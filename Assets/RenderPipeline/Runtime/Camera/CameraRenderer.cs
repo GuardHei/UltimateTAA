@@ -1,19 +1,39 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public abstract class CameraRenderer {
+public unsafe abstract class CameraRenderer {
     
     public Camera camera;
     public AdvancedCameraType cameraType;
+    
+    public int outputWidth;
+    public int outputHeight;
+
+    public float xRatio;
+    public float yRatio;
+
+    public int internalWidth => Mathf.CeilToInt(outputWidth * xRatio);
+
+    public int internalHeight => Mathf.CeilToInt(outputHeight * yRatio);
 
     internal ScriptableRenderContext _context; // Not persistent
+    internal CullingResults _cullingResults;
     
     public abstract void Render(ScriptableRenderContext context);
 
     public abstract void Setup();
+
+    public void ExecuteCommand(CommandBuffer buffer, bool clear = true) {
+        _context.ExecuteCommandBuffer(buffer);
+        if (clear) buffer.Clear();
+    }
+    
+    public void ExecuteCommandAsync(CommandBuffer buffer, ComputeQueueType queueType, bool clear = true) {
+        _context.ExecuteCommandBufferAsync(buffer, queueType);
+        if (clear) buffer.Clear();
+    }
 
     public void Submit() => _context.Submit();
 
@@ -22,6 +42,8 @@ public abstract class CameraRenderer {
     public static CameraRenderer CreateCameraRenderer(Camera camera, AdvancedCameraType type) {
         switch (type) {
             case AdvancedCameraType.Game: return new GameCameraRenderer(camera);
+            case AdvancedCameraType.SceneView: return new GameCameraRenderer(camera);
+            case AdvancedCameraType.Preview: return new GameCameraRenderer(camera);
             default: throw new InvalidOperationException("Does not support camera type: " + type);
         }
     }
@@ -43,6 +65,5 @@ public enum AdvancedCameraType {
     SceneView = 2,
     Preview = 4,
     VR = 8,
-    Reflection = 16,
-    Shadow = 32
+    Reflection = 16
 }

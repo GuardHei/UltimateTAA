@@ -1,18 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
-public class ReflectionCameraRenderer : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+public sealed class ReflectionCameraRenderer : CameraRenderer {
+	public ReflectionCameraRenderer(Camera camera) : base(camera) => cameraType = AdvancedCameraType.Reflection;
+	public override void Render(ScriptableRenderContext context) {
+		throw new System.NotImplementedException();
+	}
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+	public override void Setup() {
+		throw new System.NotImplementedException();
+	}
 }

@@ -4,6 +4,8 @@ using UnityEngine.Rendering;
 
 public sealed class AdvancedRenderPipeline : RenderPipeline {
 
+	public static AdvancedRenderPipelineSettings settings;
+	
 	internal static Dictionary<Camera, CameraRenderer> cameraRenderers = new Dictionary<Camera, CameraRenderer>(2);
 
 	#region Static Methods
@@ -23,10 +25,21 @@ public sealed class AdvancedRenderPipeline : RenderPipeline {
 
 	#endregion
 
+	public AdvancedRenderPipeline(AdvancedRenderPipelineSettings settings) {
+		AdvancedRenderPipeline.settings = settings;
+	}
+
 	protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
 
+		var screenWidth = Screen.width;
+		var screenHeight = Screen.height;
+		
 		foreach (var camera in cameras) {
 			var cameraRenderer = GetCameraRenderer(camera);
+			cameraRenderer.outputWidth = screenWidth;
+			cameraRenderer.outputHeight = screenHeight;
+			cameraRenderer.xRatio = 1f;
+			cameraRenderer.yRatio = 1f;
 			cameraRenderer.Render(context);
 		}
 	}
