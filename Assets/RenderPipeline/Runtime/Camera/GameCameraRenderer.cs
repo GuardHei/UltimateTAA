@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 public sealed class GameCameraRenderer : CameraRenderer {
@@ -8,6 +9,10 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 	internal const string RENDERER_DESC = "Render Game View";
 	internal CommandBuffer _cmd;
+
+	internal RTHandle _rawColorTex;
+	internal RTHandle _prevRawColorTex;
+	internal RTHandle _ColorTex;
 
 	public GameCameraRenderer(Camera camera) : base(camera) {
 		cameraType = AdvancedCameraType.Game;
@@ -20,8 +25,11 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 		BeginSample();
 		
-		Setup();
+		ResetBuffers();
+		GetBuffers();
 		
+		Setup();
+
 		Cull();
 		DrawDepthStencilPrepass();
 		DrawShadowPass();
@@ -32,6 +40,10 @@ public sealed class GameCameraRenderer : CameraRenderer {
 		EndSample();
 		
 		Submit();
+		
+		ReleaseBuffers();
+		
+		CommandBufferPool.Release(_cmd);
 	}
 	
 	public void BeginSample() {
@@ -78,7 +90,7 @@ public sealed class GameCameraRenderer : CameraRenderer {
 			criteria = SortingCriteria.OptimizeStateChanges
 		};
 		var drawSettings = new DrawingSettings(ShaderTagManager.SRP_DEFAULT_UNLIT, sortingSettings);
-		var filterSettings = new FilteringSettings(RenderQueueRange.opaque);
+		var filterSettings = new FilteringSettings(ShaderTagManager.OPAQUE);
 		
 		_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 	}
@@ -92,11 +104,20 @@ public sealed class GameCameraRenderer : CameraRenderer {
 	}
 
 	public void InitBuffers() {
+		ResetBuffers();
+		
+		_historyBuffers.AllocBuffer(ShaderKeywordManager.RAW_COLOR_TEXTURE, (system, i) => system.Alloc(Ratio, colorFormat: GraphicsFormat.R16G16B16A16_SFloat), 2);
+	}
+
+	public void ResetBuffers() {
 		_historyBuffers.SwapAndSetReferenceSize(outputWidth, outputHeight);
 	}
 
 	public void GetBuffers() {
-		
+		_rawColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.RAW_COLOR_TEXTURE, 0);
+		_prevRawColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.RAW_COLOR_TEXTURE, 1);
+		Debug.Log("Mark");
+		if (_prevRawColorTex == null) Debug.Log("Not Allocated Before!");
 	}
 
 	public void ReleaseBuffers() {

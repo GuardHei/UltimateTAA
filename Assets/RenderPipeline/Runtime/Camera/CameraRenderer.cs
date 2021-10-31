@@ -7,12 +7,13 @@ public unsafe abstract class CameraRenderer {
     
     public Camera camera;
     public AdvancedCameraType cameraType;
-    
+
     public int outputWidth;
     public int outputHeight;
-
     public float xRatio;
     public float yRatio;
+    
+    public Vector2 Ratio => new Vector2(xRatio, yRatio);
 
     public int internalWidth => Mathf.CeilToInt(outputWidth * xRatio);
 
@@ -36,6 +37,23 @@ public unsafe abstract class CameraRenderer {
     }
 
     public void Submit() => _context.Submit();
+    
+    public virtual void SetResolution(int w, int h) {
+        outputWidth = w;
+        outputHeight = h;
+    }
+    
+    public virtual void SetRatio(float x, float y) {
+        xRatio = x;
+        yRatio = y;
+    }
+
+    public virtual void SetResolutionAndRatio(int w, int h, float x, float y) {
+        outputWidth = w;
+        outputHeight = h;
+        xRatio = x;
+        yRatio = y;
+    }
 
     public CameraRenderer(Camera camera) => this.camera = camera;
 

@@ -36,10 +36,7 @@ public sealed class AdvancedRenderPipeline : RenderPipeline {
 		
 		foreach (var camera in cameras) {
 			var cameraRenderer = GetCameraRenderer(camera);
-			cameraRenderer.outputWidth = screenWidth;
-			cameraRenderer.outputHeight = screenHeight;
-			cameraRenderer.xRatio = 1f;
-			cameraRenderer.yRatio = 1f;
+			cameraRenderer.SetResolutionAndRatio(screenWidth, screenHeight, 1f, 1f);
 			cameraRenderer.Render(context);
 		}
 	}

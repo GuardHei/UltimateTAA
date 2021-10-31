@@ -30,8 +30,8 @@ public static class ShaderKeywordManager {
 
 	#region Render Targets
 
+	public static readonly int RAW_COLOR_TEXTURE = Shader.PropertyToID("_RawColorTexture");
 	public static readonly int COLOR_TEXTURE = Shader.PropertyToID("_ColorTexture");
-	public static readonly int HDR_COLOR_TEXTURE = Shader.PropertyToID("_HdrColorTexture");
 	public static readonly int DEPTH_TEXTURE = Shader.PropertyToID("_DepthTexture");
 	public static readonly int NORMAL_TEXTURE = Shader.PropertyToID("_NormalTexture");
 	public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
