@@ -1,70 +1,106 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
+#if UNITY_EDITOR
+public class GameCameraRenderer : CameraRenderer {
+#else
 public sealed class GameCameraRenderer : CameraRenderer {
+#endif
+
+	#region Pipeline Callbacks
+
+	public event Action beforeCull;
+	public event Action beforeFirstPass;
+	public event Action beforeTransparent;
+	public event Action beforePostProcess;
+	public event Action afterLastPass;
+	public event Action afterSubmission;	
+
+	#endregion
 
 	internal readonly BufferedRTHandleSystem _historyBuffers = new BufferedRTHandleSystem();
 
-	internal const string RENDERER_DESC = "Render Game View";
-	internal CommandBuffer _cmd;
+	internal string _rendererDesc;
+
+	#region RT Handles
 
 	internal RTHandle _rawColorTex;
 	internal RTHandle _prevRawColorTex;
-	internal RTHandle _ColorTex;
+	internal RTHandle _colorTex;
+	internal RTHandle _depthTex;
+	internal RTHandle _prevDepthTex;
+	internal RTHandle _stencilTex;
+	internal RTHandle _prevStencilTex;
+	internal RTHandle _velocityTex;
+	internal RTHandle _prevVelocityTex;
+	internal RTHandle _normalTex;
+
+	#endregion
 
 	public GameCameraRenderer(Camera camera) : base(camera) {
 		cameraType = AdvancedCameraType.Game;
+		_rendererDesc = "Render Game (" + camera + ")";
 		InitBuffers();
 	}
 
 	public override void Render(ScriptableRenderContext context) {
 		_context = context;
-		_cmd = CommandBufferPool.Get(RENDERER_DESC);
+		_cmd = CommandBufferPool.Get(_rendererDesc);
 
-		BeginSample();
+		BeginSample(_rendererDesc);
 		
 		ResetBuffers();
 		GetBuffers();
 		
 		Setup();
 
+		beforeCull?.Invoke();
+		
 		Cull();
+		
+		beforeFirstPass?.Invoke();
+		
 		DrawDepthStencilPrepass();
 		DrawShadowPass();
 		DrawOpaqueLightingPass();
-		DrawOpaqueLightingPass();
+		
+		beforeTransparent?.Invoke();
+		
+		DrawTransparentLightingPass();
 		DrawSkybox();
 		
-		EndSample();
+		beforePostProcess?.Invoke();
+		
+		afterLastPass?.Invoke();
+		
+		EndSample(_rendererDesc);
 		
 		Submit();
+		
+		afterSubmission?.Invoke();
 		
 		ReleaseBuffers();
 		
 		CommandBufferPool.Release(_cmd);
 	}
-	
-	public void BeginSample() {
-#if UNITY_EDITOR
-		_cmd.BeginSample(RENDERER_DESC);
-#endif
-	}
-
-	public void EndSample() {
-#if UNITY_EDITOR
-		_cmd.EndSample(RENDERER_DESC);
-#endif
-	}
 
 	public override void Setup() {
 		_context.SetupCameraProperties(camera);
+		
+		var clearColor = camera.clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.black;
+		
+		// SetRenderTarget();
+		ClearRenderTarget(RTClearFlags.All, clearColor);
+		
+		ExecuteCommand(_cmd);
 	}
 
 	public void Cull() {
 		if (!camera.TryGetCullingParameters(out var cullingParameters)) {
-			Debug.Log("Culling Failed for " + RENDERER_DESC);
+			Debug.Log("Culling Failed for " + _rendererDesc);
 			return;
 		}
 		
@@ -90,7 +126,7 @@ public sealed class GameCameraRenderer : CameraRenderer {
 			criteria = SortingCriteria.OptimizeStateChanges
 		};
 		var drawSettings = new DrawingSettings(ShaderTagManager.SRP_DEFAULT_UNLIT, sortingSettings);
-		var filterSettings = new FilteringSettings(ShaderTagManager.OPAQUE);
+		var filterSettings = new FilteringSettings(ShaderTagManager.OPAQUE_QUEUE);
 		
 		_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 	}
@@ -106,7 +142,10 @@ public sealed class GameCameraRenderer : CameraRenderer {
 	public void InitBuffers() {
 		ResetBuffers();
 		
-		_historyBuffers.AllocBuffer(ShaderKeywordManager.RAW_COLOR_TEXTURE, (system, i) => system.Alloc(Ratio, colorFormat: GraphicsFormat.R16G16B16A16_SFloat), 2);
+		_historyBuffers.AllocBuffer(ShaderKeywordManager.RAW_COLOR_TEXTURE, (system, i) => system.Alloc(Ratio, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, filterMode: FilterMode.Bilinear), 2);
+		_historyBuffers.AllocBuffer(ShaderKeywordManager.COLOR_TEXTURE, (system, i) => system.Alloc(Ratio, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, filterMode: FilterMode.Bilinear), 1);
+		_historyBuffers.AllocBuffer(ShaderKeywordManager.DEPTH_TEXTURE, (system, i) => system.Alloc(Ratio, colorFormat: GraphicsFormat.None, depthBufferBits: DepthBits.Depth32), 2);
+		_historyBuffers.AllocBuffer(ShaderKeywordManager.VELOCITY_TEXTURE, (system, i) => system.Alloc(Ratio, colorFormat: GraphicsFormat.R16G16_SNorm), 2);
 	}
 
 	public void ResetBuffers() {
@@ -116,8 +155,12 @@ public sealed class GameCameraRenderer : CameraRenderer {
 	public void GetBuffers() {
 		_rawColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.RAW_COLOR_TEXTURE, 0);
 		_prevRawColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.RAW_COLOR_TEXTURE, 1);
-		Debug.Log("Mark");
-		if (_prevRawColorTex == null) Debug.Log("Not Allocated Before!");
+		// if (_prevRawColorTex == null) Debug.Log("Not Allocated Before!");
+		_colorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.COLOR_TEXTURE, 0);
+		_depthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 0);
+		_prevDepthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 1);
+		_velocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 0);
+		_prevVelocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 1);
 	}
 
 	public void ReleaseBuffers() {

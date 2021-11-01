@@ -17,11 +17,7 @@ public class AdvancedRenderPipelineSettings {
 	[Header("Editor")]
 	public bool enableDebugView;
 	[Header("Batch Settings")]
-	public bool enableDynamicBatcing;
-	public bool enableAutoInstancing = true;
 	public bool enableSRPBatching = true;
-	[Header("Display")]
-	public bool enableHdr;
 	[Header("Transparency")]
 	public float alphaTestDepthCutOff = .001f;
 	
