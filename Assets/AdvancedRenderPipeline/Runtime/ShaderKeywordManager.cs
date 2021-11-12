@@ -38,6 +38,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int DEPTH_TEXTURE = Shader.PropertyToID("_DepthTexture");
 		public static readonly int STENCIL_TEXTURE = Shader.PropertyToID("_StencilTexture");
 		public static readonly int VELOCITY_TEXTURE = Shader.PropertyToID("_VelocityTexture");
+		public static readonly int GBUFFER_1_TEXTURE = Shader.PropertyToID("_GBuffer1");
+		public static readonly int GBUFFER_2_TEXTURE = Shader.PropertyToID("_GBuffer2");
 		public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
 
 		#endregion
