@@ -12,3 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 412cfaef469904157bc0f040684b1a3c, type: 3}
   m_Name: ARPAsset
   m_EditorClassIdentifier: 
+  settings:
+    enableDebugView: 1
+    enableAutoInstancing: 1
+    enableSRPBatching: 1
+    alphaTestDepthCutOff: 0.001
