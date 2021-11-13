@@ -54,8 +54,6 @@ Shader "Hidden/ARPDepthStencilMV" {
             Tags {
                 "LightMode" = "DepthStencil"
             }
-        
-            Colormask 0
             
             ZTest LEqual
             ZWrite On

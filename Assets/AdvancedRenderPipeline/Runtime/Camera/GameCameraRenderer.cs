@@ -81,6 +81,8 @@ public sealed class GameCameraRenderer : CameraRenderer {
 			DrawPostFXPass();
 
 			afterLastPass?.Invoke();
+			
+			FinalBlit();
 
 			EndSample(_rendererDesc);
 
@@ -165,21 +167,43 @@ public sealed class GameCameraRenderer : CameraRenderer {
 		public void DrawPostFXPass() {
 			ResolveTAAPass();
 			TonemapPass();
-			FinalBlit();
 		}
 
 		public void ResolveTAAPass() {
 			_cmd.Blit(_rawColorTex, _taaColorTex);
 
 			_cmd.Blit(_taaColorTex, _hdrColorTex);
+			
+			ExecuteCommand();
 		}
 
 		public void TonemapPass() {
 			_cmd.Blit(_hdrColorTex, _displayTex);
+			ExecuteCommand();
 		}
 
 		public void FinalBlit() {
 			_cmd.Blit(_displayTex, BuiltinRenderTextureType.CameraTarget);
+
+#if UNITY_EDITOR
+			RTHandle debugTex;
+			if (AdvancedRenderPipeline.settings.enableDebugView && this is not SceneViewCameraRenderer) { // this is ugly but convenient
+				switch (AdvancedRenderPipeline.settings.debugOutput) {
+					case DebugOutput.Depth:
+						debugTex = _depthTex;
+						break;
+					case DebugOutput.MotionVector:
+						debugTex = _velocityTex;
+						break;
+					default:
+						debugTex = _displayTex;
+						break;
+				}
+				
+				_cmd.Blit(debugTex, BuiltinRenderTextureType.CameraTarget);
+			}
+#endif
+			
 			ExecuteCommand();
 		}
 
