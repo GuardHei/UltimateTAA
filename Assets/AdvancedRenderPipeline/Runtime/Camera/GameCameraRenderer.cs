@@ -95,6 +95,13 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 		public override void Setup() {
 			_context.SetupCameraProperties(camera);
+
+			var screenSize = Vector4.one;
+			screenSize.x = internalWidth;
+			screenSize.y = internalHeight;
+			screenSize.z = 1.0f / internalWidth;
+			screenSize.w = 1.0f / internalHeight;
+			_cmd.SetGlobalVector(ShaderKeywordManager.SCREEN_SIZE, screenSize);
 		}
 
 		public void Cull() {
@@ -107,7 +114,6 @@ public sealed class GameCameraRenderer : CameraRenderer {
 		}
 
 		public void DrawDepthStencilPrepass() {
-			
 			DrawStaticDepthStencilPrepass();
 			DrawDynamicDepthStencilPrepass();
 		}

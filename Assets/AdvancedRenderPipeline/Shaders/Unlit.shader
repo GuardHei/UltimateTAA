@@ -42,8 +42,7 @@ Shader "Advanced Render Pipeline/Unlit" {
                 BasicVertexOutput output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
-                float3 posWS = TransformObjectToWorld(input.posOS);
-                output.posCS = TransformObjectToHClip(posWS);
+                output.posCS = TransformObjectToHClip(input.posOS);
                 return output;
             }
 

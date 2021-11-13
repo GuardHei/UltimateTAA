@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   settings:
     enableDebugView: 1
+    debugOutput: 0
     enableAutoInstancing: 1
     enableSRPBatching: 1
     alphaTestDepthCutOff: 0.001
+    mainLightShadowDistance: 100
+    mainLightShadowmapSize: 2048
+    mainLightSoftShadow: 0

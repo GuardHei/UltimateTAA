@@ -17,6 +17,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		[Header("Editor")]
 		public bool enableDebugView;
+		public DebugOutput debugOutput;
 		[Header("Batch Settings")]
 		public bool enableAutoInstancing = true;
 		public bool enableSRPBatching = true;
@@ -26,6 +27,13 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float mainLightShadowDistance = 100f;
 		public ShadowmapSize mainLightShadowmapSize = ShadowmapSize._2048;
 		public SoftShadowMode mainLightSoftShadow = SoftShadowMode.None;
+	}
+
+	public enum DebugOutput {
+		Default,
+		Depth,
+		Normal,
+		MotionVector
 	}
 
 	public enum ShadowmapSize {

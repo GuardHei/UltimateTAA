@@ -32,8 +32,7 @@ Shader "Hidden/ARPShadow" {
                 BasicVertexOutput output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
-                float3 posWS = TransformObjectToWorld(input.posOS);
-                output.posCS = TransformObjectToHClip(posWS);
+                output.posCS = TransformObjectToHClip(input.posOS);
                 #if UNITY_REVERSED_Z
                     output.posCS.z = min(output.posCS.z, output.posCS.w * UNITY_NEAR_CLIP_VALUE);
                 #else
@@ -85,8 +84,7 @@ Shader "Hidden/ARPShadow" {
                 AlphaTestShadowVertexOutput output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
-                float3 posWS = TransformObjectToWorld(input.posOS);
-                output.posCS = TransformObjectToHClip(posWS);
+                output.posCS = TransformObjectToHClip(input.posOS);
 
                 #if UNITY_REVERSED_Z
                     output.posCS.z = min(output.posCS.z, output.posCS.w * UNITY_NEAR_CLIP_VALUE);

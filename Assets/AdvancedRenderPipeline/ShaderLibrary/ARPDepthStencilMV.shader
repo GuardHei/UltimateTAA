@@ -36,8 +36,7 @@ Shader "Hidden/ARPDepthStencilMV" {
                 BasicVertexOutput output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
-                float3 posWS = TransformObjectToWorld(input.posOS);
-                output.posCS = TransformObjectToHClip(posWS);
+                output.posCS = TransformObjectToHClip(input.posOS);
                 return output;
             }
 
@@ -78,25 +77,25 @@ Shader "Hidden/ARPDepthStencilMV" {
 
             struct DepthMVVertexOutput {
                 float4 posCS : SV_POSITION;
-                float4 prevPosCS : TEXCOORD0;
+                float4 mv_posCS : TEXCOORD0;
+                float4 mv_prevPosCS : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
-
-            bool _HasLastPositionData;
 
             DepthMVVertexOutput DepthVertex(DepthMVVertexInput input) {
                 DepthMVVertexOutput output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
-                float3 posWS = TransformObjectToWorld(input.posOS);
-                output.posCS = TransformObjectToHClip(posWS);
-                output.prevPosCS = output.posCS;
+                output.posCS = TransformObjectToHClip(input.posOS);
+                output.mv_posCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetObjectToWorldMatrix(), float4(input.posOS, 1.0)));
+                output.mv_prevPosCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetPrevObjectToWorldMatrix(), float4(input.prevPosOS, 1.0)));
                 return output;
             }
 
-            float4 DepthFragment(DepthMVVertexOutput input) : SV_TARGET {
+            float2 DepthFragment(DepthMVVertexOutput input) : SV_TARGET {
                 UNITY_SETUP_INSTANCE_ID(input);
-                return 1.0;
+                float2 mv = EncodeMotionVector(CalculateMotionVector(input.posCS, input.mv_prevPosCS));
+                return mv;
             }
             
             ENDHLSL

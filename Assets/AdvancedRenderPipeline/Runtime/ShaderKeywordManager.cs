@@ -4,9 +4,10 @@ namespace AdvancedRenderPipeline.Runtime {
 	public static class ShaderKeywordManager {
 
 		#region Camera Params
-
+		
 		public static readonly int CAMERA_POSITION = Shader.PropertyToID("_CameraPosition");
 		public static readonly int CAMERA_FORWARD = Shader.PropertyToID("_CameraForward");
+		public static readonly int SCREEN_SIZE = Shader.PropertyToID("_ScreenSize");
 
 		#endregion
 
