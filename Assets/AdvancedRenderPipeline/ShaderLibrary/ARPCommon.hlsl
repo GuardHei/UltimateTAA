@@ -9,28 +9,45 @@
 #define UNITY_PREV_MATRIX_I_M prevWorldToObject
 #define UNITY_MATRIX_V unity_MatrixV
 #define UNITY_MATRIX_VP unity_MatrixVP
+#define UNITY_MATRIX_UNJITTERED_VP nonJitteredVP
 #define UNITY_MATRIX_P glstate_matrix_projection
 
-float4x4 unity_ObjectToWorld;
-float4x4 unity_WorldToObject;
-float4x4 prevObjectToWorld;
-float4x4 prevWorldToObject;
+CBUFFER_START(UnityPerDraw)
+    float4x4 unity_ObjectToWorld;
+    float4x4 unity_WorldToObject;
+    float4x4 prevObjectToWorld;
+    float4x4 prevWorldToObject;
+    float4 unity_LODFade;
+    real4 unity_WorldTransformParams;
+CBUFFER_END
 
+float4 unity_MotionVectorsParams;
 float4x4 unity_MatrixVP;
+float4x4 nonJitteredVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
-real4 unity_WorldTransformParams;
 
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
+#include "ARPInstancing.hlsl"
+// #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 
-float4 UnlitVertex(float3 posOS : POSITION) : SV_POSITION {
-    float3 posWS = TransformObjectToWorld(posOS);
-    return TransformObjectToHClip(posWS);
-}
+//////////////////////////////////////////
+// Built-in Lighting & Shadow Variables //
+//////////////////////////////////////////
 
-float4 UnlitFragment() : SV_TARGET {
-    return 0.0;
-}
+
+
+//////////////////////////////////////////
+// Alpha Related                        //
+//////////////////////////////////////////
+
+static float _AlphaCutOff;
+
+//////////////////////////////////////////
+// Built-in Textures and Samplers       //
+//////////////////////////////////////////
+
+TEXTURE2D(_AlbedoMap);
+SAMPLER(sampler_AlbedoMap);
 
 #endif

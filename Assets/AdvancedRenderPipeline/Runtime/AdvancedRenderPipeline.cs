@@ -9,12 +9,27 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		public static AdvancedRenderPipelineSettings settings;
 
-		internal static readonly Dictionary<Camera, CameraRenderer> cameraRenderers =
-			new Dictionary<Camera, CameraRenderer>(2);
+		internal static readonly Dictionary<Camera, CameraRenderer> cameraRenderers = new Dictionary<Camera, CameraRenderer>(2);
+
+		private static readonly List<KeyValuePair<Camera, CameraRenderer>> tempCameras = new List<KeyValuePair<Camera, CameraRenderer>>(10);
 
 		#region Static Methods
 
+		public static void RequestCameraCheck() {
+			foreach (var pair in cameraRenderers) {
+				if (!pair.Key || pair.Value == null) tempCameras.Add(pair);
+			}
+
+			foreach (var pair in tempCameras) {
+				cameraRenderers.Remove(pair.Key);
+				pair.Value.Dispose();
+			}
+			
+			tempCameras.Clear();
+		}
+
 		public static bool RemoveCamera(Camera camera) {
+			if (!camera) return false;
 			if (cameraRenderers.TryGetValue(camera, out var renderer)) {
 				renderer.Dispose();
 				return cameraRenderers.Remove(camera);
@@ -43,6 +58,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 
 		protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
+			
+			RequestCameraCheck();
 
 			var screenWidth = Screen.width;
 			var screenHeight = Screen.height;
@@ -56,6 +73,8 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		protected override void Dispose(bool disposing) {
 			foreach (var renderer in cameraRenderers.Values) renderer.Dispose();
+			cameraRenderers.Clear();
+			tempCameras.Clear();
 			base.Dispose(disposing);
 		}
 

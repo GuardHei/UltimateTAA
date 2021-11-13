@@ -90,7 +90,7 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 			ReleaseBuffers();
 
-			CommandBufferPool.Release(_cmd);
+			DisposeCMD();
 		}
 
 		public override void Setup() {
@@ -113,7 +113,6 @@ public sealed class GameCameraRenderer : CameraRenderer {
 		}
 
 		public void DrawStaticDepthStencilPrepass() {
-			
 			SetRenderTarget(_velocityTex, _depthTex);
 			ClearRenderTarget(false, true);
 			
@@ -226,8 +225,10 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 		public override void Dispose() {
 			base.Dispose();
-			_historyBuffers.ReleaseAll();
-			// _historyBuffers.Dispose();
+			if (_historyBuffers != null) {
+				_historyBuffers.ReleaseAll();
+				_historyBuffers.Dispose();
+			}
 		}
 	}
 }

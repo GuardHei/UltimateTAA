@@ -34,6 +34,13 @@ namespace AdvancedRenderPipeline.Runtime {
 
         #region Command Buffer Utils
 
+        public void DisposeCMD() {
+            if (_cmd != null) {
+                CommandBufferPool.Release(_cmd);
+                _cmd = null;
+            }
+        }
+
         public void SetRenderTarget(RTHandle colorBuffer, bool clear = false) {
             _cmd.SetRenderTarget(colorBuffer, 0, CubemapFace.Unknown, 0);
             CoreUtils.SetViewport(_cmd, colorBuffer);
@@ -187,7 +194,10 @@ namespace AdvancedRenderPipeline.Runtime {
             camera.forceIntoRenderTexture = true;
         }
 
-        public virtual void Dispose() { }
+        public virtual void Dispose() {
+            camera = null;
+            DisposeCMD();
+        }
 
         public static CameraRenderer CreateCameraRenderer(Camera camera, AdvancedCameraType type) {
             switch (type) {
