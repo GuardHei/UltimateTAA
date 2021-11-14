@@ -1,53 +1,109 @@
-Shader "Custom/ARPStandard"
-{
-    Properties
-    {
-        _Color ("Color", Color) = (1,1,1,1)
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
-        _Glossiness ("Smoothness", Range(0,1)) = 0.5
-        _Metallic ("Metallic", Range(0,1)) = 0.0
+Shader "Advanced Render Pipeline/ARPStandard" {
+    
+    Properties {
+        [Enum(Dynamic, 1, Alpha, 2, Custom, 3)]
+        _StencilRef("Stencil Ref", int) = 1
+        _AlbedoTint("Albedo Tint", Color) = (1,1,1,1)
+        _AlbedoMap("Albedo", 2D) = "white" { }
+        _NormalScale("Normal Scale", float) = 1
+        _NormalMap("Normal", 2D) = "bump" { }
+        _SpecularMap("Specular", 2D) = "black" { }
+        _SmoothnessScale("Smoothness Scale", float) = 1
+        _SmoothnessMap("Smoothness", 2D) = "white" { }
     }
-    SubShader
-    {
-        Tags { "RenderType"="Opaque" }
-        LOD 200
+    
+    SubShader {
+        
+        UsePass "Hidden/ARPDepthStencilMV/DefaultDynamicDepthStencil"
+        
+        UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
+        
+        Pass {
+            
+            Tags {
+                "LightMode" = "Forward"
+            }
+            
+            ZTest Equal
+            ZWrite Off
+			Cull Back
+            
+            HLSLPROGRAM
 
-        CGPROGRAM
-        // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf Standard fullforwardshadows
+            #pragma multi_compile_instancing
+            #pragma vertex StandardVertex
+            #pragma fragment StandardFragment
 
-        // Use shader model 3.0 target, to get nicer looking lighting
-        #pragma target 3.0
+            #include "../ShaderLibrary/ARPCommon.hlsl"
 
-        sampler2D _MainTex;
+            struct VertexInput {
+                float3 posOS : POSITION;
+                float3 normalOS : NORMAL;
+                float2 baseUV : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
 
-        struct Input
-        {
-            float2 uv_MainTex;
-        };
+            struct VertexOutput {
+                float4 posCS : SV_POSITION;
+                float3 normalWS : VAR_NORMAL;
+                float3 viewDirWS : TEXCOORD1;
+                float2 baseUV : VAR_BASE_UV;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
 
-        half _Glossiness;
-        half _Metallic;
-        fixed4 _Color;
+            struct GBufferOutput {
+                float4 forward : SV_TARGET0;
+                float2 gbuffer1 : SV_TARGET1;
+                float4 gbuffer2 : SV_TARGET2;
+            };
 
-        // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
-        // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
-        // #pragma instancing_options assumeuniformscaling
-        UNITY_INSTANCING_BUFFER_START(Props)
-            // put more per-instance properties here
-        UNITY_INSTANCING_BUFFER_END(Props)
+            UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+                UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
+                UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)
+            UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
-        {
-            // Albedo comes from a texture tinted by color
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-            o.Albedo = c.rgb;
-            // Metallic and smoothness come from slider variables
-            o.Metallic = _Metallic;
-            o.Smoothness = _Glossiness;
-            o.Alpha = c.a;
+            VertexOutput StandardVertex(VertexInput input) {
+                VertexOutput output;
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_TRANSFER_INSTANCE_ID(input, output);
+                
+                output.posCS = TransformObjectToHClip(input.posOS);
+                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+
+                output.viewDirWS = output.normalWS;
+                
+                float4 albedoST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoMap_ST);
+                output.baseUV = input.baseUV * albedoST.xy + albedoST.zw;
+                return output;
+            }
+
+            GBufferOutput StandardFragment(VertexOutput input) {
+                UNITY_SETUP_INSTANCE_ID(input);
+                
+                GBufferOutput output;
+
+                float3 N = normalize(input.normalWS);
+                float3 V = normalize(input.viewDirWS);
+                float3 L = _MainLightDir;
+
+                float NdotV;
+                float NVCos = GetViewReflectedNormal(N, V, NdotV);
+                float3 H = normalize(V + L);
+                float LdotH = saturate(dot(L, H));
+                float NdotH = saturate(dot(N, H));
+                float NdotL = saturate(dot(N, L));
+
+                float4 albedo = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint);
+                albedo *= SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.baseUV).rgba;
+                
+                output.forward = albedo;
+                output.gbuffer1 = PackNormalOctQuadEncode(N);
+                // output.gbuffer1 = normalWS;
+                output.gbuffer2 = 0;
+                return output;
+            }
+
+            ENDHLSL
         }
-        ENDCG
     }
-    FallBack "Diffuse"
 }

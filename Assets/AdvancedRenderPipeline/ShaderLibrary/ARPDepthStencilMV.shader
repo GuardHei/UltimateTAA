@@ -1,5 +1,9 @@
 Shader "Hidden/ARPDepthStencilMV" {
     
+    Properties {
+        _StencilRef("Stencil Ref", int) = 1
+    }
+    
     SubShader {
         
         Pass {
@@ -8,6 +12,13 @@ Shader "Hidden/ARPDepthStencilMV" {
             
             Tags {
                 "LightMode" = "DepthStencil"
+            }
+            
+            Stencil {
+                Ref 0
+                WriteMask 3
+                Comp Always
+                Pass Replace
             }
             
             ZTest LEqual
@@ -53,6 +64,13 @@ Shader "Hidden/ARPDepthStencilMV" {
             
             Tags {
                 "LightMode" = "DepthStencil"
+            }
+            
+            Stencil {
+                Ref [_StencilRef]
+                WriteMask 3
+                Comp Always
+                Pass Replace
             }
             
             ZTest LEqual

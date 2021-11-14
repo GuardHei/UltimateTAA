@@ -122,6 +122,54 @@ namespace AdvancedRenderPipeline.Runtime {
                 depthSlice);
             CoreUtils.SetViewport(_cmd, colorBuffers[0]);
         }
+        
+        public void SetRenderTarget(RTHandle refColor, RenderTargetIdentifier[] colorBuffers, RTHandle depthBuffer, bool clear = false) {
+            _cmd.SetRenderTarget(colorBuffers, depthBuffer, 0, CubemapFace.Unknown, 0);
+            CoreUtils.SetViewport(_cmd, refColor);
+        }
+
+        public void SetRenderTarget(RTHandle refColor, RenderTargetIdentifier[] colorBuffers, RTHandle depthBuffer, int mipLevel, bool clear = false) {
+            _cmd.SetRenderTarget(colorBuffers, depthBuffer, mipLevel, CubemapFace.Unknown, 0);
+            CoreUtils.SetViewport(_cmd, refColor);
+        }
+
+        public void SetRenderTarget(RTHandle refColor, RenderTargetIdentifier[] colorBuffers, RTHandle depthBuffer, int mipLevel,
+            CubemapFace cubemapFace, bool clear = false) {
+            _cmd.SetRenderTarget(colorBuffers, depthBuffer, mipLevel, cubemapFace, 0);
+            CoreUtils.SetViewport(_cmd, refColor);
+        }
+
+        public void SetRenderTarget(RTHandle refColor, RenderTargetIdentifier[] colorBuffers, RTHandle depthBuffer, int mipLevel,
+            CubemapFace cubemapFace, int depthSlice, bool clear = false) {
+            _cmd.SetRenderTarget(colorBuffers, depthBuffer, mipLevel, cubemapFace, depthSlice);
+            CoreUtils.SetViewport(_cmd, refColor);
+        }
+        
+        public void SetRenderTargetNonAlloc(RTHandle[] colorBuffers, RenderTargetIdentifier[] rts, RTHandle depthBuffer, bool clear = false) {
+            ARPUtils.RTHandlesToRTIsNonAlloc(colorBuffers, ref rts);
+            _cmd.SetRenderTarget(rts, depthBuffer, 0, CubemapFace.Unknown, 0);
+            CoreUtils.SetViewport(_cmd, colorBuffers[0]);
+        }
+
+        public void SetRenderTargetNonAlloc(RTHandle[] colorBuffers, RenderTargetIdentifier[] rts, RTHandle depthBuffer, int mipLevel, bool clear = false) {
+            ARPUtils.RTHandlesToRTIsNonAlloc(colorBuffers, ref rts);
+            _cmd.SetRenderTarget(rts, depthBuffer, mipLevel, CubemapFace.Unknown, 0);
+            CoreUtils.SetViewport(_cmd, colorBuffers[0]);
+        }
+
+        public void SetRenderTargetNonAlloc(RTHandle[] colorBuffers, RenderTargetIdentifier[] rts, RTHandle depthBuffer, int mipLevel,
+            CubemapFace cubemapFace, bool clear = false) {
+            ARPUtils.RTHandlesToRTIsNonAlloc(colorBuffers, ref rts);
+            _cmd.SetRenderTarget(rts, depthBuffer, mipLevel, cubemapFace, 0);
+            CoreUtils.SetViewport(_cmd, colorBuffers[0]);
+        }
+
+        public void SetRenderTargetNonAlloc(RTHandle[] colorBuffers, RenderTargetIdentifier[] rts, RTHandle depthBuffer, int mipLevel,
+            CubemapFace cubemapFace, int depthSlice, bool clear = false) {
+            ARPUtils.RTHandlesToRTIsNonAlloc(colorBuffers, ref rts);
+            _cmd.SetRenderTarget(rts, depthBuffer, mipLevel, cubemapFace, depthSlice);
+            CoreUtils.SetViewport(_cmd, colorBuffers[0]);
+        }
 
         public void ClearRenderTarget(RTClearFlags flags) => ClearRenderTarget(flags, Color.black);
 

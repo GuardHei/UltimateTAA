@@ -42,6 +42,8 @@ public sealed class GameCameraRenderer : CameraRenderer {
 		internal RTHandle _gbuffer1Tex;
 		internal RTHandle _gbuffer2Tex;
 
+		protected RenderTargetIdentifier[] _forwardMRTs = new RenderTargetIdentifier[3];
+
 		#endregion
 
 		public GameCameraRenderer(Camera camera) : base(camera) {
@@ -103,7 +105,10 @@ public sealed class GameCameraRenderer : CameraRenderer {
 			screenSize.y = internalHeight;
 			screenSize.z = 1.0f / internalWidth;
 			screenSize.w = 1.0f / internalHeight;
+			
 			_cmd.SetGlobalVector(ShaderKeywordManager.SCREEN_SIZE, screenSize);
+			
+			ExecuteCommand();
 		}
 
 		public void Cull() {
@@ -145,14 +150,19 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 		public void DrawOpaqueLightingPass() {
 			var clearColor = camera.clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.black;
+			clearColor = Color.clear; // MRT needs to be cleared with 0 anyway
 
-			SetRenderTarget(_rawColorTex, _depthTex);
+			_forwardMRTs[0] = _rawColorTex;
+			_forwardMRTs[1] = _gbuffer1Tex;
+			_forwardMRTs[2] = _gbuffer2Tex;
+
+			SetRenderTarget(_rawColorTex, _forwardMRTs, _depthTex);
 			ClearRenderTarget(true, false, clearColor);
 			
 			ExecuteCommand(_cmd);
 			
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.OptimizeStateChanges };
-			var drawSettings = new DrawingSettings(ShaderTagManager.SRP_DEFAULT_UNLIT, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
+			var drawSettings = new DrawingSettings(ShaderTagManager.FORWARD, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
 			var filterSettings = new FilteringSettings(RenderQueueManager.OPAQUE_QUEUE);
 
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
@@ -191,6 +201,9 @@ public sealed class GameCameraRenderer : CameraRenderer {
 				switch (AdvancedRenderPipeline.settings.debugOutput) {
 					case DebugOutput.Depth:
 						debugTex = _depthTex;
+						break;
+					case DebugOutput.Normal:
+						debugTex = _gbuffer1Tex;
 						break;
 					case DebugOutput.MotionVector:
 						debugTex = _velocityTex;

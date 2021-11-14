@@ -1,6 +1,8 @@
 Shader "Advanced Render Pipeline/Unlit" {
 
     Properties {
+        [Enum(Dynamic, 1, Alpha, 2, Custom, 3)]
+        _StencilRef("Stencil Ref", int) = 1
         _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
     }
     
@@ -12,8 +14,12 @@ Shader "Advanced Render Pipeline/Unlit" {
         
         Pass {
             
+            Tags {
+                "LightMode" = "Forward"
+            }
+            
             ZTest Equal
-            ZWrite On
+            ZWrite Off
 			Cull Back
             
             HLSLPROGRAM

@@ -66,13 +66,13 @@ Shader "Hidden/ARPShadow" {
 
             struct AlphaTestShadowVertexInput {
                 float3 posOS : POSITION;
-                float2 uv : TEXCOORD0;
+                float2 baseUV : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct AlphaTestShadowVertexOutput {
                 float4 posCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
+                float2 baseUV : VAR_BASE_UV;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -93,14 +93,14 @@ Shader "Hidden/ARPShadow" {
                 #endif
 
                 float4 albedoST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoMap_ST);
-                output.uv = input.uv * albedoST.xy + albedoST.zw;
+                output.baseUV = input.baseUV * albedoST.xy + albedoST.zw;
                 
                 return output;
             }
 
             void ShadowFragment(AlphaTestShadowVertexOutput input) {
                 UNITY_SETUP_INSTANCE_ID(input);
-                float alpha = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.uv).a;
+                float alpha = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.baseUV).a;
                 clip(alpha - _AlphaCutOff);
             }
             

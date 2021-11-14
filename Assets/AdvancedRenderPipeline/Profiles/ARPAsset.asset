@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   settings:
     enableDebugView: 1
-    debugOutput: 1
+    debugOutput: 0
     enableAutoInstancing: 1
     enableSRPBatching: 1
     alphaTestDepthCutOff: 0.001

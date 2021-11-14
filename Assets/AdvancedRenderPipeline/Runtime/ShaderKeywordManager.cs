@@ -5,15 +5,15 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#region Camera Params
 		
-		public static readonly int CAMERA_POSITION = Shader.PropertyToID("_CameraPosition");
-		public static readonly int CAMERA_FORWARD = Shader.PropertyToID("_CameraForward");
+		public static readonly int CAMERA_POS = Shader.PropertyToID("_CameraPosWS");
+		public static readonly int CAMERA_FWD = Shader.PropertyToID("_CameraFwdWS");
 		public static readonly int SCREEN_SIZE = Shader.PropertyToID("_ScreenSize");
 
 		#endregion
 
 		#region Light Params
 
-		public static readonly int MAIN_LIGHT_DIRECTION = Shader.PropertyToID("_MainLightDirection");
+		public static readonly int MAIN_LIGHT_DIR = Shader.PropertyToID("_MainLightDir");
 		public static readonly int MAIN_LIGHT_COLOR = Shader.PropertyToID("_MainLightColor");
 
 		#endregion
@@ -22,23 +22,23 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		public static readonly int SHADOW_CONSTANT_BIAS = Shader.PropertyToID("_ShadowConstantBias");
 		public static readonly int SHADOW_NORMAL_BIAS = Shader.PropertyToID("_ShadowNormalBias");
-		public static readonly int MAIN_LIGHT_SHADOW_DISTANCE = Shader.PropertyToID("_MainLightShadowDistance");
-		public static readonly int MAIN_LIGHT_SHADOW_STRENGTH = Shader.PropertyToID("_MainLightShadowStrength");
+		public static readonly int MAIN_LIGHT_SHADOW_DIST = Shader.PropertyToID("_MainLightShadowDist");
+		public static readonly int MAIN_LIGHT_SHADOW_STR = Shader.PropertyToID("_MainLightShadowStr");
 		public static readonly int MAIN_LIGHT_SHADOW_TINT = Shader.PropertyToID("_MainLightShadowTint");
 		public static readonly int MAIN_LIGHT_SHADOWMAP_SIZE = Shader.PropertyToID("_MainLightShadowmapSize");
-		public static readonly int MAIN_LIGHT_INVERSE_VP = Shader.PropertyToID("_MainLightInverseVP");
+		public static readonly int MAIN_LIGHT_INV_VP = Shader.PropertyToID("_MainLightInvVP");
 
 		#endregion
 
 		#region Render Targets
 
-		public static readonly int RAW_COLOR_TEXTURE = Shader.PropertyToID("_RawColorTexture");
-		public static readonly int TAA_COLOR_TEXTURE = Shader.PropertyToID("_TAAColorTexture");
-		public static readonly int HDR_COLOR_TEXTURE = Shader.PropertyToID("_HdrColorTexture");
-		public static readonly int DISPLAY_TEXTURE = Shader.PropertyToID("_DisplayTexture");
-		public static readonly int DEPTH_TEXTURE = Shader.PropertyToID("_DepthTexture");
-		public static readonly int STENCIL_TEXTURE = Shader.PropertyToID("_StencilTexture");
-		public static readonly int VELOCITY_TEXTURE = Shader.PropertyToID("_VelocityTexture");
+		public static readonly int RAW_COLOR_TEXTURE = Shader.PropertyToID("_RawColorTex");
+		public static readonly int TAA_COLOR_TEXTURE = Shader.PropertyToID("_TAAColorTex");
+		public static readonly int HDR_COLOR_TEXTURE = Shader.PropertyToID("_HdrColorTex");
+		public static readonly int DISPLAY_TEXTURE = Shader.PropertyToID("_DisplayTex");
+		public static readonly int DEPTH_TEXTURE = Shader.PropertyToID("_DepthTex");
+		public static readonly int STENCIL_TEXTURE = Shader.PropertyToID("_StencilTex");
+		public static readonly int VELOCITY_TEXTURE = Shader.PropertyToID("_VelocityTex");
 		public static readonly int GBUFFER_1_TEXTURE = Shader.PropertyToID("_GBuffer1");
 		public static readonly int GBUFFER_2_TEXTURE = Shader.PropertyToID("_GBuffer2");
 		public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
