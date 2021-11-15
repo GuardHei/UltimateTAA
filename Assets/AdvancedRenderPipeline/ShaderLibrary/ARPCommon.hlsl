@@ -47,8 +47,8 @@ float4x4 glstate_matrix_projection;
 //////////////////////////////////////////
 
 CBUFFER_START(MainLightData)
-    float3 _MainLightDir;
-    float3 _MainLightColor;
+    float4 _MainLightDir;
+    float4 _MainLightColor;
 CBUFFER_END
 
 // CBUFFER_START(MainLightShadowData)
@@ -67,10 +67,33 @@ static float _AlphaCutOff;
 
 TEXTURE2D(_AlbedoMap);
 SAMPLER(sampler_AlbedoMap);
+TEXTURE2D(_NormalMap);
+SAMPLER(sampler_NormalMap);
+TEXTURE2D(_MetallicMap);
+SAMPLER(sampler_MetallicMap);
+TEXTURE2D(_SpecularMap);
+SAMPLER(sampler_SpecularMap);
+TEXTURE2D(_SmoothnessMap);
+SAMPLER(sampler_SmoothnessMap);
+TEXTURE2D(_MetallicSmoothnessMap);
+SAMPLER(sampler_MetallicSmoothnessMap);
+TEXTURE2D(_OcclusionMap);
+SAMPLER(sampler_OcclusionMap);
+TEXTURE2D(_EmissionMap);
+SAMPLER(sampler_EmissionMap);
 
 //////////////////////////////////////////
 // Built-in Utility Functions           //
 //////////////////////////////////////////
+
+float4 TransformObjectToWorldTangent(float4 tangentOS) {
+    return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
+}
+
+float3 ApplyNormalMap(float3 data, float3 normalWS, float4 tangentWS) {
+    float3x3 tangentToWorld = CreateTangentToWorld(normalWS, tangentWS.xyz, tangentWS.w);
+    return TransformTangentToWorld(data, tangentToWorld);
+}
 
 float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     float2 posNDC = posCS.xy / posCS.w;
@@ -108,6 +131,12 @@ float2 DecodeMotionVector(float2 encoded) {
 // PBR Utility Functions                //
 //////////////////////////////////////////
 
+float pow5(float b) {
+    float temp0 = b * b;
+    float temp1 = temp0 * temp0;
+    return temp1 * b;
+}
+
 float LinearSmoothToLinearRoughness(float ls) {
     return 1 - ls;
 }
@@ -122,12 +151,26 @@ float RoughnessToAlphaG2(float roughness) {
     return roughness * roughness;
 }
 
-float3 F_Schlick(in float3 f0, in float f90, in float u) {
-    return f0 + (f90 - f0) * pow(1.0 - u, 5.0);
+float ClampMinLinearRoughness(float linearRoughness) {
+    return max(linearRoughness, .04f); // Anti specular flickering
 }
 
-float3 F_Schlick_1(in float3 f0, in float u) {
-    return f0 + (float3(1.0, 1.0, 1.0) - f0) * pow(1.0 - u, 5.0);
+float3 GetF0(float3 albedo, float metallic) {
+    float3 f0 = float3(.04, .04, .04);
+    // return lerp(f0, albedo.rgb, metallic);
+    return f0 * (1.0 - metallic) + albedo * metallic;
+}
+
+float3 GetF0(float3 reflectance) {
+    return .16 * (reflectance * reflectance);
+}
+
+float3 F_Schlick(in float3 f0, in float f90, in float u) {
+    return f0 + (f90 - f0) * pow5(1.0 - u);
+}
+
+float3 F_Schlick(in float3 f0, in float u) {
+    return f0 + (float3(1.0, 1.0, 1.0) - f0) * pow5(1.0 - u);
 }
 
 float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
@@ -155,16 +198,16 @@ float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float lin
 }
 
 float CalculateFd(float NdotV, float NdotL, float LdotH, float linearRoughness) {
-    const float d = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
+    float d = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
     return d / PI;
 }
 
-float CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float f0) {
+float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float f0) {
     float alphaG2 = RoughnessToAlphaG2(roughness);
-    float F = F_Schlick_1(f0, LdotH);
+    float3 F = F_Schlick(f0, LdotH);
     float V = V_SmithGGX(NdotV, NdotL, alphaG2);
     float D = D_GGX(NdotH, alphaG2);
-    return D * F * V / PI;
+    return D * V * F / PI;
 }
 
 #endif

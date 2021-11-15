@@ -31,7 +31,7 @@
  | :-------- | :------------ | :--------  | :--------  | :--------  | :--------------- |
  | GBuffer 0 | RGBA16_SFloat | Forward R  | Forward G  | Forward B  | TAA Anti-flicker |
  | GBuffer 1 | RG16_SNorm    | Normal X   | Normal Y   | N/A        | N/A              | 
- | GBuffer 2 | RGBA8_UNorm   | Specular R | Specular G | Specular B | Smoothness       |
+ | GBuffer 2 | RGBA8_UNorm   | Specular R | Specular G | Specular B | Roughness        |
  | Velocity  | RG16_SNorm    | Velocity X | Velocity Y | N/A        | N/A              |
  | Depth     | D24S8         | Depth      | Depth      | Depth      | Stencil          |
 
@@ -55,6 +55,6 @@
  
  ### Forward Lighting Pass
 
-    Shade forward materials. Output lighting result to GBuffer 0. Output normalized normals (spheremap transform) to GBuffer 1. Output specular color and smoothness value to GBuffer 2.
+    Shade forward materials. Output lighting result to GBuffer 0. Output normalized normals (Oct Quad Encode) to GBuffer 1. Output specular color and roughness to GBuffer 2.
 
  ###

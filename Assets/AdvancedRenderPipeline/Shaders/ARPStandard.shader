@@ -5,11 +5,18 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         _StencilRef("Stencil Ref", int) = 1
         _AlbedoTint("Albedo Tint", Color) = (1,1,1,1)
         _AlbedoMap("Albedo", 2D) = "white" { }
-        _NormalScale("Normal Scale", float) = 1
+        _NormalScale("Normal Scale", Range(0, 1)) = 1
+        [NoScaleOffset]
         _NormalMap("Normal", 2D) = "bump" { }
-        _SpecularMap("Specular", 2D) = "black" { }
-        _SmoothnessScale("Smoothness Scale", float) = 1
-        _SmoothnessMap("Smoothness", 2D) = "white" { }
+        _MetallicScale("Metallic Scale", Range(0, 1)) = 0
+        _SmoothnessScale("Smoothness Scale", Range(0, 1)) = 1
+        _MetallicSmoothnessMap("Metallic (RGB) Smoothness (A)", 2D) = "white" { }
+        // _SpecularMap("Specular", 2D) = "black" { }
+        // _SmoothnessMap("Smoothness", 2D) = "white" { }
+        _OcclusionMap("Occlusion", 2D) = "white" { }
+        [HDR]
+        _EmissionTint("Emission Tint", Color) = (0, 0, 0, 1)
+        _EmissionMap("Emission", 2D) = "black" { }
     }
     
     SubShader {
@@ -39,6 +46,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             struct VertexInput {
                 float3 posOS : POSITION;
                 float3 normalOS : NORMAL;
+                float4 tangentOS : TANGENT;
                 float2 baseUV : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
@@ -46,20 +54,29 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             struct VertexOutput {
                 float4 posCS : SV_POSITION;
                 float3 normalWS : VAR_NORMAL;
+                float4 tangentWS : VAR_TANGENT;
                 float3 viewDirWS : TEXCOORD1;
                 float2 baseUV : VAR_BASE_UV;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct GBufferOutput {
-                float4 forward : SV_TARGET0;
+                float3 forward : SV_TARGET0;
                 float2 gbuffer1 : SV_TARGET1;
                 float4 gbuffer2 : SV_TARGET2;
             };
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+                UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+                UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)
+                UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
+                UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionTint)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)
+                // UNITY_DEFINE_INSTANCED_PROP(float4, _NormalMap_ST)
+                // UNITY_DEFINE_INSTANCED_PROP(float4, _MetallicSmoothnessMap_ST)
+                // UNITY_DEFINE_INSTANCED_PROP(float4, _OcclusionMap_ST)
+                // UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionMap_ST)
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
             VertexOutput StandardVertex(VertexInput input) {
@@ -69,6 +86,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 output.posCS = TransformObjectToHClip(input.posOS);
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+                output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
 
                 output.viewDirWS = output.normalWS;
                 
@@ -82,7 +100,11 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 GBufferOutput output;
 
-                float3 N = normalize(input.normalWS);
+                float3 normalWS = normalize(input.normalWS);
+                float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
+                float3 normalData = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.baseUV), normalScale);
+                
+                float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS);
                 float3 V = normalize(input.viewDirWS);
                 float3 L = _MainLightDir;
 
@@ -93,13 +115,42 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float NdotH = saturate(dot(N, H));
                 float NdotL = saturate(dot(N, L));
 
-                float4 albedo = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint);
-                albedo *= SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.baseUV).rgba;
+                float3 albedo = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.baseUV).rgb;
+                albedo *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;
+
+                float occlusion = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, input.baseUV).r;
+                albedo *= occlusion;
+
+                float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, input.baseUV);
                 
-                output.forward = albedo;
+                float linearSmoothness = metallicSmoothness.a;
+                linearSmoothness *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale);
+                float linearRoughness = LinearSmoothToLinearRoughness(linearSmoothness);
+                linearRoughness = ClampMinLinearRoughness(linearRoughness);
+                float roughness = LinearRoughnessToRoughness(linearRoughness);
+
+                float metallic = metallicSmoothness.r;
+                metallic *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
+
+                float3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.baseUV).rgb;
+                emission *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionTint);
+
+                float3 diffuse = (1.0 - metallic) * albedo;
+                float3 f0 = GetF0(albedo, metallic);
+
+                float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
+                float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, f0);
+
+                float3 mainLighting = NdotL * _MainLightColor.rgb;
+
+                diffuse *= fd * mainLighting;
+                diffuse += emission;
+                
+                output.forward = float4(diffuse.r, diffuse.g, diffuse.b, 1.0) + fr * mainLighting;
+                // diffuse = fd * NdotL * _MainLightColor.rgb;
+                // output.forward = float4(diffuse, 1.0);
                 output.gbuffer1 = PackNormalOctQuadEncode(N);
-                // output.gbuffer1 = normalWS;
-                output.gbuffer2 = 0;
+                output.gbuffer2 = float4(fr, roughness);
                 return output;
             }
 

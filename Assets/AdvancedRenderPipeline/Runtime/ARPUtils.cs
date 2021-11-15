@@ -1,9 +1,13 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
 	public static class ARPUtils {
+
+		public static float4 ColorToFloat4(this Color color) => new float4(color.r, color.g, color.b, color.a);
+		public static Vector4 ColorToVector4(this Color color) => new Vector4(color.r, color.g, color.b, color.a);
 
 		public static RenderTargetIdentifier[] RTHandlesToRTIs(RTHandle[] rtHandles) {
 			var len = rtHandles.Length;

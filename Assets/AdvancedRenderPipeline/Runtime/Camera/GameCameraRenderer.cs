@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
 #if UNITY_EDITOR
-	public class GameCameraRenderer : CameraRenderer {
+	public unsafe class GameCameraRenderer : CameraRenderer {
 #else
-public sealed class GameCameraRenderer : CameraRenderer {
+public unsafe sealed class GameCameraRenderer : CameraRenderer {
 #endif
 
 		#region Pipeline Callbacks
@@ -26,7 +27,7 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 		internal string _rendererDesc;
 
-		#region RT Handles
+		#region RT Handles & Render Target Identifiers
 
 		internal RTHandle _rawColorTex;
 		internal RTHandle _taaColorTex;
@@ -46,10 +47,18 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 		#endregion
 
+		#region Compute Buffers
+
+		internal DirectionalLight[] _mainLights;
+		internal ComputeBuffer _mainLightBuffer;
+
+		#endregion
+
 		public GameCameraRenderer(Camera camera) : base(camera) {
 			cameraType = AdvancedCameraType.Game;
 			_rendererDesc = "Render Game (" + camera.name + ")";
 			InitBuffers();
+			InitComputeBuffers();
 		}
 
 		public override void Render(ScriptableRenderContext context) {
@@ -70,6 +79,9 @@ public sealed class GameCameraRenderer : CameraRenderer {
 			beforeFirstPass?.Invoke();
 
 			DrawDepthStencilPrepass();
+			
+			SetupLights();
+			
 			DrawShadowPass();
 			DrawOpaqueLightingPass();
 			DrawSkybox();
@@ -144,6 +156,14 @@ public sealed class GameCameraRenderer : CameraRenderer {
 			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.All ^ (RenderLayerManager.STATIC | RenderLayerManager.TERRAIN));
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
+		}
+		
+		public void SetupLights() {
+			LightManager.UpdateLight(_cullingResults);
+			_mainLights[0] = LightManager.mainLightData;
+			_mainLightBuffer.SetData(_mainLights, 0, 0, 1);
+			_cmd.SetGlobalConstantBuffer(_mainLightBuffer, ShaderKeywordManager.MAIN_LIGHT_DATA, 0, sizeof(DirectionalLight));
+			ExecuteCommand();
 		}
 
 		public void DrawShadowPass() { }
@@ -266,12 +286,23 @@ public sealed class GameCameraRenderer : CameraRenderer {
 
 		public void ReleaseBuffers() { }
 
+		public void InitComputeBuffers() {
+			_mainLights = new DirectionalLight[1];
+			_mainLightBuffer = new ComputeBuffer(1, sizeof(DirectionalLight), ComputeBufferType.Constant);
+		}
+
+		public void ReleaseComputeBuffers() {
+			_mainLightBuffer.Dispose();
+		}
+
 		public override void Dispose() {
 			base.Dispose();
 			if (_historyBuffers != null) {
 				_historyBuffers.ReleaseAll();
 				_historyBuffers.Dispose();
 			}
+			
+			ReleaseComputeBuffers();
 		}
 	}
 }

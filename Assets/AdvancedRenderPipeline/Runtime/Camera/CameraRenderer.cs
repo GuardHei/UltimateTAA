@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
-    public unsafe abstract class CameraRenderer : IDisposable {
+    public abstract class CameraRenderer : IDisposable {
 
         public static AdvancedRenderPipelineSettings settings => AdvancedRenderPipeline.settings;
 

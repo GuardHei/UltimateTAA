@@ -13,6 +13,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#region Light Params
 
+		public static readonly int MAIN_LIGHT_DATA = Shader.PropertyToID("MainLightData");
 		public static readonly int MAIN_LIGHT_DIR = Shader.PropertyToID("_MainLightDir");
 		public static readonly int MAIN_LIGHT_COLOR = Shader.PropertyToID("_MainLightColor");
 
