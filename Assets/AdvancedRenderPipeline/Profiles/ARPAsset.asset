@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ARPAsset
   m_EditorClassIdentifier: 
   settings:
-    enableDebugView: 1
-    debugOutput: 2
+    enableDebugView: 0
+    debugOutput: 0
     enablePostFXInEditor: 1
     enableAutoInstancing: 1
     enableSRPBatching: 1

@@ -34,7 +34,8 @@ namespace AdvancedRenderPipeline.Runtime {
 	public enum DebugOutput {
 		Default,
 		Depth,
-		Normal,
+		GBuffer1,
+		GBuffer2,
 		MotionVector
 	}
 

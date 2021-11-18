@@ -10,7 +10,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		public static AdvancedRenderPipelineSettings settings;
 
-		internal static readonly Dictionary<Camera, CameraRenderer> cameraRenderers = new Dictionary<Camera, CameraRenderer>(2);
+		private static readonly Dictionary<Camera, CameraRenderer> cameraRenderers = new Dictionary<Camera, CameraRenderer>(2);
 
 		private static readonly List<KeyValuePair<Camera, CameraRenderer>> tempCameras = new List<KeyValuePair<Camera, CameraRenderer>>(10);
 
@@ -67,6 +67,8 @@ namespace AdvancedRenderPipeline.Runtime {
 
 			foreach (var camera in cameras) {
 				var cameraRenderer = GetCameraRenderer(camera);
+				// Debug.Log(Time.frameCount + " " + camera.name);
+				cameraRenderer.PreUpdate();
 				cameraRenderer.SetResolutionAndRatio(screenWidth, screenHeight, 1f, 1f);
 				cameraRenderer.Render(context);
 			}

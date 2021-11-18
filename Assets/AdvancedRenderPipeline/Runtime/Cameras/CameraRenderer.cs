@@ -32,20 +32,31 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             }
         }
 
-        internal Vector2Int _outputRes;
-        internal Vector2Int _internalRes;
-        internal Vector2 _ratio;
+        public bool IsOnFirstFrame => _frameNum == 1; // default is 0, and we start at 1.
 
-        internal ScriptableRenderContext _context; // Not persistent
-        internal CommandBuffer _cmd; // current active command buffer
-        internal CullingResults _cullingResults;
+        protected Vector2Int _outputRes;
+        protected Vector2Int _internalRes;
+        protected Vector2 _ratio;
+        protected Vector2Int _lastRenderOutputRes;
+        protected Vector2 _lastRenderRatio;
+        
+        protected ScriptableRenderContext _context; // Not persistent
+        protected CommandBuffer _cmd; // current active command buffer
+        protected CullingResults _cullingResults;
 
-        internal float3 _cameraPosWS;
-        internal float3 _cameraFwdWS;
+        protected int _frameNum;
+        protected float3 _cameraPosWS;
+        protected float3 _cameraFwdWS;
 
         public abstract void Render(ScriptableRenderContext context);
 
         public abstract void Setup();
+
+        public virtual void PreUpdate() {
+            _frameNum++;
+            _lastRenderOutputRes = OutputRes;
+            _lastRenderRatio = Ratio;
+        }
 
         #region Command Buffer Utils
 
@@ -238,14 +249,15 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         protected virtual void UpdateRenderScale(bool outputChanged = true) => _internalRes = Vector2Int.CeilToInt(OutputRes * Ratio);
 
         public void SetResolutionAndRatio(int w, int h, float x, float y) {
-            var prevOutput = _outputRes;
-            var prevRatio = _ratio;
+            var prevOutput = _lastRenderOutputRes;
+            var prevRatio = _lastRenderRatio;
             
             _outputRes = new Vector2Int(w, h);
             _ratio = new Vector2(x, y);
 
             var outputChanged = prevOutput != _outputRes;
             var ratioChanged = prevRatio != _ratio;
+
             UpdateRenderScale(outputChanged);
         }
 

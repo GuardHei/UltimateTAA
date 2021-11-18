@@ -21,25 +21,25 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 
 		#endregion
 
-		internal readonly BufferedRTHandleSystem _historyBuffers = new();
+		protected readonly BufferedRTHandleSystem _historyBuffers = new();
 
-		internal string _rendererDesc;
+		protected string _rendererDesc;
 
 		#region RT Handles & Render Target Identifiers
 
-		internal RTHandle _rawColorTex;
-		internal RTHandle _taaColorTex;
-		internal RTHandle _prevTaaColorTex;
-		internal RTHandle _hdrColorTex;
-		internal RTHandle _displayTex;
-		internal RTHandle _depthTex;
-		internal RTHandle _prevDepthTex;
-		internal RTHandle _stencilTex;
-		internal RTHandle _prevStencilTex;
-		internal RTHandle _velocityTex;
-		internal RTHandle _prevVelocityTex;
-		internal RTHandle _gbuffer1Tex;
-		internal RTHandle _gbuffer2Tex;
+		protected RTHandle _rawColorTex;
+		protected RTHandle _taaColorTex;
+		protected RTHandle _prevTaaColorTex;
+		protected RTHandle _hdrColorTex;
+		protected RTHandle _displayTex;
+		protected RTHandle _depthTex;
+		protected RTHandle _prevDepthTex;
+		protected RTHandle _stencilTex;
+		protected RTHandle _prevStencilTex;
+		protected RTHandle _velocityTex;
+		protected RTHandle _prevVelocityTex;
+		protected RTHandle _gbuffer1Tex;
+		protected RTHandle _gbuffer2Tex;
 
 		protected RenderTargetIdentifier[] _forwardMRTs = new RenderTargetIdentifier[3];
 
@@ -47,11 +47,11 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 
 		#region Compute Buffers
 
-		internal CameraData[] _cameraData;
-		internal DirectionalLight[] _mainLights;
+		protected CameraData[] _cameraData;
+		protected DirectionalLight[] _mainLights;
 
-		internal ComputeBuffer _cameraDataBuffer;
-		internal ComputeBuffer _mainLightBuffer;
+		protected ComputeBuffer _cameraDataBuffer;
+		protected ComputeBuffer _mainLightBuffer;
 
 		#endregion
 
@@ -125,6 +125,14 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 			screenSize.w = 1.0f / InternalRes.y;
 
 			var rtProps = _historyBuffers.rtHandleProperties.Pack();
+
+			/*
+			if (IsOnFirstFrame) {
+				rtProps.viewportSize.zw = rtProps.viewportSize.xy;
+				rtProps.rtSize.zw = rtProps.rtSize.xy;
+				rtProps.rtHandleScale.zw = rtProps.rtHandleScale.xy;
+			}
+			*/
 
 			_cameraData[0] = new CameraData {
 				cameraPosWS = _cameraPosWS,
@@ -255,25 +263,34 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 
 		public void FinalBlit() {
 			RTHandle src = _displayTex;
-#if UNITY_EDITOR
+#if !UNITY_EDITOR
+			_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+#else
 			if (AdvancedRenderPipeline.settings.enableDebugView && this is not SceneViewCameraRenderer) { // this is ugly but convenient
 				switch (AdvancedRenderPipeline.settings.debugOutput) {
 					case DebugOutput.Depth:
 						src = _depthTex;
+						_cmd.ScaledBlitDepth(src, BuiltinRenderTextureType.CameraTarget);
 						break;
-					case DebugOutput.Normal:
+					case DebugOutput.GBuffer1:
 						src = _gbuffer1Tex;
+						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+						break;
+					case DebugOutput.GBuffer2:
+						src = _gbuffer2Tex;
+						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					case DebugOutput.MotionVector:
 						src = _velocityTex;
+						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					default:
 						src = _displayTex;
+						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 				}
-			}
+			} else _cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
 #endif
-			_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
 			ExecuteCommand();
 		}
 
@@ -283,7 +300,7 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 		}
 
 		public void InitBuffers() {
-			ResetBufferSize();
+			// ResetBufferSize();
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.RAW_COLOR_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16B16A16_SFloat,
 					filterMode: FilterMode.Bilinear, name: "RawColorBuffer"), 1);
@@ -308,6 +325,8 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 		}
 
 		public void ResetBufferSize() {
+			// Debug.Log("Reset!");
+			// Debug.Log(Time.frameCount + ", " + _frameNum + " " + camera.name + " Reset to " + OutputRes);
 			// _historyBuffers.SwapAndSetReferenceSize(OutputRes.x, OutputRes.y);
 			_historyBuffers.ResetReferenceSize(OutputRes.x, OutputRes.y);
 		}
@@ -329,8 +348,7 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 			
 			// Debug.Log("Raw Color S: " + _rawColorTex.referenceSize);
 			// Debug.Log("Velocity S: " + _rawColorTex.referenceSize);
-			// Debug.Log("Depth S: " + _depthTex.referenceSize);
-			
+			// Debug.Log("Depth S: " + _depthTex.referenceSize)
 		}
 
 		public void ReleaseBuffers() { }

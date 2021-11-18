@@ -7,9 +7,11 @@ namespace AdvancedRenderPipeline.Runtime {
 		
 		public static Material BlitMaterial {
 			get {
-				if (blitMaterial == null && AdvancedRenderPipeline.settings.blitShader != null) {
-					blitMaterial = new Material(AdvancedRenderPipeline.settings.blitShader);
-					blitMaterial.hideFlags = HideFlags.HideAndDontSave;
+				if (blitMaterial == null) {
+					if (!AdvancedRenderPipeline.settings.blitShader) AdvancedRenderPipeline.settings.blitShader = Shader.Find("Hidden/ARPBlit");
+					blitMaterial = new Material(AdvancedRenderPipeline.settings.blitShader) {
+						hideFlags = HideFlags.HideAndDontSave
+					};
 				}
 
 				return blitMaterial;
