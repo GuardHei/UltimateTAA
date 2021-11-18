@@ -1,12 +1,11 @@
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace AdvancedRenderPipeline.Runtime {
+namespace AdvancedRenderPipeline.Runtime.Cameras {
 #if UNITY_EDITOR
 	public class SceneViewCameraRenderer : GameCameraRenderer {
 
-		public SceneViewCameraRenderer(Camera camera) : base(camera) {
+		public SceneViewCameraRenderer(UnityEngine.Camera camera) : base(camera) {
 			cameraType = AdvancedCameraType.SceneView;
 			_rendererDesc = "Render Scene View (" + camera.name + ")";
 			beforeCull += () => GraphicsSettings.useScriptableRenderPipelineBatching = settings.enableSRPBatching;

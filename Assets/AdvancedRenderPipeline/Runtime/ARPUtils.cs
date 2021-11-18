@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -6,7 +7,10 @@ using UnityEngine.Rendering;
 namespace AdvancedRenderPipeline.Runtime {
 	public static class ARPUtils {
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float4 ColorToFloat4(this Color color) => new float4(color.r, color.g, color.b, color.a);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Vector4 ColorToVector4(this Color color) => new Vector4(color.r, color.g, color.b, color.a);
 
 		public static RenderTargetIdentifier[] RTHandlesToRTIs(RTHandle[] rtHandles) {
@@ -19,6 +23,18 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static void RTHandlesToRTIsNonAlloc(RTHandle[] rtHandles, ref RenderTargetIdentifier[] rts) {
 			var len = Math.Min(rtHandles.Length, rts.Length);
 			for (int i = 0; i < len; i++) rts[i] = rtHandles[i];
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static int4 Vector2IntToInt4(Vector2Int a, Vector2Int b) => new int4(a.x, a.y, b.x, b.y);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static PackedRTHandleProperties Pack(this RTHandleProperties properties) {
+			return new PackedRTHandleProperties {
+				viewportSize = new int4(Vector2IntToInt4(properties.currentViewportSize, properties.previousViewportSize)),
+				rtSize = new int4(Vector2IntToInt4(properties.currentRenderTargetSize, properties.previousRenderTargetSize)),
+				rtHandleScale = properties.rtHandleScale
+			};
 		}
 	}
 }

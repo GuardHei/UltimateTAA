@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace AdvancedRenderPipeline.Runtime {
+namespace AdvancedRenderPipeline.Runtime.Cameras {
 	public sealed class ReflectionCameraRenderer : CameraRenderer {
 
 		public ReflectionCameraRenderer(Camera camera) : base(camera) => cameraType = AdvancedCameraType.Reflection;

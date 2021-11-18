@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AdvancedRenderPipeline.Runtime.Cameras;
 using UnityEngine;
 using UnityEngine.Rendering;
 

@@ -17,6 +17,7 @@ Shader "Hidden/ARPShadow" {
             #pragma fragment ShadowFragment
             
             #include "ARPCommon.hlsl"
+            #include "ARPInstancing.hlsl"
 
             struct BasicVertexInput {
                 float3 posOS : POSITION;
@@ -63,6 +64,7 @@ Shader "Hidden/ARPShadow" {
             #pragma fragment ShadowFragment
             
             #include "ARPCommon.hlsl"
+            #include "ARPInstancing.hlsl"
 
             struct AlphaTestShadowVertexInput {
                 float3 posOS : POSITION;

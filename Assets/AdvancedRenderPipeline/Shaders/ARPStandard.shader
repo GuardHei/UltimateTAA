@@ -42,6 +42,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             #pragma fragment StandardFragment
 
             #include "../ShaderLibrary/ARPCommon.hlsl"
+            #include "../ShaderLibrary/ARPInstancing.hlsl"
 
             struct VertexInput {
                 float3 posOS : POSITION;
@@ -106,7 +107,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS);
                 float3 V = normalize(input.viewDirWS);
-                float3 L = _MainLightDir;
+                float3 L = _MainLight.direction.xyz;
 
                 float NdotV;
                 float NVCos = GetViewReflectedNormal(N, V, NdotV);
@@ -141,7 +142,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
                 float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, f0);
 
-                float3 mainLighting = NdotL * _MainLightColor.rgb;
+                float3 mainLighting = NdotL * _MainLight.color.rgb;
 
                 diffuse *= fd * mainLighting;
                 diffuse += emission;

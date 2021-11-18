@@ -1,9 +1,10 @@
 using System;
-using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Vector2 = UnityEngine.Vector2;
 
-namespace AdvancedRenderPipeline.Runtime {
+namespace AdvancedRenderPipeline.Runtime.Cameras {
     public abstract class CameraRenderer : IDisposable {
 
         public static AdvancedRenderPipelineSettings settings => AdvancedRenderPipeline.settings;
@@ -11,22 +12,36 @@ namespace AdvancedRenderPipeline.Runtime {
         public Camera camera;
         public AdvancedCameraType cameraType;
 
-        public int outputWidth;
-        public int outputHeight;
-        public float xRatio = 0f;
-        public float yRatio = 0f;
+        public Vector2Int OutputRes {
+            get => _outputRes;
+            set {
+                if (_outputRes == value) return;
+                _outputRes = value;
+                UpdateRenderScale();
+            }
+        }
 
-        public Vector2 ratio => new Vector2(xRatio, yRatio);
+        public Vector2Int InternalRes => _internalRes;
 
-        public int internalWidth => Mathf.CeilToInt(outputWidth * xRatio);
+        public Vector2 Ratio {
+            get => _ratio;
+            set {
+                if (_ratio == value || value.x > 1 || value.y > 1) return;
+                _ratio = value;
+                UpdateRenderScale(false);
+            }
+        }
 
-        public int internalHeight => Mathf.CeilToInt(outputHeight * yRatio);
-
-        public Vector2Int internalRes => new Vector2Int(internalWidth, internalHeight);
+        internal Vector2Int _outputRes;
+        internal Vector2Int _internalRes;
+        internal Vector2 _ratio;
 
         internal ScriptableRenderContext _context; // Not persistent
         internal CommandBuffer _cmd; // current active command buffer
         internal CullingResults _cullingResults;
+
+        internal float3 _cameraPosWS;
+        internal float3 _cameraFwdWS;
 
         public abstract void Render(ScriptableRenderContext context);
 
@@ -34,13 +49,13 @@ namespace AdvancedRenderPipeline.Runtime {
 
         #region Command Buffer Utils
 
-        public void DisposeCMD() {
+        public void DisposeCommandBuffer() {
             if (_cmd != null) {
                 CommandBufferPool.Release(_cmd);
                 _cmd = null;
             }
         }
-
+        
         public void SetRenderTarget(RTHandle colorBuffer, bool clear = false) {
             _cmd.SetRenderTarget(colorBuffer, 0, CubemapFace.Unknown, 0);
             CoreUtils.SetViewport(_cmd, colorBuffer);
@@ -220,21 +235,18 @@ namespace AdvancedRenderPipeline.Runtime {
 
         public void Submit() => _context.Submit();
 
-        public virtual void SetResolution(int w, int h) {
-            outputWidth = w;
-            outputHeight = h;
-        }
+        protected virtual void UpdateRenderScale(bool outputChanged = true) => _internalRes = Vector2Int.CeilToInt(OutputRes * Ratio);
 
-        public virtual void SetRatio(float x, float y) {
-            xRatio = x;
-            yRatio = y;
-        }
+        public void SetResolutionAndRatio(int w, int h, float x, float y) {
+            var prevOutput = _outputRes;
+            var prevRatio = _ratio;
+            
+            _outputRes = new Vector2Int(w, h);
+            _ratio = new Vector2(x, y);
 
-        public virtual void SetResolutionAndRatio(int w, int h, float x, float y) {
-            outputWidth = w;
-            outputHeight = h;
-            xRatio = x;
-            yRatio = y;
+            var outputChanged = prevOutput != _outputRes;
+            var ratioChanged = prevRatio != _ratio;
+            UpdateRenderScale(outputChanged);
         }
 
         public CameraRenderer(Camera camera) {
@@ -244,7 +256,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
         public virtual void Dispose() {
             camera = null;
-            DisposeCMD();
+            DisposeCommandBuffer();
         }
 
         public static CameraRenderer CreateCameraRenderer(Camera camera, AdvancedCameraType type) {

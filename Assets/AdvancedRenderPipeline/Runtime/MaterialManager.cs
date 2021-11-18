@@ -4,6 +4,19 @@ using UnityEngine;
 
 namespace AdvancedRenderPipeline.Runtime {
 	public class MaterialManager {
+		
+		public static Material BlitMaterial {
+			get {
+				if (blitMaterial == null && AdvancedRenderPipeline.settings.blitShader != null) {
+					blitMaterial = new Material(AdvancedRenderPipeline.settings.blitShader);
+					blitMaterial.hideFlags = HideFlags.HideAndDontSave;
+				}
+
+				return blitMaterial;
+			}
+		}
+		
+		private static Material blitMaterial;
 
 		public static Material ErrorMat {
 			get {

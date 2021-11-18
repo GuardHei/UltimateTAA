@@ -29,6 +29,7 @@ Shader "Advanced Render Pipeline/Unlit" {
             #pragma fragment UnlitFragment
             
             #include "../ShaderLibrary/ARPCommon.hlsl"
+            #include "../ShaderLibrary/ARPInstancing.hlsl"
 
             struct BasicVertexInput {
                 float3 posOS : POSITION;

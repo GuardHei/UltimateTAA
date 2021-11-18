@@ -14,13 +14,15 @@ namespace AdvancedRenderPipeline.Runtime {
 
 	[Serializable]
 	public class AdvancedRenderPipelineSettings {
-
 		[Header("Editor")]
 		public bool enableDebugView;
 		public DebugOutput debugOutput;
+		public bool enablePostFXInEditor = true;
 		[Header("Batch Settings")]
 		public bool enableAutoInstancing = true;
 		public bool enableSRPBatching = true;
+		[Header("Builtin Shaders")]
+		public Shader blitShader;
 		[Header("Transparency"), Min(0f)]
 		public float alphaTestDepthCutOff = .001f;
 		[Header("Shadow"), Min(0f)]

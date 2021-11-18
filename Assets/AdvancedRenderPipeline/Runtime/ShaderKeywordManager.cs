@@ -4,18 +4,15 @@ namespace AdvancedRenderPipeline.Runtime {
 	public static class ShaderKeywordManager {
 
 		#region Camera Params
-		
-		public static readonly int CAMERA_POS = Shader.PropertyToID("_CameraPosWS");
-		public static readonly int CAMERA_FWD = Shader.PropertyToID("_CameraFwdWS");
-		public static readonly int SCREEN_SIZE = Shader.PropertyToID("_ScreenSize");
+
+		public static readonly int CAMERA_DATA = Shader.PropertyToID("CameraData");
 
 		#endregion
 
 		#region Light Params
 
+		public static readonly int MAIN_LIGHT = Shader.PropertyToID("_MainLight");
 		public static readonly int MAIN_LIGHT_DATA = Shader.PropertyToID("MainLightData");
-		public static readonly int MAIN_LIGHT_DIR = Shader.PropertyToID("_MainLightDir");
-		public static readonly int MAIN_LIGHT_COLOR = Shader.PropertyToID("_MainLightColor");
 
 		#endregion
 
@@ -33,6 +30,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#region Render Targets
 
+		public static readonly int MAIN_TEXTURE = Shader.PropertyToID("_MainTex");
 		public static readonly int RAW_COLOR_TEXTURE = Shader.PropertyToID("_RawColorTex");
 		public static readonly int TAA_COLOR_TEXTURE = Shader.PropertyToID("_TAAColorTex");
 		public static readonly int HDR_COLOR_TEXTURE = Shader.PropertyToID("_HdrColorTex");

@@ -42,20 +42,4 @@ namespace AdvancedRenderPipeline.Runtime {
 			}
 		}
 	}
-
-	[Serializable]
-	public class MainLightParams {
-		public bool enabled = true;
-		public bool shadowOn = true;
-		public int shadowDistance = 100;
-		public int shadowResolution = 2048;
-		public int shadowCascades = 4;
-		public Vector3 shadowCascadeSplits = new Vector3(.067f, .2f, .467f);
-	}
-
-	[Serializable]
-	public struct DirectionalLight {
-		public float4 direction;
-		public float4 color; // rgb - final light color, a - unused
-	}
 }

@@ -18,6 +18,17 @@
 #define UNITY_MATRIX_UNJITTERED_VP unjitteredVP
 #define UNITY_MATRIX_P glstate_matrix_projection
 
+struct RTHandleProperties {
+    int4 viewportSize; // xy: curr, zw: prev
+    int4 rtSize; // xy: curr, zw: prev
+    float4 rtHandleScale; // xy: curr, zw: prev
+};
+
+struct DirectionalLight {
+    float4 direction;
+    float4 color;
+};
+
 CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld;
     float4x4 unity_WorldToObject;
@@ -31,31 +42,28 @@ CBUFFER_START(CameraData)
     float3 _CameraPosWS;
     float3 _CameraFwdWS;
     float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
+    RTHandleProperties _RTHandleProps;
 CBUFFER_END
 
+float4 _ProjectionParams;
 float4 unity_MotionVectorsParams;
 float4x4 unity_MatrixVP;
 float4x4 unjitteredVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
 
-#include "ARPInstancing.hlsl"
-// #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
+// #include "ARPInstancing.hlsl"
 
 //////////////////////////////////////////
 // Built-in Lighting & Shadow Variables //
 //////////////////////////////////////////
 
 CBUFFER_START(MainLightData)
-    float4 _MainLightDir;
-    float4 _MainLightColor;
+    DirectionalLight _MainLight;
 CBUFFER_END
 
-// CBUFFER_START(MainLightShadowData)
-    
-// CBUFFER_END
 
 //////////////////////////////////////////
 // Alpha Related                        //
@@ -67,6 +75,10 @@ static float _AlphaCutOff;
 // Built-in Textures and Samplers       //
 //////////////////////////////////////////
 
+SAMPLER(sampler_linear_clamp);
+
+TEXTURE2D(_MainTex);
+SAMPLER(sampler_MainTex);
 TEXTURE2D(_AlbedoMap);
 SAMPLER(sampler_AlbedoMap);
 TEXTURE2D(_NormalMap);
@@ -87,6 +99,20 @@ SAMPLER(sampler_EmissionMap);
 //////////////////////////////////////////
 // Built-in Utility Functions           //
 //////////////////////////////////////////
+
+float4 VertexIDToPosCS(uint vertexID) {
+    return float4(
+        vertexID <= 1 ? -1.0 : 3.0,
+        vertexID == 1 ? 3.0 : -1.0,
+        0.0,
+        1.0);
+}
+
+float2 VertexIDToScreenUV(uint vertexID) {
+    return float2(
+        vertexID <= 1 ? 0.0 : 2.0,
+        vertexID ==1 ? 2.0 : 0.0);
+}
 
 float4 TransformObjectToWorldTangent(float4 tangentOS) {
     return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
@@ -110,9 +136,7 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     mv = clamp(mv, -1.0, 1.0);
     #endif
 
-    #if UNITY_UV_STARTS_AT_TOP
-    mv.y = -mv.y;
-    #endif
+    if (_ProjectionParams.x < 0.0) mv.y = -mv.y;
 
     return mv;
 }
