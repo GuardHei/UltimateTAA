@@ -77,12 +77,13 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 			Cull();
 
 			beforeFirstPass?.Invoke();
+			
+			DrawShadowPass();
 
 			DrawDepthStencilPrepass();
 			
 			SetupLights();
 			
-			DrawShadowPass();
 			DrawOpaqueLightingPass();
 			DrawSkybox();
 			
@@ -270,26 +271,26 @@ public unsafe sealed class GameCameraRenderer : CameraRenderer {
 				switch (AdvancedRenderPipeline.settings.debugOutput) {
 					case DebugOutput.Depth:
 						src = _depthTex;
-						_cmd.ScaledBlitDepth(src, BuiltinRenderTextureType.CameraTarget);
+						_cmd.BlitDepth(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					case DebugOutput.GBuffer1:
 						src = _gbuffer1Tex;
-						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					case DebugOutput.GBuffer2:
 						src = _gbuffer2Tex;
-						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					case DebugOutput.MotionVector:
 						src = _velocityTex;
-						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					default:
 						src = _displayTex;
-						_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 				}
-			} else _cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+			} else _cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 #endif
 			ExecuteCommand();
 		}

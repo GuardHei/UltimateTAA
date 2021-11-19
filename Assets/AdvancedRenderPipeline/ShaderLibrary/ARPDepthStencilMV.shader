@@ -32,7 +32,6 @@ Shader "Hidden/ARPDepthStencilMV" {
             #pragma fragment DepthFragment
             
             #include "ARPCommon.hlsl"
-            #include "ARPInstancing.hlsl"
 
             struct BasicVertexInput {
                 float3 posOS : POSITION;
@@ -85,7 +84,6 @@ Shader "Hidden/ARPDepthStencilMV" {
             #pragma fragment DepthFragment
             
             #include "ARPCommon.hlsl"
-            #include "ARPInstancing.hlsl"
 
             struct DepthMVVertexInput {
                 float3 posOS : POSITION;

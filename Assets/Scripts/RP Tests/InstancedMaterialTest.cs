@@ -3,6 +3,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace RP_Tests {
+	[ExecuteInEditMode]
 	public class InstancedMaterialTest : MonoBehaviour {
 
 		public const int NUM = 1022;

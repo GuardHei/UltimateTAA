@@ -71,6 +71,7 @@ Shader "Hidden/ARPBlit" {
 
             float4 ScaledBlitFragment(VertexOutput input) : SV_TARGET {
                 float2 uv = input.screenUV * _RTHandleProps.rtHandleScale.xy;
+                // float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
                 float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv);
                 return output;

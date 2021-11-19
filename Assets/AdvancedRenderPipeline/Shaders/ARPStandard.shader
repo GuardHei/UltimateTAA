@@ -31,8 +31,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 "LightMode" = "Forward"
             }
             
-            ZTest Equal
-            ZWrite Off
+            ZTest LEqual
+            ZWrite On
 			Cull Back
             
             HLSLPROGRAM
@@ -42,7 +42,6 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             #pragma fragment StandardFragment
 
             #include "../ShaderLibrary/ARPCommon.hlsl"
-            #include "../ShaderLibrary/ARPInstancing.hlsl"
 
             struct VertexInput {
                 float3 posOS : POSITION;
@@ -110,7 +109,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 L = _MainLight.direction.xyz;
 
                 float NdotV;
-                float NVCos = GetViewReflectedNormal(N, V, NdotV);
+                N = GetViewReflectedNormal(N, V, NdotV);
                 float3 H = normalize(V + L);
                 float LdotH = saturate(dot(L, H));
                 float NdotH = saturate(dot(N, H));
@@ -134,7 +133,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 metallic *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
 
                 float3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.baseUV).rgb;
-                emission *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionTint);
+                emission *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionTint).rgb;
 
                 float3 diffuse = (1.0 - metallic) * albedo;
                 float3 f0 = GetF0(albedo, metallic);
@@ -146,10 +145,10 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
                 diffuse *= fd * mainLighting;
                 diffuse += emission;
+
+                float3 specular = fr * mainLighting;
                 
-                output.forward = float4(diffuse.r, diffuse.g, diffuse.b, 1.0) + fr * mainLighting;
-                // diffuse = fd * NdotL * _MainLightColor.rgb;
-                // output.forward = float4(diffuse, 1.0);
+                output.forward = diffuse + specular;
                 output.gbuffer1 = PackNormalOctQuadEncode(N);
                 output.gbuffer2 = float4(fr, roughness);
                 return output;

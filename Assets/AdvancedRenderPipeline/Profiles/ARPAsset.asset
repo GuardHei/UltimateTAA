@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: ARPAsset
   m_EditorClassIdentifier: 
   settings:
-    enableDebugView: 0
+    enableDebugView: 1
     debugOutput: 0
     enablePostFXInEditor: 1
     enableAutoInstancing: 1
-    enableSRPBatching: 1
+    enableSRPBatching: 0
     blitShader: {fileID: 4800000, guid: 770f6fb14c9b4bab86e1be1af449fb0a, type: 3}
     alphaTestDepthCutOff: 0.001
     mainLightShadowDistance: 100

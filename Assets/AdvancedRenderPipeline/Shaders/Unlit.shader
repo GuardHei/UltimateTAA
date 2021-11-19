@@ -3,7 +3,7 @@ Shader "Advanced Render Pipeline/Unlit" {
     Properties {
         [Enum(Dynamic, 1, Alpha, 2, Custom, 3)]
         _StencilRef("Stencil Ref", int) = 1
-        _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
+        _BaseColor("Base Color", Color) = (1.0, 1.0, 1.0, 1.0)
     }
     
     SubShader {
@@ -29,7 +29,6 @@ Shader "Advanced Render Pipeline/Unlit" {
             #pragma fragment UnlitFragment
             
             #include "../ShaderLibrary/ARPCommon.hlsl"
-            #include "../ShaderLibrary/ARPInstancing.hlsl"
 
             struct BasicVertexInput {
                 float3 posOS : POSITION;

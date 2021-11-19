@@ -32,7 +32,6 @@ struct DirectionalLight {
 CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld;
     float4x4 unity_WorldToObject;
-    float4x4 prevObjectToWorld;
     float4x4 prevWorldToObject;
     float4 unity_LODFade;
     real4 unity_WorldTransformParams;
@@ -52,9 +51,11 @@ float4x4 unjitteredVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
 
+float4x4 prevObjectToWorld;
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
-// #include "ARPInstancing.hlsl"
+#include "ARPInstancing.hlsl"
 
 //////////////////////////////////////////
 // Built-in Lighting & Shadow Variables //
@@ -228,7 +229,7 @@ float CalculateFd(float NdotV, float NdotL, float LdotH, float linearRoughness) 
     return d / PI;
 }
 
-float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float f0) {
+float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float3 f0) {
     float alphaG2 = RoughnessToAlphaG2(roughness);
     float3 F = F_Schlick(f0, LdotH);
     float V = V_SmithGGX(NdotV, NdotL, alphaG2);

@@ -1,5 +1,10 @@
 Shader "Hidden/ARPShadow" {
     
+    Properties {
+        _AlbedoTint("Albedo Tint", Color) = (1,1,1,1)
+        _AlbedoMap("Albedo", 2D) = "white" { }
+    }
+    
     SubShader {
         
         Pass {
@@ -17,7 +22,6 @@ Shader "Hidden/ARPShadow" {
             #pragma fragment ShadowFragment
             
             #include "ARPCommon.hlsl"
-            #include "ARPInstancing.hlsl"
 
             struct BasicVertexInput {
                 float3 posOS : POSITION;
@@ -64,7 +68,6 @@ Shader "Hidden/ARPShadow" {
             #pragma fragment ShadowFragment
             
             #include "ARPCommon.hlsl"
-            #include "ARPInstancing.hlsl"
 
             struct AlphaTestShadowVertexInput {
                 float3 posOS : POSITION;
@@ -79,6 +82,7 @@ Shader "Hidden/ARPShadow" {
             };
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+                UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -103,6 +107,7 @@ Shader "Hidden/ARPShadow" {
             void ShadowFragment(AlphaTestShadowVertexOutput input) {
                 UNITY_SETUP_INSTANCE_ID(input);
                 float alpha = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.baseUV).a;
+                alpha *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).a;
                 clip(alpha - _AlphaCutOff);
             }
             
