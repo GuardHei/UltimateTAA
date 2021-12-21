@@ -274,8 +274,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         public static CameraRenderer CreateCameraRenderer(Camera camera, AdvancedCameraType type) {
             switch (type) {
                 case AdvancedCameraType.Game: return new GameCameraRenderer(camera);
+#if UNITY_EDITOR
                 case AdvancedCameraType.SceneView: return new SceneViewCameraRenderer(camera);
                 case AdvancedCameraType.Preview: return new GameCameraRenderer(camera);
+#endif
                 default: throw new InvalidOperationException("Does not support camera type: " + type);
             }
         }
@@ -283,8 +285,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         public static AdvancedCameraType DefaultToAdvancedCameraType(CameraType cameraType) {
             switch (cameraType) {
                 case CameraType.Game: return AdvancedCameraType.Game;
+#if UNITY_EDITOR
                 case CameraType.SceneView: return AdvancedCameraType.SceneView;
                 case CameraType.Preview: return AdvancedCameraType.Preview;
+#endif
                 case CameraType.VR: return AdvancedCameraType.VR;
                 case CameraType.Reflection: return AdvancedCameraType.Reflection;
                 default: throw new InvalidOperationException("Does not support camera type: " + cameraType);

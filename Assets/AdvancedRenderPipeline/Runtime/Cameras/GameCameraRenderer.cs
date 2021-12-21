@@ -7,7 +7,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 #if UNITY_EDITOR
 	public unsafe class GameCameraRenderer : CameraRenderer {
 #else
-public unsafe sealed class GameCameraRenderer : CameraRenderer {
+public unsafe class GameCameraRenderer : CameraRenderer {
 #endif
 
 		#region Pipeline Callbacks
