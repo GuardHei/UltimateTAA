@@ -56,7 +56,6 @@ float4x4 prevObjectToWorld;
 #include "ARPInstancing.hlsl"
 // #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
-
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 
 //////////////////////////////////////////
@@ -98,6 +97,9 @@ TEXTURE2D(_OcclusionMap);
 SAMPLER(sampler_OcclusionMap);
 TEXTURE2D(_EmissionMap);
 SAMPLER(sampler_EmissionMap);
+
+TEXTURE2D(_PreintegratedDGFLut);
+SAMPLER(sampler_PreintegratedDGFLut);
 
 //////////////////////////////////////////
 // Built-in Utility Functions           //
@@ -243,16 +245,60 @@ float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float rou
 // IBL Utility Functions                //
 //////////////////////////////////////////
 
-float3 ImportanceSampleGGX(float2 u, float3 V, float roughness) {
-    float cosTheta = sqrt(SafeDiv(1.0 - u.x, 1.0 + (roughness * roughness - 1.0) * u.x));
-    float phi = TWO_PI * u.y;
-    float3 H = SphericalToCartesian(phi, cosTheta);
-    return H;
+float3 CosineSampleHemisphere(float2 u) {
+    float phi = TWO_PI * u.x;
+    float cosTheta = sqrt(u.y);
+    float3 L = SphericalToCartesian(phi, cosTheta);
+    return L;
 }
 
-float2 PrecomputeL_DFG(float NdotV, float NdotL, float roughness) {
+float3 ImportanceSampleGGX(float2 u, float3 V, float roughness) {
+    float phi = TWO_PI * u.x;
+    float cosTheta = sqrt(SafeDiv(1.0 - u.y, 1.0 + (roughness * roughness - 1.0) * u.y));
+    float3 H = SphericalToCartesian(phi, cosTheta);
+    
+    float3 up = abs(V.z) < 0.999 ? float3(0.0, 0.0, 1.0) : float3(1.0, 0.0, 0.0);
+    float3 tangent = normalize(cross(up, V));
+    float3 bitangent = cross(V, tangent);
+	
+    return tangent * H.x + bitangent * H.y + V * H.z;
+}
+
+float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, float3 specularColor) {
+    float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGFD.ggg, envGFD.rrr, specularColor);
+    energyCompensation = 1.0f + specularColor * (1.0f / envGFD.r - 1.0f);
+    return float4(reflectionGF, envGFD.b);
+}
+
+float4 GetDGFFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
+    float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, roughness), 0);
+    return CompensateDirectBRDF(envGFD, energyCompensation, specularColor);
+}
+
+float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float roughness) {
+    float linearRoughness = sqrt(roughness);
+    // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
+    float r = 0;
+    const uint SAMPLE_COUNT = 2048u;
+    for (uint i = 0; i < SAMPLE_COUNT; i++) {
+        float2 E = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float3 H = CosineSampleHemisphere(E);
+        float3 L = 2.0f * dot(V, H) * H - V;
+
+        float NdotL = saturate(L.z);
+        float LdotH = saturate(dot(L, H));
+
+        if (NdotL > .0f) {
+            float diffuse = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
+            r += diffuse;
+        }
+    }
+    return r / SAMPLE_COUNT;
+}
+
+float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float roughness) {
     float alphaG2 = RoughnessToAlphaG2(roughness);
-    float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
+    // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
     float2 r = .0f;
     float3 N = float3(.0f, .0f, 1.0f);
     const uint SAMPLE_COUNT = 2048u;
@@ -275,6 +321,15 @@ float2 PrecomputeL_DFG(float NdotV, float NdotL, float roughness) {
     }
 
     return r * (1.0f / SAMPLE_COUNT);
+}
+
+float4 PrecomputeL_DFG(float NdotV, float NdotL, float roughness) {
+    float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
+    float4 color;
+    color.xy = PrecomputeSpecularL_DFG(V, NdotV, roughness);
+    color.z = PrecomputeDiffuseL_DFG(V, NdotV, roughness);
+    color.w = 1.0f;
+    return color;
 }
 
 #endif
