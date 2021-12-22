@@ -4,11 +4,7 @@ using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime.Cameras {
-#if UNITY_EDITOR
 	public unsafe class GameCameraRenderer : CameraRenderer {
-#else
-public unsafe class GameCameraRenderer : CameraRenderer {
-#endif
 
 		#region Pipeline Callbacks
 
