@@ -1,0 +1,15 @@
+#pragma kernel GenerateIBLLut
+
+#include "ARPCommon.hlsl"
+
+float _Width;
+float _Height;
+RWTexture2D<float4> _ResultLut;
+
+[numthreads(8,8,1)]
+void GenerateIBLLut (uint3 id : SV_DispatchThreadID) {
+    float NdotV = ((float) id.x) / _Width;
+    float roughness = 1.0f - ((float) id.y) / _Height;
+    _ResultLut[id.xy] = PrecomputeL_DFG(NdotV, roughness);
+    // _ResultLut[id.xy] = float4(NdotV, roughness, 0, 1);
+}

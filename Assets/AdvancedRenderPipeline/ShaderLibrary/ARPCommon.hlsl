@@ -29,19 +29,28 @@ struct DirectionalLight {
     float4 color;
 };
 
-CBUFFER_START(UnityPerDraw)
-    float4x4 unity_ObjectToWorld;
-    float4x4 unity_WorldToObject;
-    float4x4 prevWorldToObject;
-    float4 unity_LODFade;
-    real4 unity_WorldTransformParams;
-CBUFFER_END
+/*
+struct CameraData {
+    float3 _CameraPosWS;
+    float3 _CameraFwdWS;
+    float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
+    RTHandleProperties _RTHandleProps;
+};
+*/
 
 CBUFFER_START(CameraData)
     float3 _CameraPosWS;
     float3 _CameraFwdWS;
     float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
     RTHandleProperties _RTHandleProps;
+CBUFFER_END
+
+CBUFFER_START(UnityPerDraw)
+    float4x4 unity_ObjectToWorld;
+    float4x4 unity_WorldToObject;
+    float4x4 prevWorldToObject;
+    float4 unity_LODFade;
+    real4 unity_WorldTransformParams;
 CBUFFER_END
 
 float4 _ProjectionParams;
@@ -65,7 +74,6 @@ float4x4 prevObjectToWorld;
 CBUFFER_START(MainLightData)
     DirectionalLight _MainLight;
 CBUFFER_END
-
 
 //////////////////////////////////////////
 // Alpha Related                        //
@@ -256,12 +264,16 @@ float3 ImportanceSampleGGX(float2 u, float3 V, float roughness) {
     float phi = TWO_PI * u.x;
     float cosTheta = sqrt(SafeDiv(1.0 - u.y, 1.0 + (roughness * roughness - 1.0) * u.y));
     float3 H = SphericalToCartesian(phi, cosTheta);
-    
+
+    return H;
+
+    /*
     float3 up = abs(V.z) < 0.999 ? float3(0.0, 0.0, 1.0) : float3(1.0, 0.0, 0.0);
     float3 tangent = normalize(cross(up, V));
     float3 bitangent = cross(V, tangent);
 	
     return tangent * H.x + bitangent * H.y + V * H.z;
+    */
 }
 
 float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, float3 specularColor) {
@@ -271,7 +283,7 @@ float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, floa
 }
 
 float4 GetDGFFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
-    float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, roughness), 0);
+    float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, roughness), 0).rgb;
     return CompensateDirectBRDF(envGFD, energyCompensation, specularColor);
 }
 
@@ -293,7 +305,7 @@ float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float roughness) {
             r += diffuse;
         }
     }
-    return r / SAMPLE_COUNT;
+    return r / (float) SAMPLE_COUNT;
 }
 
 float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float roughness) {
@@ -320,10 +332,10 @@ float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float roughness) {
         }
     }
 
-    return r * (1.0f / SAMPLE_COUNT);
+    return r / (float) SAMPLE_COUNT;
 }
 
-float4 PrecomputeL_DFG(float NdotV, float NdotL, float roughness) {
+float4 PrecomputeL_DFG(float NdotV, float roughness) {
     float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
     float4 color;
     color.xy = PrecomputeSpecularL_DFG(V, NdotV, roughness);

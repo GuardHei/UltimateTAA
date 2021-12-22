@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
-	[CreateAssetMenu(menuName = "Advanced Render Pipeline/ARP Asset")]
+	[CreateAssetMenu(fileName = "ARP Asset", menuName = "Advanced Render Pipeline/ARP Asset")]
 	public class AdvancedRenderPipelineAsset : RenderPipelineAsset {
 
 		public AdvancedRenderPipelineSettings settings;

@@ -7,6 +7,8 @@ using UnityEngine.Rendering;
 namespace AdvancedRenderPipeline.Runtime {
 	public sealed class AdvancedRenderPipeline : RenderPipeline {
 
+		public static AdvancedRenderPipeline instance { get; private set; }
+
 		public static bool ReversedZ { get; private set; }
 
 		public static AdvancedRenderPipelineSettings settings;
@@ -14,6 +16,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		private static readonly Dictionary<Camera, CameraRenderer> cameraRenderers = new Dictionary<Camera, CameraRenderer>(2);
 
 		private static readonly List<KeyValuePair<Camera, CameraRenderer>> tempCameras = new List<KeyValuePair<Camera, CameraRenderer>>(10);
+
+		private static readonly Dictionary<CommandBuffer, Action> independentCMDRequests = new Dictionary<CommandBuffer, Action>();
 
 		#region Static Methods
 
@@ -50,9 +54,33 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		}
 
+		public static bool AddIndependentCommandBufferRequest(CommandBuffer request, Action onSubmit) {
+			if (instance == null) return false;
+			independentCMDRequests.Add(request, onSubmit);
+			return true;
+		}
+
+		private static void ExecuteIndependentCommandBufferRequest(ScriptableRenderContext context) {
+			if (independentCMDRequests.Count == 0) return;
+			
+			Debug.Log("Enter " + Time.frameCount);
+			
+			foreach (var pair in independentCMDRequests) context.ExecuteCommandBuffer(pair.Key);
+			
+			context.Submit();
+
+			foreach (var pair in independentCMDRequests) {
+				pair.Key.Release();
+				pair.Value();
+			}
+			
+			independentCMDRequests.Clear();
+		}
+
 		#endregion
 
 		public AdvancedRenderPipeline(AdvancedRenderPipelineSettings settings) {
+			instance = this;
 			AdvancedRenderPipeline.settings = settings;
 			ReversedZ = SystemInfo.usesReversedZBuffer;
 			GraphicsSettings.lightsUseLinearIntensity = true;
@@ -60,6 +88,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 
 		protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
+			
+			ExecuteIndependentCommandBufferRequest(context);
 			
 			RequestCameraCheck();
 

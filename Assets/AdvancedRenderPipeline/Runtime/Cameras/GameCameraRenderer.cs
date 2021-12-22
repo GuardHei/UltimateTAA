@@ -143,6 +143,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cameraDataBuffer.SetData(_cameraData);
 			
 			_cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
+			// _cmd.SetGlobalBuffer(ShaderKeywordManager.CAMERA_DATA, _cameraDataBuffer);
 
 			ExecuteCommand();
 		}
@@ -187,6 +188,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_mainLights[0] = LightManager.mainLightData;
 			_mainLightBuffer.SetData(_mainLights, 0, 0, 1);
 			_cmd.SetGlobalConstantBuffer(_mainLightBuffer, ShaderKeywordManager.MAIN_LIGHT_DATA, 0, sizeof(DirectionalLight));
+			// _cmd.SetGlobalBuffer(ShaderKeywordManager.MAIN_LIGHT_DATA, _mainLightBuffer);
 			ExecuteCommand();
 		}
 
