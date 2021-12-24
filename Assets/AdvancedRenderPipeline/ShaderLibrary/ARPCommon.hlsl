@@ -6,8 +6,7 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl"
-// #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
-#include "ARPSequence.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Sampling.hlsl"
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
@@ -260,24 +259,12 @@ float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float rou
 // Offline IBL Utility Functions        //
 //////////////////////////////////////////
 
-float3 CosineSampleHemisphere(float2 u) {
-    float u1 = u.x;
-    float u2 = u.y;
-    float r = sqrt(u1);
-    float theta = 2.0f * PI * u2;
- 
-    float x = r * cos(theta);
-    float y = r * sin(theta);
- 
-    return float3(x, y, sqrt(max(.0f, 1.0f - u1)));
-}
+float3 ImportanceSampleGGX(float2 u, float3 N, float alphaG2) {
 
-float3 ImportanceSampleGGX(float2 u, float3 N, float roughness) {
-
-    float a = roughness * roughness;
+    // float alphaG2 = roughness * roughness;
 	
     float phi = 2.0f * PI * u.x;
-    float cosTheta = sqrt((1.0f - u.y) / (1.0f + (a * a - 1.0f) * u.y));
+    float cosTheta = sqrt((1.0f - u.y) / (1.0f + (alphaG2 * alphaG2 - 1.0f) * u.y));
     float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
 	
     float3 H;
@@ -292,21 +279,20 @@ float3 ImportanceSampleGGX(float2 u, float3 N, float roughness) {
     return tangent * H.x + bitangent * H.y + N * H.z;
 }
 
-
-
-float IBL_G_SmithGGX(float NdotL, float NdotV, float linearRoughness) {
-    float alphaG2 = LinearRoughnessToAlphaG2(linearRoughness);
+float IBL_G_SmithGGX(float NdotV, float NdotL, float alphaG2) {
+    // float alphaG2 = LinearRoughnessToAlphaG2(linearRoughness);
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
     const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
     return (2 * NdotL) / (lambdaV + lambdaL);
-    
 }
 
-
 float IBL_Diffuse(float NdotV, float NdotL, float LdotH, float linearRoughness) {
+    return DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
+    /*
     float f90 = lerp(.0f, .5f, linearRoughness) + (2.0f * LdotH * LdotH * linearRoughness);
     const float3 f0 = float3(1.0f, 1.0f, 1.0f);
     return F_Schlick(f0, f90, NdotL).r * F_Schlick(f0, f90, NdotV).r * lerp(1.0f, (1.0f / 1.51f), linearRoughness);
+    */
 }
 
 float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float linearRoughness) {
@@ -314,9 +300,8 @@ float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float linearRoughness) {
     float r = .0f;
     const uint SAMPLE_COUNT = 2048u;
     for (uint i = 0; i < SAMPLE_COUNT; i++) {
-        // float2 E = Hammersley2dSeq(i, SAMPLE_COUNT);
-        float2 E = Hammersley(i, SAMPLE_COUNT);
-        float3 H = CosineSampleHemisphere(E);
+        float2 E = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float3 H = SampleHemisphereCosine(E.x, E.y);
         float3 L = 2.0f * dot(V, H) * H - V;
 
         float NdotL = saturate(L.z);
@@ -324,7 +309,6 @@ float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float linearRoughness) {
 
         if (LdotH > .0f) {
             float diffuse = IBL_Diffuse(NdotV, NdotL, LdotH, linearRoughness);
-            // float diffuse = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
             r += diffuse;
         }
     }
@@ -333,14 +317,14 @@ float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float linearRoughness) {
 
 float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float linearRoughness) {
     float roughness = LinearRoughnessToRoughness(linearRoughness);
+    float alphaG2 = RoughnessToAlphaG2(roughness);
     // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
     float2 r = .0f;
     float3 N = float3(.0f, .0f, 1.0f);
     const uint SAMPLE_COUNT = 2048u;
     for (uint i = 0; i < SAMPLE_COUNT; i++) {
-        // float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
-        float2 Xi = Hammersley(i, SAMPLE_COUNT);
-        float3 H = ImportanceSampleGGX(Xi, N, roughness);
+        float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float3 H = ImportanceSampleGGX(Xi, N, alphaG2);
         float3 L = 2.0f * dot(V, H) * H - V;
 
         float VdotH = saturate(dot(V, H));
@@ -348,7 +332,7 @@ float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float linearRoughness) {
         float NdotH = saturate(H.z);
 
         if (NdotL > .0f) {
-            float G = IBL_G_SmithGGX(NdotL, NdotV, roughness);
+            float G = IBL_G_SmithGGX(NdotV, NdotL, alphaG2);
             float Gv = G * VdotH / NdotH;
             float Fc = pow5(1.0f - VdotH);
             // r.x += Gv * (1.0f - Fc);

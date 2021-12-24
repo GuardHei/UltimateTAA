@@ -24,10 +24,11 @@ namespace AdvancedRenderPipeline.Editor {
 			if (lut && lut.IsCreated() && lut.isReadable && !lut.IsDestroyed()) {
 				if (!AssetDatabase.Contains(lut)) {
 					if (GUILayout.Button("Save IBL Lut")) {
-						var path = EditorUtility.SaveFilePanelInProject("Save IBL BRDF Lut", "IBL BRDF Lut.renderTexture", "renderTexture", "Select a location to save");
-						if (string.IsNullOrEmpty(path)) path = "Assets/IBL BRDF Lut.renderTexture";
-						AssetDatabase.CreateAsset(lut, path);
-						errorText = "";
+						var path = EditorUtility.SaveFilePanelInProject("Save IBL BRDF Lut", "IBL BRDF Lut.renderTexture", "renderTexture", "Select a location to save", "Assets/AdvancedRenderPipeline/Profiles/");
+						if (!string.IsNullOrEmpty(path)) {
+							AssetDatabase.CreateAsset(lut, path);
+							errorText = "";
+						}
 					} else if (GUILayout.Button("Clear IBL Lut Cache")) {
 						lut.Release();
 						lut = null;
