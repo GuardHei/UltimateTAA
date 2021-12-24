@@ -17,7 +17,7 @@ MonoBehaviour:
     debugOutput: 0
     enablePostFXInEditor: 1
     enableAutoInstancing: 1
-    enableSRPBatching: 0
+    enableSRPBatching: 1
     blitShader: {fileID: 4800000, guid: 770f6fb14c9b4bab86e1be1af449fb0a, type: 3}
     alphaTestDepthCutOff: 0.001
     mainLightShadowDistance: 100

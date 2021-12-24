@@ -6,7 +6,8 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl"
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
+// #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
+#include "ARPSequence.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Sampling.hlsl"
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
@@ -190,14 +191,20 @@ float RoughnessToAlphaG2(float roughness) {
     return roughness * roughness;
 }
 
+float LinearRoughnessToAlphaG2(float linearRoughness) {
+    float roughness = linearRoughness * linearRoughness;
+    return roughness * roughness;
+}
+
 float ClampMinLinearRoughness(float linearRoughness) {
-    return max(linearRoughness, .04f); // Anti specular flickering
+    // return max(linearRoughness, 0.089f); // half precision float
+    return max(linearRoughness, .045f); // Anti specular flickering
 }
 
 float3 GetF0(float3 albedo, float metallic) {
-    float3 f0 = float3(.04, .04, .04);
+    float3 f0 = float3(.04f, .04f, .04f);
     // return lerp(f0, albedo.rgb, metallic);
-    return f0 * (1.0 - metallic) + albedo * metallic;
+    return f0 * (1.0f - metallic) + albedo * metallic;
 }
 
 float3 GetF0(float3 reflectance) {
@@ -205,33 +212,33 @@ float3 GetF0(float3 reflectance) {
 }
 
 float3 F_Schlick(in float3 f0, in float f90, in float u) {
-    return f0 + (f90 - f0) * pow5(1.0 - u);
+    return f0 + (f90 - f0) * pow5(1.0f - u);
 }
 
 float3 F_Schlick(in float3 f0, in float u) {
-    return f0 + (float3(1.0, 1.0, 1.0) - f0) * pow5(1.0 - u);
+    return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow5(1.0f - u);
 }
 
 float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
     const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
-    return .5 / (lambdaV + lambdaL);
+    return .5f / (lambdaV + lambdaL);
 }
 
 float D_GGX(float NdotH, float alphaG2) {
     // Higher accuracy?
-    const float f = (alphaG2 - 1) * NdotH * NdotH + 1;
+    const float f = (alphaG2 - 1.0f) * NdotH * NdotH + 1.0f;
     // const float f = (NdotH * alphaG2 - NdotH) * NdotH + 1;
     return alphaG2 / (f * f);
 }
 
 float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float linearRoughness) {
-    float energyBias = lerp(0, .5, linearRoughness);
-    float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
-    float fd90 = energyBias + 2.0 * LdotH * LdotH * linearRoughness;
-    const float3 f0 = float3(1.0, 1.0, 1.0);
-    float lightScatter = F_Schlick(f0, fd90, NdotL).r;
-    float viewScatter = F_Schlick(f0, fd90, NdotV).r;
+    float energyBias = lerp(.0f, .5f, linearRoughness);
+    float energyFactor = lerp(1.0f, 1.0f / 1.51f, linearRoughness);
+    float f90 = energyBias + 2.0f * LdotH * LdotH * linearRoughness;
+    const float3 f0 = float3(1.0f, 1.0f, 1.0f);
+    float lightScatter = F_Schlick(f0, f90, NdotL).r;
+    float viewScatter = F_Schlick(f0, f90, NdotV).r;
 
     return lightScatter * viewScatter * energyFactor;
 }
@@ -250,31 +257,130 @@ float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float rou
 }
 
 //////////////////////////////////////////
-// IBL Utility Functions                //
+// Offline IBL Utility Functions        //
 //////////////////////////////////////////
 
 float3 CosineSampleHemisphere(float2 u) {
-    float phi = TWO_PI * u.x;
-    float cosTheta = sqrt(u.y);
-    float3 L = SphericalToCartesian(phi, cosTheta);
-    return L;
+    float u1 = u.x;
+    float u2 = u.y;
+    float r = sqrt(u1);
+    float theta = 2.0f * PI * u2;
+ 
+    float x = r * cos(theta);
+    float y = r * sin(theta);
+ 
+    return float3(x, y, sqrt(max(.0f, 1.0f - u1)));
 }
 
-float3 ImportanceSampleGGX(float2 u, float3 V, float roughness) {
-    float phi = TWO_PI * u.x;
-    float cosTheta = sqrt(SafeDiv(1.0 - u.y, 1.0 + (roughness * roughness - 1.0) * u.y));
-    float3 H = SphericalToCartesian(phi, cosTheta);
+float3 ImportanceSampleGGX(float2 u, float3 N, float roughness) {
 
-    return H;
-
-    /*
-    float3 up = abs(V.z) < 0.999 ? float3(0.0, 0.0, 1.0) : float3(1.0, 0.0, 0.0);
-    float3 tangent = normalize(cross(up, V));
-    float3 bitangent = cross(V, tangent);
+    float a = roughness * roughness;
 	
-    return tangent * H.x + bitangent * H.y + V * H.z;
-    */
+    float phi = 2.0f * PI * u.x;
+    float cosTheta = sqrt((1.0f - u.y) / (1.0f + (a * a - 1.0f) * u.y));
+    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+	
+    float3 H;
+    H.x = cos(phi) * sinTheta;
+    H.y = sin(phi) * sinTheta;
+    H.z = cosTheta;
+	
+    float3 up = abs(N.z) < 0.999f ? float3(.0f, .0f, 1.0f) : float3(1.0f, .0f, .0f);
+    float3 tangent = normalize(cross(up, N));
+    float3 bitangent = cross(N, tangent);
+	
+    return tangent * H.x + bitangent * H.y + N * H.z;
 }
+
+
+
+float IBL_G_SmithGGX(float NdotL, float NdotV, float linearRoughness) {
+    float alphaG2 = LinearRoughnessToAlphaG2(linearRoughness);
+    const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
+    const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
+    return (2 * NdotL) / (lambdaV + lambdaL);
+    
+}
+
+
+float IBL_Diffuse(float NdotV, float NdotL, float LdotH, float linearRoughness) {
+    float f90 = lerp(.0f, .5f, linearRoughness) + (2.0f * LdotH * LdotH * linearRoughness);
+    const float3 f0 = float3(1.0f, 1.0f, 1.0f);
+    return F_Schlick(f0, f90, NdotL).r * F_Schlick(f0, f90, NdotV).r * lerp(1.0f, (1.0f / 1.51f), linearRoughness);
+}
+
+/*
+
+float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float linearRoughness) {
+    // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
+    float r = .0f;
+    const uint SAMPLE_COUNT = 2048u;
+    for (uint i = 0; i < SAMPLE_COUNT; i++) {
+        // float2 E = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float2 E = Hammersley(i, SAMPLE_COUNT);
+        float3 H = CosineSampleHemisphere(E);
+        float3 L = 2.0f * dot(V, H) * H - V;
+
+        float NdotL = saturate(L.z);
+        float LdotH = saturate(dot(L, H));
+
+        if (LdotH > .0f) {
+            float diffuse = IBL_Diffuse(NdotV, NdotL, LdotH, linearRoughness);
+            // float diffuse = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
+            r += diffuse;
+        }
+    }
+    return r / (float) SAMPLE_COUNT;
+}
+*/
+
+/*
+float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float linearRoughness) {
+    float roughness = LinearRoughnessToRoughness(linearRoughness);
+    // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
+    float2 r = .0f;
+    float3 N = float3(.0f, .0f, 1.0f);
+    const uint SAMPLE_COUNT = 2048u;
+    for (uint i = 0; i < SAMPLE_COUNT; i++) {
+        // float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float2 Xi = Hammersley(i, SAMPLE_COUNT);
+        float3 H = ImportanceSampleGGX(Xi, N, roughness);
+        float3 L = 2.0f * dot(V, H) * H - V;
+
+        float VdotH = saturate(dot(V, H));
+        float NdotL = saturate(L.z);
+        float NdotH = saturate(H.z);
+
+        if (NdotL > .0f) {
+            float G = IBL_G_SmithGGX(NdotL, NdotV, roughness);
+            float Gv = G * VdotH / NdotH;
+            float Fc = pow5(1.0f - VdotH);
+            // r.x += Gv * (1.0f - Fc);
+            r.x += Gv;
+            r.y += Gv * Fc;
+        }
+    }
+
+    return r / (float) SAMPLE_COUNT;
+}
+*/
+
+/*
+
+float4 PrecomputeL_DFG(float NdotV, float linearRoughness) {
+    float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
+    float4 color;
+    color.xy = PrecomputeSpecularL_DFG(V, NdotV, linearRoughness);
+    color.z = PrecomputeDiffuseL_DFG(V, NdotV, linearRoughness);
+    color.w = 1.0f;
+    return color;
+}
+
+*/
+
+//////////////////////////////////////////
+// Runtime IBL Utility Functions        //
+//////////////////////////////////////////
 
 float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, float3 specularColor) {
     float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGFD.ggg, envGFD.rrr, specularColor);
@@ -285,63 +391,6 @@ float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, floa
 float4 GetDGFFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
     float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, roughness), 0).rgb;
     return CompensateDirectBRDF(envGFD, energyCompensation, specularColor);
-}
-
-float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float roughness) {
-    float linearRoughness = sqrt(roughness);
-    // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
-    float r = 0;
-    const uint SAMPLE_COUNT = 2048u;
-    for (uint i = 0; i < SAMPLE_COUNT; i++) {
-        float2 E = Hammersley2dSeq(i, SAMPLE_COUNT);
-        float3 H = CosineSampleHemisphere(E);
-        float3 L = 2.0f * dot(V, H) * H - V;
-
-        float NdotL = saturate(L.z);
-        float LdotH = saturate(dot(L, H));
-
-        if (NdotL > .0f) {
-            float diffuse = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
-            r += diffuse;
-        }
-    }
-    return r / (float) SAMPLE_COUNT;
-}
-
-float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float roughness) {
-    float alphaG2 = RoughnessToAlphaG2(roughness);
-    // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
-    float2 r = .0f;
-    float3 N = float3(.0f, .0f, 1.0f);
-    const uint SAMPLE_COUNT = 2048u;
-    for (uint i = 0; i < SAMPLE_COUNT; i++) {
-        float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
-        float3 H = ImportanceSampleGGX(Xi, N, roughness);
-        float3 L = 2.0f * dot(V, H) * H - V;
-
-        float VdotH = saturate(dot(V, H));
-        float NdotL = saturate(L.z);
-        float NdotH = saturate(H.z);
-
-        if (NdotL > .0f) {
-            float G = V_SmithGGX(NdotL, NdotV, alphaG2);
-            float Gv = G * VdotH / NdotH;
-            float Fc = pow5(1.0f - VdotH);
-            r.x += Gv * (1.0f - Fc);
-            r.y += Gv * Fc;
-        }
-    }
-
-    return r / (float) SAMPLE_COUNT;
-}
-
-float4 PrecomputeL_DFG(float NdotV, float roughness) {
-    float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
-    float4 color;
-    color.xy = PrecomputeSpecularL_DFG(V, NdotV, roughness);
-    color.z = PrecomputeDiffuseL_DFG(V, NdotV, roughness);
-    color.w = 1.0f;
-    return color;
 }
 
 #endif

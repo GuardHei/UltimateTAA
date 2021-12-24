@@ -1,9 +1,8 @@
-using AdvancedRenderPipeline.Runtime;
+using System;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
-using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Editor {
 	
@@ -11,24 +10,36 @@ namespace AdvancedRenderPipeline.Editor {
 	public class ARPEditorAssetEditor : UnityEditor.Editor {
 
 		private static RenderTexture lut;
+		private static string errorText = "";
 		
 		public override void OnInspectorGUI() {
 			base.OnInspectorGUI();
 
 			if (Runtime.AdvancedRenderPipeline.instance == null) return;
+			
+			GUILayout.Space(20);
+			
+			GUILayout.BeginHorizontal();
 
 			if (lut && lut.IsCreated() && lut.isReadable && !lut.IsDestroyed()) {
-				GUILayout.Label(lut);
-				if (GUILayout.Button("Clear IBL Lut Cache")) {
-					lut.Release();
-					lut = null;
+				if (!AssetDatabase.Contains(lut)) {
+					if (GUILayout.Button("Save IBL Lut")) {
+						var path = EditorUtility.SaveFilePanelInProject("Save IBL BRDF Lut", "IBL BRDF Lut.renderTexture", "renderTexture", "Select a location to save");
+						if (string.IsNullOrEmpty(path)) path = "Assets/IBL BRDF Lut.renderTexture";
+						AssetDatabase.CreateAsset(lut, path);
+						errorText = "";
+					} else if (GUILayout.Button("Clear IBL Lut Cache")) {
+						lut.Release();
+						lut = null;
+						errorText = "";
+					}
 				}
 			}
+			
+			ARPEditorAsset asset = target as ARPEditorAsset;
 
 			bool iblLutError = false;
-			string errorText = "";
 			if (GUILayout.Button("Generate IBL Lut")) {
-				ARPEditorAsset asset = target as ARPEditorAsset;
 				if (asset == null) {
 					iblLutError = true;
 					errorText = "ARP Editor Asset cannot be null!";
@@ -50,65 +61,63 @@ namespace AdvancedRenderPipeline.Editor {
 						lut = null;
 					}
 
-					RenderTextureDescriptor desc = new RenderTextureDescriptor(asset.iblLutResolution, asset.iblLutResolution, GraphicsFormat.R32G32B32A32_SFloat, 32);
-					desc.enableRandomWrite = true;
-					desc.useMipMap = false;
-					desc.sRGB = false;
-					
-					// lut = new RenderTexture(asset.iblLutResolution, asset.iblLutResolution, GraphicsFormat.R32G32B32A32_SFloat, GraphicsFormat.D32_SFloat);
-					// lut.useMipMap = false;
-					// lut.enableRandomWrite = true;
+					var desc = new RenderTextureDescriptor(asset.iblLutResolution, asset.iblLutResolution, asset.iblLutFormat, 0) {
+						enableRandomWrite = true,
+						useMipMap = false,
+						sRGB = false
+					};
 
 					lut = new RenderTexture(desc);
-					
 					lut.Create();
 					
 					int threadGroupX = Mathf.CeilToInt(asset.iblLutResolution / 8f);
 					int threadGroupY = Mathf.CeilToInt(asset.iblLutResolution / 8f);
-
-					/*
-					CommandBuffer cmd = new CommandBuffer();
-					cmd.name = "Generate IBL Lut";
-
-					cmd.SetComputeFloatParam(shader, "_Width", asset.iblLutResolution);
-					cmd.SetComputeFloatParam(shader, "_Height", asset.iblLutResolution);
-					cmd.SetComputeTextureParam(shader, kernel, "Result", lut);
-					
-					cmd.DispatchCompute(shader, kernel, threadGroupX, threadGroupY, 1);
-
-					if (!Runtime.AdvancedRenderPipeline.AddIndependentCommandBufferRequest(cmd, OnIBLLutGenerated)) {
-						iblLutError = true;
-						errorText = "Failed to add independent command buffer request";
-						lut.Release();
-						lut = null;
-					} else {
-						Debug.Log("Start generating IBL Lut");
-					}
-					*/
 					
 					shader.SetFloat("_Width", asset.iblLutResolution);
 					shader.SetFloat("_Height", asset.iblLutResolution);
 					shader.SetTexture(kernel, "_ResultLut", lut);
-					shader.Dispatch(kernel, threadGroupX, threadGroupY, 1);
 					
 					Debug.Log("Start generating IBL Lut");
 					
-					OnIBLLutGenerated();
+					errorText = "";
+
+					try {
+						shader.Dispatch(kernel, threadGroupX, threadGroupY, 1);
+					} catch (Exception e) {
+						lut.Release();
+						lut = null;
+						iblLutError = true;
+						errorText = e.Message;
+					}
+					
+					Debug.Log("Finish generating IBL Lut");
 				}
 			}
-
-			if (iblLutError) {
-				EditorGUILayout.HelpBox(errorText, MessageType.Error);
-			}
-		}
-
-		private void OnIBLLutGenerated() {
-			if (lut == null) {
-				EditorUtility.DisplayDialog("IBL Lut Generation Error", "LUT cannot be null!", "ok");
-				return;
-			}
 			
-			// AssetDatabase.CreateAsset(lut, "Assets/TestLut.renderTexture");
+			GUILayout.EndHorizontal();
+
+			if (iblLutError || !string.IsNullOrEmpty(errorText)) EditorGUILayout.HelpBox(errorText, MessageType.Error);
+			else if (lut && lut.IsCreated() && lut.isReadable && !lut.IsDestroyed()) {
+				float height = 320;
+				GUILayout.Space(20);
+				if (asset != null && (asset.referenceLut1 != null || asset.referenceLut2 != null)) {
+					GUILayout.BeginVertical();
+					if (asset.referenceLut1 != null) {
+						GUILayout.Label(asset.referenceLut1, new GUIStyle { fixedHeight = height, stretchHeight = true, stretchWidth = true, alignment = TextAnchor.MiddleCenter });
+						GUILayout.Space(10);
+					}
+					
+					GUILayout.Label(lut, new GUIStyle { fixedHeight = height, stretchHeight = true, stretchWidth = true, alignment = TextAnchor.MiddleCenter });
+					GUILayout.EndVertical();
+					
+					if (asset.referenceLut2 != null) {
+						GUILayout.Label(asset.referenceLut2, new GUIStyle { fixedHeight = height, stretchHeight = true, stretchWidth = true, alignment = TextAnchor.MiddleCenter });
+						GUILayout.Space(10);
+					}
+				} else {
+					GUILayout.Label(lut, new GUIStyle { fixedHeight = height, stretchHeight = true, stretchWidth = true, alignment = TextAnchor.MiddleCenter });
+				}
+			}
 		}
 	}
 }
