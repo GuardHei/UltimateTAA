@@ -55,6 +55,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 
 		public static bool AddIndependentCommandBufferRequest(CommandBuffer request, Action onSubmit) {
+			return false;
 			if (instance == null) return false;
 			independentCMDRequests.Add(request, onSubmit);
 			return true;
@@ -89,7 +90,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
 			
-			ExecuteIndependentCommandBufferRequest(context);
+			// ExecuteIndependentCommandBufferRequest(context);
 			
 			RequestCameraCheck();
 

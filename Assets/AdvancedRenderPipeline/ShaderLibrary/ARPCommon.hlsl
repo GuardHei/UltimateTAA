@@ -309,8 +309,6 @@ float IBL_Diffuse(float NdotV, float NdotL, float LdotH, float linearRoughness) 
     return F_Schlick(f0, f90, NdotL).r * F_Schlick(f0, f90, NdotV).r * lerp(1.0f, (1.0f / 1.51f), linearRoughness);
 }
 
-/*
-
 float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float linearRoughness) {
     // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
     float r = .0f;
@@ -332,9 +330,7 @@ float PrecomputeDiffuseL_DFG(float3 V, float NdotV, float linearRoughness) {
     }
     return r / (float) SAMPLE_COUNT;
 }
-*/
 
-/*
 float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float linearRoughness) {
     float roughness = LinearRoughnessToRoughness(linearRoughness);
     // float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
@@ -362,10 +358,7 @@ float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float linearRoughness) {
     }
 
     return r / (float) SAMPLE_COUNT;
-}
-*/
-
-/*
+} 
 
 float4 PrecomputeL_DFG(float NdotV, float linearRoughness) {
     float3 V = float3(sqrt(1.0f - NdotV * NdotV), .0f, NdotV);
@@ -375,8 +368,6 @@ float4 PrecomputeL_DFG(float NdotV, float linearRoughness) {
     color.w = 1.0f;
     return color;
 }
-
-*/
 
 //////////////////////////////////////////
 // Runtime IBL Utility Functions        //
