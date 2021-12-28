@@ -425,7 +425,7 @@ float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal) {
 }
 
 float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 albedo, float d) {
-    float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 9).rgb;
+    float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 8).rgb;
     indirectDiffuse *= albedo * kD * d;
     return indirectDiffuse;
 }

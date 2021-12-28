@@ -107,7 +107,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 normalData = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.baseUV), normalScale);
                 
                 float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS);
-                float3 V = normalize(input.viewDirWS);
+                float3 V = input.viewDirWS;
                 float3 L = _MainLight.direction.xyz;
 
                 float NdotV;
