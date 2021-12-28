@@ -31,8 +31,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public SoftShadowMode mainLightSoftShadow = SoftShadowMode.None;
 		[Header("Image Based Lighting")]
 		public Texture2D iblLut;
-		public Cubemap globalEnvMapSpecular;
 		public Cubemap globalEnvMapDiffuse;
+		public Cubemap globalEnvMapSpecular;
 	}
 
 	public enum DebugOutput {

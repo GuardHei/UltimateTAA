@@ -192,6 +192,7 @@ float LinearRoughnessToAlphaG2(float linearRoughness) {
 }
 
 float ClampMinLinearRoughness(float linearRoughness) {
+    // return max(linearRoughness, .04f);
     // return max(linearRoughness, 0.089f); // half precision float
     // return max(linearRoughness, REAL_EPS);
     return max(linearRoughness, .045f); // Anti specular flickering
@@ -228,9 +229,10 @@ float3 F_Schlick(in float3 f0, in float u) {
     return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow5(1.0f - u);
 }
 
-float3 F_SchlickRoughness(float NdotV, float3 f0, float linearRoughness) {
+float3 F_SchlickRoughness(float3 f0, float u, float linearRoughness) {
     float r = 1.0f - linearRoughness;
-    return f0 + (max(float3(r, r, r), f0) - f0) * pow5(1.0f - NdotV);
+    // r = 1.0f;
+    return f0 + (max(float3(r, r, r), f0) - f0) * pow5(1.0f - u);
 }
 
 float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
@@ -423,18 +425,19 @@ float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal) {
 }
 
 float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 albedo, float d) {
-    float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 11).rgb;
+    float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 9).rgb;
     indirectDiffuse *= albedo * kD * d;
     return indirectDiffuse;
 }
 
 float3 EvaluateSpecularIBL(float3 kS, float3 R, float linearRoughness, float3 GFD, float energyCompensation) {
     float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)).rgb;
-    return indirectSpecular * GFD * kS * energyCompensation;
+    indirectSpecular *= GFD * kS * energyCompensation;
+    return indirectSpecular;
 }
 
 float3 EvaluateIBL(float3 N, float3 R, float NdotV, float linearRoughness, float3 albedo, float3 f0, float4 lut, float energyCompensation) {
-    float3 kS = F_SchlickRoughness(NdotV, f0, linearRoughness);
+    float3 kS = F_SchlickRoughness(f0, NdotV, linearRoughness);
     float3 kD = 1.0f - kS;
     
     float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut.a);
@@ -447,7 +450,6 @@ float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, floa
     float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGFD.ggg, envGFD.rrr, specularColor);
     energyCompensation = 1.0f + specularColor * (1.0f / envGFD.r - 1.0f);
     
-    // energyCompensation = 1.0f;
     return float4(reflectionGF, envGFD.b);
 }
 

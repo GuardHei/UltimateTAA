@@ -98,7 +98,7 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
-    - _MipLevel: 0
+    - _MipLevel: 0.69
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02

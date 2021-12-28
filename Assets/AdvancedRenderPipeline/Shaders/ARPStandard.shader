@@ -83,12 +83,14 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 VertexOutput output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
-                
-                output.posCS = TransformObjectToHClip(input.posOS);
+
+                float3 posWS = TransformObjectToWorld(input.posOS);
+                // output.posCS = TransformObjectToHClip(input.posOS);
+                output.posCS = TransformWorldToHClip(posWS);
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
 
-                output.viewDirWS = output.normalWS;
+                output.viewDirWS = normalize(_CameraPosWS - posWS);
                 
                 float4 albedoST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoMap_ST);
                 output.baseUV = input.baseUV * albedoST.xy + albedoST.zw;
@@ -154,7 +156,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
                 float3 directLighting = diffuse + specular;
 
-                float3 kS = F_SchlickRoughness(NdotV, f0, linearRoughness);
+                float3 kS = F_SchlickRoughness(f0, NdotV, linearRoughness);
                 float3 kD = (1.0f - kS) * (1.0f - metallic);
                 
                 float3 R = reflect(-V, N);
@@ -166,7 +168,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 indirectLighting = indirectDiffuse + indirectSpecular;
                 
                 output.forward = directLighting + indirectLighting;
-                // output.forward = diffuse;
+                // output.forward = directLighting;
+                // output.forward = indirectSpecular;
                 output.gbuffer1 = PackNormalOctQuadEncode(N);
                 output.gbuffer2 = float4(fr, roughness);
                 return output;
