@@ -59,6 +59,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public override void Render(ScriptableRenderContext context) {
+			
 			_context = context;
 			_cmd = CommandBufferPool.Get(_rendererDesc);
 
@@ -144,6 +145,12 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			
 			_cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
 			// _cmd.SetGlobalBuffer(ShaderKeywordManager.CAMERA_DATA, _cameraDataBuffer);
+
+			if (IsOnFirstFrame) {
+				_cmd.SetGlobalTexture(ShaderKeywordManager.PREINTEGRATED_DGF_LUT, settings.iblLut);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.GLOBAL_ENV_MAP_SPECULAR, settings.globalEnvMapSpecular);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.GLOBAL_ENV_MAP_DIFFUSE, settings.globalEnvMapDiffuse);
+			}
 
 			ExecuteCommand();
 		}

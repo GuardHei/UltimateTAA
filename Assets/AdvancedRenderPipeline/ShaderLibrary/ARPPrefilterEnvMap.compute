@@ -1,0 +1,42 @@
+#pragma kernel PrefilterEnvMap
+
+#include "ARPCommon.hlsl"
+
+float _MipResolution;
+float _Resolution;
+float _Roughness;
+float _MipLevel;
+float _FaceId;
+
+TextureCube<float4> _EnvMapInput;
+RWTexture2DArray<float4> _EnvMapOutput;
+
+[numthreads(8, 8, 1)]
+void PrefilterEnvMap(uint3 id : SV_DispatchThreadID) {
+    // float curMipRes = _Resolution / pow(2.0f, _MipLevel);
+    
+    if (id.x >= _MipResolution || id.y >= _MipResolution) return;
+
+    float2 uv = id.xy / float2(_Resolution, _Resolution);
+
+    float3 reflection = float3(1.0f, 1.0f, 1.0f);
+
+    if (_FaceId == 0) {
+        
+    } else if (_FaceId == 1) {
+        
+    } else if (_FaceId == 2) {
+        
+    } else if (_FaceId == 3) {
+        
+    } else if (_FaceId == 4) {
+        
+    } else if (_FaceId == 5) {
+        
+    }
+    
+    // float4 color = PrefilterEnvMap(_EnvMapInput, _Resolution, _Roughness, reflection);
+    float4 color = float4(1.0f, .0f, .0f, 1.0f);
+    
+    _EnvMapOutput[int3(uv, id.z)] = color;
+}

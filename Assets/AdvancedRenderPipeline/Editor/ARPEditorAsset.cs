@@ -7,8 +7,9 @@ namespace AdvancedRenderPipeline.Editor {
 		[Range(128, 1024)]
 		public int iblLutResolution = 1024;
 		public GraphicsFormat iblLutFormat = GraphicsFormat.R16G16B16A16_UNorm;
-		public Texture2D referenceLut1;
-		public Texture2D referenceLut2;
+		public bool displayLutRefereces;
+		public Texture referenceLut1;
+		public Texture referenceLut2;
 		public ComputeShader iblLutGenerationShader;
 	}
 }

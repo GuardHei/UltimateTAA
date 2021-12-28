@@ -6,8 +6,8 @@ float _Width;
 float _Height;
 RWTexture2D<float4> _ResultLut;
 
-[numthreads(8,8,1)]
-void GenerateIBLLut (uint3 id : SV_DispatchThreadID) {
+[numthreads(8, 8, 1)]
+void GenerateIBLLut(uint3 id : SV_DispatchThreadID) {
     float NdotV = ((float) id.x) / _Width;
     // float linearRoughness = 1.0f - ((float) id.y) / _Height;
     float roughness = 1.0f - ((float) id.y) / _Height;

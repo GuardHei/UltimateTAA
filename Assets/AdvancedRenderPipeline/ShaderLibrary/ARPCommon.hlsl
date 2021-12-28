@@ -29,15 +29,6 @@ struct DirectionalLight {
     float4 color;
 };
 
-/*
-struct CameraData {
-    float3 _CameraPosWS;
-    float3 _CameraFwdWS;
-    float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
-    RTHandleProperties _RTHandleProps;
-};
-*/
-
 CBUFFER_START(CameraData)
     float3 _CameraPosWS;
     float3 _CameraFwdWS;
@@ -109,6 +100,11 @@ SAMPLER(sampler_EmissionMap);
 TEXTURE2D(_PreintegratedDGFLut);
 SAMPLER(sampler_PreintegratedDGFLut);
 
+TEXTURECUBE(_GlobalEnvMapSpecular);
+SAMPLER(sampler_GlobalEnvMapSpecular);
+TEXTURECUBE(_GlobalEnvMapDiffuse);
+SAMPLER(sampler_GlobalEnvMapDiffuse);
+
 //////////////////////////////////////////
 // Built-in Utility Functions           //
 //////////////////////////////////////////
@@ -176,13 +172,13 @@ float pow5(float b) {
     return temp1 * b;
 }
 
-float LinearSmoothToLinearRoughness(float ls) {
-    return 1 - ls;
+float LinearSmoothToLinearRoughness(float linearSmooth) {
+    return 1.0f - linearSmooth;
 }
 
 // Roughness = Alpha
-float LinearRoughnessToRoughness(float lr) {
-    return lr * lr;
+float LinearRoughnessToRoughness(float linearRoughness) {
+    return linearRoughness * linearRoughness;
 }
 
 // (Linear Roughness) ^ 4 = AlphaG2
@@ -197,7 +193,21 @@ float LinearRoughnessToAlphaG2(float linearRoughness) {
 
 float ClampMinLinearRoughness(float linearRoughness) {
     // return max(linearRoughness, 0.089f); // half precision float
+    // return max(linearRoughness, REAL_EPS);
     return max(linearRoughness, .045f); // Anti specular flickering
+}
+
+float ClampMinRoughness(float roughness) {
+    // return max(roughness, 0.089f); // half precision float
+    // return max(roughness, REAL_EPS);
+    return max(roughness, .045f); // Anti specular flickering
+}
+
+// maxMipLevel: start from 0
+float LinearRoughnessToMipmapLevel(float linearRoughness, uint maxMipLevel) {
+    return linearRoughness * maxMipLevel;
+    linearRoughness = linearRoughness * (1.7f - 0.7f * linearRoughness);
+    return linearRoughness * maxMipLevel;
 }
 
 float3 GetF0(float3 albedo, float metallic) {
@@ -218,12 +228,18 @@ float3 F_Schlick(in float3 f0, in float u) {
     return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow5(1.0f - u);
 }
 
+float3 F_SchlickRoughness(float NdotV, float3 f0, float linearRoughness) {
+    float r = 1.0f - linearRoughness;
+    return f0 + (max(float3(r, r, r), f0) - f0) * pow5(1.0f - NdotV);
+}
+
 float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
     const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
     return .5f / (lambdaV + lambdaL);
 }
 
+// Requires caller to "div PI"
 float D_GGX(float NdotH, float alphaG2) {
     // Higher accuracy?
     const float f = (alphaG2 - 1.0f) * NdotH * NdotH + 1.0f;
@@ -255,6 +271,10 @@ float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float rou
     return D * V * F / PI;
 }
 
+float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float3 f0, float3 energyCompensation) {
+    return CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, f0) * energyCompensation;
+}
+
 //////////////////////////////////////////
 // Offline IBL Utility Functions        //
 //////////////////////////////////////////
@@ -284,6 +304,7 @@ float IBL_G_SmithGGX(float NdotV, float NdotL, float alphaG2) {
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
     const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
     return (2 * NdotL) / (lambdaV + lambdaL);
+    // return .5f / (lambdaV + lambdaL);
 }
 
 float IBL_Diffuse(float NdotV, float NdotL, float LdotH, float linearRoughness) {
@@ -353,18 +374,85 @@ float4 PrecomputeL_DFG(float NdotV, float linearRoughness) {
     return color;
 }
 
+float4 PrefilterEnvMap(TextureCube envMap, float resolution, float roughness, float3 reflectionDir) {
+    float alphaG2 = RoughnessToAlphaG2(roughness);
+    float3 N, R, V;
+    N = R = V = reflectionDir;
+    float3 prefiltered = float3(.0f, .0f, .0f);
+    float totalWeight = .0f;
+    const uint SAMPLE_COUNT = 2048u;
+    for (uint i = 0; i < SAMPLE_COUNT; i++) {
+        float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float3 H = ImportanceSampleGGX(Xi, N, alphaG2);
+        float3 L = 2.0f * dot(V, H) * H - V;
+
+        float NdotL = saturate(dot(N, L));
+        
+        if (NdotL > .0f) {
+            float VdotH = saturate(dot(V, H));
+            float NdotH = VdotH;
+            // float NdotH = saturate(dot(N, H));
+
+            float D = D_GGX(NdotH, alphaG2) / PI;
+            float pdf = D * NdotH / (4.0f * VdotH) + .0001f;
+            
+            float omegasS = 1.0f / (float(SAMPLE_COUNT) * pdf);
+            float omegaP = 4.0f * PI / (6.0f * resolution * resolution);
+            float mipLevel = roughness == .0f ? .0f : .5f * log2(omegasS / omegaP);
+
+            totalWeight += NdotL;
+            prefiltered += envMap.SampleLevel(sampler_linear_clamp, L, mipLevel).rgb * NdotL;
+        }
+    }
+
+    return float4(prefiltered / totalWeight, 1.0f);
+}
+
 //////////////////////////////////////////
 // Runtime IBL Utility Functions        //
 //////////////////////////////////////////
 
+float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal, float horizonFade) {
+    const float horizon = saturate(1.0f + horizonFade * dot(R, vertexNormal));
+    return horizon * horizon;
+}
+
+float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal) {
+    const float horizon = saturate(1.0f + dot(R, vertexNormal));
+    return horizon * horizon;
+}
+
+float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 albedo, float d) {
+    float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 11).rgb;
+    indirectDiffuse *= albedo * kD * d;
+    return indirectDiffuse;
+}
+
+float3 EvaluateSpecularIBL(float3 kS, float3 R, float linearRoughness, float3 GFD, float energyCompensation) {
+    float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)).rgb;
+    return indirectSpecular * GFD * kS * energyCompensation;
+}
+
+float3 EvaluateIBL(float3 N, float3 R, float NdotV, float linearRoughness, float3 albedo, float3 f0, float4 lut, float energyCompensation) {
+    float3 kS = F_SchlickRoughness(NdotV, f0, linearRoughness);
+    float3 kD = 1.0f - kS;
+    
+    float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut.a);
+    float3 indirectSpecular = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation);
+    
+    return indirectDiffuse + indirectSpecular;
+}
+
 float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, float3 specularColor) {
     float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGFD.ggg, envGFD.rrr, specularColor);
     energyCompensation = 1.0f + specularColor * (1.0f / envGFD.r - 1.0f);
+    
+    // energyCompensation = 1.0f;
     return float4(reflectionGF, envGFD.b);
 }
 
 float4 GetDGFFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
-    float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, roughness), 0).rgb;
+    float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, 1.0f - roughness), 0).rgb;
     return CompensateDirectBRDF(envGFD, energyCompensation, specularColor);
 }
 

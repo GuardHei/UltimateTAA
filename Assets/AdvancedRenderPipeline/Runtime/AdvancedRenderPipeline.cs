@@ -64,8 +64,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		private static void ExecuteIndependentCommandBufferRequest(ScriptableRenderContext context) {
 			if (independentCMDRequests.Count == 0) return;
 			
-			Debug.Log("Enter " + Time.frameCount);
-			
 			foreach (var pair in independentCMDRequests) context.ExecuteCommandBuffer(pair.Key);
 			
 			context.Submit();
@@ -88,10 +86,12 @@ namespace AdvancedRenderPipeline.Runtime {
 			GraphicsSettings.useScriptableRenderPipelineBatching = settings.enableSRPBatching;
 		}
 
+		private double tempA, tempB;
+
 		protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
 			
 			// ExecuteIndependentCommandBufferRequest(context);
-			
+
 			RequestCameraCheck();
 
 			var screenWidth = Screen.width;

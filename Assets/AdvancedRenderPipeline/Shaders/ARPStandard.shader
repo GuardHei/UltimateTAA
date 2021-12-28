@@ -119,7 +119,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 albedo *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;
 
                 float occlusion = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, input.baseUV).r;
-                albedo *= occlusion;
+                // albedo *= occlusion;
 
                 float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, input.baseUV);
                 
@@ -128,6 +128,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float linearRoughness = LinearSmoothToLinearRoughness(linearSmoothness);
                 linearRoughness = ClampMinLinearRoughness(linearRoughness);
                 float roughness = LinearRoughnessToRoughness(linearRoughness);
+                // roughness = ClampMinRoughness(roughness);
 
                 float metallic = metallicSmoothness.r;
                 metallic *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
@@ -138,17 +139,34 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 diffuse = (1.0 - metallic) * albedo;
                 float3 f0 = GetF0(albedo, metallic);
 
+                float3 energyCompensation;
+                float4 lut = GetDGFFromLut(energyCompensation, f0, roughness, NdotV);
+
                 float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
-                float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, f0);
+                float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, f0, energyCompensation);
 
                 float3 mainLighting = NdotL * _MainLight.color.rgb;
 
                 diffuse *= fd * mainLighting;
-                diffuse += emission;
+                // diffuse += emission;
 
                 float3 specular = fr * mainLighting;
+
+                float3 directLighting = diffuse + specular;
+
+                float3 kS = F_SchlickRoughness(NdotV, f0, linearRoughness);
+                float3 kD = (1.0f - kS) * (1.0f - metallic);
                 
-                output.forward = diffuse + specular;
+                float3 R = reflect(-V, N);
+
+                float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut.a) * occlusion;
+                float3 indirectSpecular = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation) * ComputeHorizonSpecularOcclusion(R, normalWS);
+                
+                // float3 indirectLighting = EvaluateIBL(N, reflect(-V, N), NdotV, linearRoughness, albedo, f0, lut, energyCompensation);
+                float3 indirectLighting = indirectDiffuse + indirectSpecular;
+                
+                output.forward = directLighting + indirectLighting;
+                // output.forward = diffuse;
                 output.gbuffer1 = PackNormalOctQuadEncode(N);
                 output.gbuffer2 = float4(fr, roughness);
                 return output;

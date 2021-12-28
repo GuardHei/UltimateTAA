@@ -28,6 +28,15 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#endregion
 
+		#region IBL Params
+
+		public static readonly int PREINTEGRATED_DGF_LUT = Shader.PropertyToID("_PreintegratedDGFLut");
+		public static readonly int GLOBAL_ENV_MAP        = Shader.PropertyToID("_GlobalEnvMap");
+		public static readonly int GLOBAL_ENV_MAP_SPECULAR = Shader.PropertyToID("_GlobalEnvMapSpecular");
+		public static readonly int GLOBAL_ENV_MAP_DIFFUSE = Shader.PropertyToID("_GlobalEnvMapDiffuse");
+
+		#endregion
+
 		#region Render Targets
 
 		public static readonly int MAIN_TEXTURE = Shader.PropertyToID("_MainTex");

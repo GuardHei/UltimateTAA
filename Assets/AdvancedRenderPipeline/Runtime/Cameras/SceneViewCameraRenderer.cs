@@ -5,11 +5,11 @@ using UnityEngine.Rendering;
 namespace AdvancedRenderPipeline.Runtime.Cameras {
 #if UNITY_EDITOR
 	public class SceneViewCameraRenderer : GameCameraRenderer {
-
+		
 		public SceneViewCameraRenderer(Camera camera) : base(camera) {
+			// Debug.Log("SceneView camera render is initing...");
 			cameraType = AdvancedCameraType.SceneView;
 			_rendererDesc = "Render Scene View (" + camera.name + ")";
-			beforeCull += () => GraphicsSettings.useScriptableRenderPipelineBatching = settings.enableSRPBatching;
 			beforeCull += EmitUIMesh;
 			beforePostProcess += DrawPreImageGizmosPass;
 			afterLastPass += DrawUnsupportedShaders;
@@ -42,6 +42,11 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			var filterSettings = new FilteringSettings(RenderQueueManager.ALL_QUEUE);
 
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
+		}
+
+		public override void Dispose() {
+			// Debug.Log("SceneView camera renderer is disposing...");
+			base.Dispose();
 		}
 	}
 #else

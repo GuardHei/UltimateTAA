@@ -1,8 +1,11 @@
 using System;
+using System.IO;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Editor {
 	
@@ -24,9 +27,18 @@ namespace AdvancedRenderPipeline.Editor {
 			if (lut && lut.IsCreated() && lut.isReadable && !lut.IsDestroyed()) {
 				if (!AssetDatabase.Contains(lut)) {
 					if (GUILayout.Button("Save IBL Lut")) {
-						var path = EditorUtility.SaveFilePanelInProject("Save IBL BRDF Lut", "IBL BRDF Lut.renderTexture", "renderTexture", "Select a location to save", "Assets/AdvancedRenderPipeline/Profiles/");
+						var path = EditorUtility.SaveFilePanelInProject("Save IBL BRDF Lut", "IBL BRDF Lut.png", "png", "Select a location to save", "Assets/AdvancedRenderPipeline/Profiles/");
 						if (!string.IsNullOrEmpty(path)) {
-							AssetDatabase.CreateAsset(lut, path);
+							Texture2D save = new Texture2D(lut.width, lut.height);
+							var temp = RenderTexture.active;
+							RenderTexture.active = lut;
+							save.ReadPixels(new Rect(0, 0, lut.width, lut.height), 0, 0);
+							RenderTexture.active = temp;
+							byte[] data = save.EncodeToPNG();
+							File.WriteAllBytes(Path.GetFullPath(path), data);
+							// AssetDatabase.CreateAsset(lut, path);
+							AssetDatabase.ImportAsset(path);
+							Debug.Log("IBL Lut Saved");
 							errorText = "";
 						}
 					} else if (GUILayout.Button("Clear IBL Lut Cache")) {
@@ -54,8 +66,8 @@ namespace AdvancedRenderPipeline.Editor {
 					iblLutError = true;
 					errorText = "IBL Lut Generation Shader cannot be null!";
 				} else {
-					var shader = asset.iblLutGenerationShader;
-					int kernel = shader.FindKernel("GenerateIBLLut");
+					var lutShader = asset.iblLutGenerationShader;
+					int kernel = lutShader.FindKernel("GenerateIBLLut");
 
 					if (lut != null) {
 						lut.Release();
@@ -74,16 +86,16 @@ namespace AdvancedRenderPipeline.Editor {
 					int threadGroupX = Mathf.CeilToInt(asset.iblLutResolution / 8f);
 					int threadGroupY = Mathf.CeilToInt(asset.iblLutResolution / 8f);
 					
-					shader.SetFloat("_Width", asset.iblLutResolution);
-					shader.SetFloat("_Height", asset.iblLutResolution);
-					shader.SetTexture(kernel, "_ResultLut", lut);
+					lutShader.SetFloat("_Width", asset.iblLutResolution);
+					lutShader.SetFloat("_Height", asset.iblLutResolution);
+					lutShader.SetTexture(kernel, "_ResultLut", lut);
 					
 					Debug.Log("Start generating IBL Lut");
 					
 					errorText = "";
 
 					try {
-						shader.Dispatch(kernel, threadGroupX, threadGroupY, 1);
+						lutShader.Dispatch(kernel, threadGroupX, threadGroupY, 1);
 					} catch (Exception e) {
 						lut.Release();
 						lut = null;
@@ -101,7 +113,7 @@ namespace AdvancedRenderPipeline.Editor {
 			else if (lut && lut.IsCreated() && lut.isReadable && !lut.IsDestroyed()) {
 				float height = 320;
 				GUILayout.Space(20);
-				if (asset != null && (asset.referenceLut1 != null || asset.referenceLut2 != null)) {
+				if (asset != null && (asset.referenceLut1 != null || asset.referenceLut2 != null) && asset.displayLutRefereces) {
 					GUILayout.BeginVertical();
 					if (asset.referenceLut1 != null) {
 						GUILayout.Label(asset.referenceLut1, new GUIStyle { fixedHeight = height, stretchHeight = true, stretchWidth = true, alignment = TextAnchor.MiddleCenter });
