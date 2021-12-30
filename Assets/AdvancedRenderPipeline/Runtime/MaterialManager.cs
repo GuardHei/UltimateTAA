@@ -20,6 +20,21 @@ namespace AdvancedRenderPipeline.Runtime {
 		
 		private static Material blitMaterial;
 
+		public static Material TonemappingMaterial {
+			get {
+				if (tonemappingMaterial == null) {
+					if (!AdvancedRenderPipeline.settings.tonemappingSettings.tonemappingShader) AdvancedRenderPipeline.settings.tonemappingSettings.tonemappingShader = Shader.Find("Hidden/ARPTonemapping");
+					tonemappingMaterial = new Material(AdvancedRenderPipeline.settings.tonemappingSettings.tonemappingShader) {
+						hideFlags = HideFlags.HideAndDontSave
+					};
+				}
+
+				return tonemappingMaterial;
+			}
+		}
+
+		private static Material tonemappingMaterial;
+
 		public static Material ErrorMat {
 			get {
 				if (_errorMat == null) _errorMat = new Material(Shader.Find("Hidden/InternalErrorShader"));

@@ -27,9 +27,7 @@ namespace RP_Tests {
 
 		public void Awake() => Setup();
 
-		public void Update() {
-			Graphics.DrawMeshInstanced(mesh, 0, mat, _matrices, num, _mpb);
-		}
+		public void Update() => Graphics.DrawMeshInstanced(mesh, 0, mat, _matrices, num, _mpb);
 
 		private void Setup() {
 			float[] _metallicValues = new float[num];

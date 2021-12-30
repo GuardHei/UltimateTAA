@@ -77,8 +77,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			
 			DrawShadowPass();
 
-			DrawDepthStencilPrepass();
-			
+			DrawDepthNormalPrepass();
+
+			SetupSkybox();
 			SetupLights();
 			
 			DrawOpaqueLightingPass();
@@ -164,30 +165,36 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cullingResults = _context.Cull(ref cullingParameters);
 		}
 
-		public void DrawDepthStencilPrepass() {
-			DrawStaticDepthStencilPrepass();
-			DrawDynamicDepthStencilPrepass();
+		public void DrawDepthNormalPrepass() {
+			DrawStaticDepthNormalPrepass();
+			DrawDynamicDepthNormalPrepass();
 		}
 
-		public void DrawStaticDepthStencilPrepass() {
+		public void DrawStaticDepthNormalPrepass() {
 			SetRenderTarget(_velocityTex, _depthTex);
 			ClearRenderTarget(false, true);
 			
 			ExecuteCommand(_cmd);
 			
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
-			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_STENCIL, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
+			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_NORMAL, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
 			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.STATIC | RenderLayerManager.TERRAIN);
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 		}
 
-		public void DrawDynamicDepthStencilPrepass() {
+		public void DrawDynamicDepthNormalPrepass() {
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
-			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_STENCIL, sortingSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
+			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_NORMAL, sortingSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
 			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.All ^ (RenderLayerManager.STATIC | RenderLayerManager.TERRAIN));
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
+		}
+
+		public void SetupSkybox() {
+			_cmd.SetGlobalFloat(ShaderKeywordManager.GLOBAL_ENV_MAP_EXPOSURE, settings.globalEnvMapExposure);
+			_cmd.SetGlobalFloat(ShaderKeywordManager.GLOBAL_ENV_MAP_ROTATION, settings.globalEnvMapRotation);
+			_cmd.SetGlobalFloat(ShaderKeywordManager.SKYBOX_MIP_LEVEL, settings.skyboxMipLevel);
 		}
 		
 		public void SetupLights() {
@@ -263,7 +270,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void TonemapPass() {
-			_cmd.Blit(_hdrColorTex, _displayTex);
+			// _cmd.Blit(_hdrColorTex, _displayTex);
+			MaterialManager.TonemappingMaterial.SetInteger(ShaderKeywordManager.TONEMAPPING_MODE, (int) settings.tonemappingSettings.tonemappingMode);
+			_cmd.Blit(_hdrColorTex, _displayTex, MaterialManager.TonemappingMaterial, 0);
 			ExecuteCommand();
 		}
 

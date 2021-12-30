@@ -21,8 +21,10 @@ namespace RP_Tests {
 		private float[] _smoothnessValues = new float[NUM];
 
 		private MaterialPropertyBlock _mpb;
+		
+		public void Awake() => Setup();
 
-		private void Awake() {
+		private void Setup() {
 			for (int i = 0; i < NUM; i++) {
 				_matrices[i] = Matrix4x4.TRS(transform.position + Random.insideUnitSphere * radius, Quaternion.identity, Vector3.one);
 				_baseColors[i] = new Vector4(Random.value, Random.value, Random.value, 1f);
@@ -38,9 +40,9 @@ namespace RP_Tests {
 				_mpb.SetFloatArray("_SmoothnessScale", _smoothnessValues);
 			}
 		}
+
+		private void OnValidate() => Setup();
 		
-		private void Update() {
-			Graphics.DrawMeshInstanced(mesh, 0, mat, _matrices, NUM, _mpb);
-		}
+		private void Update() => Graphics.DrawMeshInstanced(mesh, 0, mat, _matrices, NUM, _mpb);
 	}
 }

@@ -34,6 +34,9 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int GLOBAL_ENV_MAP        = Shader.PropertyToID("_GlobalEnvMap");
 		public static readonly int GLOBAL_ENV_MAP_SPECULAR = Shader.PropertyToID("_GlobalEnvMapSpecular");
 		public static readonly int GLOBAL_ENV_MAP_DIFFUSE = Shader.PropertyToID("_GlobalEnvMapDiffuse");
+		public static readonly int GLOBAL_ENV_MAP_EXPOSURE = Shader.PropertyToID("_GlobalEnvMapExposure");
+		public static readonly int GLOBAL_ENV_MAP_ROTATION = Shader.PropertyToID("_GlobalEnvMapRotation");
+		public static readonly int SKYBOX_MIP_LEVEL = Shader.PropertyToID("_SkyboxMipLevel");
 
 		#endregion
 
@@ -50,6 +53,12 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int GBUFFER_1_TEXTURE = Shader.PropertyToID("_GBuffer1");
 		public static readonly int GBUFFER_2_TEXTURE = Shader.PropertyToID("_GBuffer2");
 		public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
+
+		#endregion
+
+		#region Color Grading & Tonemapping
+
+		public static readonly int TONEMAPPING_MODE = Shader.PropertyToID("_TonemappingMode");
 
 		#endregion
 	}

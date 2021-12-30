@@ -16,6 +16,13 @@ namespace AdvancedRenderPipeline.Runtime {
 			cmd.SetRenderTarget(dest, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
 			cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMaterial, (int) BlitPass.Blit, MeshTopology.Triangles, 3);
 		}
+
+		public static void CustomBlit(this CommandBuffer cmd, RTHandle src, RenderTargetIdentifier dest, Material mat, int pass) {
+			cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_TEXTURE, src, RenderTextureSubElement.Color);
+			// MaterialManager.BlitMaterial.SetTexture(ShaderKeywordManager.MAIN_TEXTURE, src);
+			cmd.SetRenderTarget(dest, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+			cmd.DrawProcedural(Matrix4x4.identity, mat, pass, MeshTopology.Triangles, 3);
+		}
 		
 		public static void ScaledBlit(this CommandBuffer cmd, RTHandle src, RenderTargetIdentifier dest) {
 			cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_TEXTURE, src, RenderTextureSubElement.Color);

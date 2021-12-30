@@ -115,8 +115,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		internal CameraRenderer GetCameraRenderer(Camera camera) {
 			if (!cameraRenderers.TryGetValue(camera, out var renderer)) {
-				renderer = CameraRenderer.CreateCameraRenderer(camera,
-					CameraRenderer.DefaultToAdvancedCameraType(camera.cameraType));
+				renderer = CameraRenderer.CreateCameraRenderer(camera, CameraRenderer.DefaultToAdvancedCameraType(camera.cameraType));
 				cameraRenderers.Add(camera, renderer);
 			}
 

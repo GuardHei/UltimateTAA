@@ -15,13 +15,13 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         // _SmoothnessMap("Smoothness", 2D) = "white" { }
         _OcclusionMap("Occlusion", 2D) = "white" { }
         [HDR]
-        _EmissionTint("Emission Tint", Color) = (0, 0, 0, 1)
-        _EmissionMap("Emission", 2D) = "black" { }
+        _EmissiveTint("Emissive Tint", Color) = (0, 0, 0, 1)
+        _EmissiveMap("Emissive", 2D) = "black" { }
     }
     
     SubShader {
         
-        UsePass "Hidden/ARPDepthStencilMV/DefaultDynamicDepthStencil"
+        UsePass "Hidden/ARPDepthNormal/DefaultDynamicDepthNormal"
         
         UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
         
@@ -71,12 +71,12 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)
                 UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
-                UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionTint)
+                UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveTint)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)
                 // UNITY_DEFINE_INSTANCED_PROP(float4, _NormalMap_ST)
                 // UNITY_DEFINE_INSTANCED_PROP(float4, _MetallicSmoothnessMap_ST)
                 // UNITY_DEFINE_INSTANCED_PROP(float4, _OcclusionMap_ST)
-                // UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionMap_ST)
+                // UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveMap_ST)
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
             VertexOutput StandardVertex(VertexInput input) {
@@ -126,6 +126,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, input.baseUV);
                 
                 float linearSmoothness = metallicSmoothness.a;
+                // float linearSmoothness = 1.0f - metallicSmoothness.g;
                 linearSmoothness *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale);
                 float linearRoughness = LinearSmoothToLinearRoughness(linearSmoothness);
                 linearRoughness = ClampMinLinearRoughness(linearRoughness);
@@ -133,10 +134,11 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 // roughness = ClampMinRoughness(roughness);
 
                 float metallic = metallicSmoothness.r;
+                // float metallic = metallicSmoothness.b;
                 metallic *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
 
-                float3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.baseUV).rgb;
-                emission *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionTint).rgb;
+                float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, input.baseUV).rgb;
+                emissive += UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;
 
                 float3 diffuse = (1.0 - metallic) * albedo;
                 float3 f0 = GetF0(albedo, metallic);
@@ -157,19 +159,21 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 directLighting = diffuse + specular;
 
                 float3 kS = F_SchlickRoughness(f0, NdotV, linearRoughness);
-                float3 kD = (1.0f - kS) * (1.0f - metallic);
+                float3 kD = 1.0f - kS;
+                kD *=  1.0f - metallic;
                 
                 float3 R = reflect(-V, N);
 
                 float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut.a) * occlusion;
                 float3 indirectSpecular = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation) * ComputeHorizonSpecularOcclusion(R, normalWS);
                 
-                // float3 indirectLighting = EvaluateIBL(N, reflect(-V, N), NdotV, linearRoughness, albedo, f0, lut, energyCompensation);
                 float3 indirectLighting = indirectDiffuse + indirectSpecular;
                 
-                output.forward = directLighting + indirectLighting;
-                // output.forward = directLighting;
-                // output.forward = indirectSpecular;
+                output.forward = directLighting + indirectLighting + emissive;
+                // output.forward = energyCompensation - 1.0f;
+                // output.forward = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation);
+                // output.forward = metallicSmoothness.r;
+                // output.forward = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)) * lut.rgb;
                 output.gbuffer1 = PackNormalOctQuadEncode(N);
                 output.gbuffer2 = float4(fr, roughness);
                 return output;

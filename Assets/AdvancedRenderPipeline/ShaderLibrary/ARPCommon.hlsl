@@ -73,6 +73,14 @@ CBUFFER_END
 static float _AlphaCutOff;
 
 //////////////////////////////////////////
+// Image Based Lighting Variables       //
+//////////////////////////////////////////
+
+float _GlobalEnvMapExposure;
+float _GlobalEnvMapRotation;
+float _SkyboxMipLevel;
+
+//////////////////////////////////////////
 // Built-in Textures and Samplers       //
 //////////////////////////////////////////
 
@@ -94,8 +102,8 @@ TEXTURE2D(_MetallicSmoothnessMap);
 SAMPLER(sampler_MetallicSmoothnessMap);
 TEXTURE2D(_OcclusionMap);
 SAMPLER(sampler_OcclusionMap);
-TEXTURE2D(_EmissionMap);
-SAMPLER(sampler_EmissionMap);
+TEXTURE2D(_EmissiveMap);
+SAMPLER(sampler_EmissiveMap);
 
 TEXTURE2D(_PreintegratedDGFLut);
 SAMPLER(sampler_PreintegratedDGFLut);
@@ -125,6 +133,14 @@ float2 VertexIDToScreenUV(uint vertexID) {
 
 float4 TransformObjectToWorldTangent(float4 tangentOS) {
     return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
+}
+
+float3 RotateAroundYInDegrees (float3 vertex, float degrees) {
+    float alpha = degrees * PI / 180.0f;
+    float sina, cosa;
+    sincos(alpha, sina, cosa);
+    float2x2 m = float2x2(cosa, -sina, sina, cosa);
+    return float3(mul(m, vertex.xz), vertex.y).xzy;
 }
 
 float3 ApplyNormalMap(float3 data, float3 normalWS, float4 tangentWS) {
@@ -414,6 +430,16 @@ float4 PrefilterEnvMap(TextureCube envMap, float resolution, float roughness, fl
 // Runtime IBL Utility Functions        //
 //////////////////////////////////////////
 
+float3 SampleGlobalEnvMapDiffuse(float3 dir) {
+    dir = RotateAroundYInDegrees(dir, _GlobalEnvMapRotation);
+    return _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, dir, 11u).rgb * _GlobalEnvMapExposure;
+}
+
+float3 SampleGlobalEnvMapSpecular(float3 dir, float mipLevel) {
+    dir = RotateAroundYInDegrees(dir, _GlobalEnvMapRotation);
+    return _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, dir, mipLevel).rgb * _GlobalEnvMapExposure;
+}
+
 float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal, float horizonFade) {
     const float horizon = saturate(1.0f + horizonFade * dot(R, vertexNormal));
     return horizon * horizon;
@@ -425,13 +451,16 @@ float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal) {
 }
 
 float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 albedo, float d) {
-    float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 8).rgb;
+    // float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 11u).rgb;
+    float3 indirectDiffuse = SampleGlobalEnvMapDiffuse(N);
     indirectDiffuse *= albedo * kD * d;
     return indirectDiffuse;
 }
 
 float3 EvaluateSpecularIBL(float3 kS, float3 R, float linearRoughness, float3 GFD, float energyCompensation) {
-    float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)).rgb;
+    // GFD = 1.0f;
+    // float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)).rgb;
+    float3 indirectSpecular = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, 11u));
     indirectSpecular *= GFD * kS * energyCompensation;
     return indirectSpecular;
 }

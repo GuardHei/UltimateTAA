@@ -8,7 +8,7 @@ Shader "Advanced Render Pipeline/Unlit" {
     
     SubShader {
         
-        UsePass "Hidden/ARPDepthStencilMV/DefaultDynamicDepthStencil"
+        UsePass "Hidden/ARPDepthNormal/DefaultDynamicDepthNormal"
         
         UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
         

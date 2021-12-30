@@ -35,7 +35,7 @@ Shader "Hidden/ARPBlit" {
             float4 BlitFragment(VertexOutput input) : SV_TARGET {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
-                float4 output =  SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, input.screenUV);
+                float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, input.screenUV);
                 return output;
             }
             

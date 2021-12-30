@@ -33,6 +33,15 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Texture2D iblLut;
 		public Cubemap globalEnvMapDiffuse;
 		public Cubemap globalEnvMapSpecular;
+		[Range(.0f, 8.0f)]
+		public float globalEnvMapExposure = 1.0f;
+		[Range(.0f, 360.0f)]
+		public float globalEnvMapRotation;
+		[Range(.0f, 11.0f)]
+		public float skyboxMipLevel;
+		[Header("Color Grading & Tonemapping")]
+		public ColorGradingSettings colorSettings;
+		public TonemappingSettings tonemappingSettings;
 	}
 
 	public enum DebugOutput {
@@ -56,5 +65,31 @@ namespace AdvancedRenderPipeline.Runtime {
 		None = 0,
 		Pcf = 1,
 		Pcss = 2
+	}
+
+	public enum TonemappingMode {
+		None = 0,
+		ACES = 1,
+		Neutral = 2,
+		Reinhard = 3
+	}
+
+	[Serializable]
+	public struct ColorGradingSettings {
+		public float postExposure;
+		[Range(-100f, 100f)]
+		public float contrast;
+		[ColorUsage(false, true)]
+		public Color colorFilter;
+		[Range(-180f, 180f)]
+		public float hueShift;
+		[Range(-100f, 100f)]
+		public float saturation;
+	}
+
+	[Serializable]
+	public struct TonemappingSettings {
+		public TonemappingMode tonemappingMode;
+		public Shader tonemappingShader;
 	}
 }
