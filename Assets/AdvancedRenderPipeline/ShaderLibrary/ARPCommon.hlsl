@@ -84,7 +84,19 @@ float _SkyboxMipLevel;
 // Built-in Textures and Samplers       //
 //////////////////////////////////////////
 
+SAMPLER(sampler_point_clamp);
 SAMPLER(sampler_linear_clamp);
+
+TEXTURE2D(_RawColorTex);
+TEXTURE2D(_TAAColorTex);
+TEXTURE2D(_HdrColorTex);
+TEXTURE2D(_DisplayTex);
+TEXTURE2D(_DepthTex);
+TEXTURE2D(_StencilTex);
+TEXTURE2D(_VelocityTex);
+TEXTURE2D(_GBuffer1);
+TEXTURE2D(_GBuffer2);
+TEXTURE2D(_ScreenSpaceCubemap);
 
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);

@@ -1,6 +1,7 @@
 Shader "Hidden/ARPShadow" {
     
     Properties {
+        _Cull("Cull", Float) = 0
         _AlbedoTint("Albedo Tint", Color) = (1,1,1,1)
         _AlbedoMap("Albedo", 2D) = "white" { }
     }
@@ -14,6 +15,8 @@ Shader "Hidden/ARPShadow" {
             Tags {
                 "LightMode" = "ShadowCaster"
             }
+            
+            Cull [_Cull]
             
             HLSLPROGRAM
 
@@ -60,6 +63,8 @@ Shader "Hidden/ARPShadow" {
             Tags {
                 "LightMode" = "ShadowCaster"
             }
+            
+            Cull [_Cull]
             
             HLSLPROGRAM
 

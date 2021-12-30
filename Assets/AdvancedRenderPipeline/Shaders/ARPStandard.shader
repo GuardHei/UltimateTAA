@@ -3,6 +3,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
     Properties {
         [Enum(Dynamic, 1, Alpha, 2, Custom, 3)]
         _StencilRef("Stencil Ref", int) = 1
+        [Enum(UnityEngine.Rendering.CullMode)]
+        _Cull("Cull", Float) = 0
         _AlbedoTint("Albedo Tint", Color) = (1,1,1,1)
         _AlbedoMap("Albedo", 2D) = "white" { }
         _NormalScale("Normal Scale", Range(0, 1)) = 1
@@ -21,7 +23,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
     
     SubShader {
         
-        UsePass "Hidden/ARPDepthNormal/DefaultDynamicDepthNormal"
+        UsePass "Hidden/ARPDepth/DefaultDynamicDepth"
         
         UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
         
@@ -33,7 +35,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             
             ZTest LEqual
             ZWrite On
-			Cull Back
+			Cull [_Cull]
             
             HLSLPROGRAM
 
@@ -172,10 +174,10 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 output.forward = directLighting + indirectLighting + emissive;
                 // output.forward = energyCompensation - 1.0f;
                 // output.forward = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation);
-                // output.forward = metallicSmoothness.r;
+                // output.forward = metallicSmoothness;
                 // output.forward = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)) * lut.rgb;
                 output.gbuffer1 = PackNormalOctQuadEncode(N);
-                output.gbuffer2 = float4(fr, roughness);
+                output.gbuffer2 = float4(f0, roughness);
                 return output;
             }
 

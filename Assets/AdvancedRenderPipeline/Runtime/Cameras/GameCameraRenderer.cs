@@ -36,6 +36,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		protected RTHandle _prevVelocityTex;
 		protected RTHandle _gbuffer1Tex;
 		protected RTHandle _gbuffer2Tex;
+		protected RTHandle _screenSpaceCubemap;
 
 		protected RenderTargetIdentifier[] _forwardMRTs = new RenderTargetIdentifier[3];
 
@@ -77,7 +78,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			
 			DrawShadowPass();
 
-			DrawDepthNormalPrepass();
+			DrawDepthStencilPrepass();
 
 			SetupSkybox();
 			SetupLights();
@@ -165,27 +166,27 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cullingResults = _context.Cull(ref cullingParameters);
 		}
 
-		public void DrawDepthNormalPrepass() {
-			DrawStaticDepthNormalPrepass();
-			DrawDynamicDepthNormalPrepass();
+		public void DrawDepthStencilPrepass() {
+			DrawStaticDepthStencilPrepass();
+			DrawDynamicDepthStencilPrepass();
 		}
 
-		public void DrawStaticDepthNormalPrepass() {
+		public void DrawStaticDepthStencilPrepass() {
 			SetRenderTarget(_velocityTex, _depthTex);
 			ClearRenderTarget(false, true);
 			
 			ExecuteCommand(_cmd);
 			
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
-			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_NORMAL, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
+			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_STENCIL, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
 			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.STATIC | RenderLayerManager.TERRAIN);
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 		}
 
-		public void DrawDynamicDepthNormalPrepass() {
+		public void DrawDynamicDepthStencilPrepass() {
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
-			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_NORMAL, sortingSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
+			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_STENCIL, sortingSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
 			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.All ^ (RenderLayerManager.STATIC | RenderLayerManager.TERRAIN));
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
@@ -245,7 +246,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void ComputeSpecularIBLPass() {
-			
+			_cmd.SetGlobalTexture(ShaderKeywordManager.DEPTH_TEXTURE, _depthTex);
+			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_1_TEXTURE, _gbuffer1Tex);
+			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_2_TEXTURE, _gbuffer2Tex);
+			_cmd.FullScreenPass(_screenSpaceCubemap, MaterialManager.ScreenSpaceCubemapReflectionMaterial, 0);
 		}
 
 		public void ComputeScreenSpaceReflectionPass() {
@@ -299,6 +303,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 						src = _velocityTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
+					case DebugOutput.ScreenSpaceCubemap:
+						src = _screenSpaceCubemap;
+						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
+						break;
 					default:
 						src = _displayTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
@@ -337,6 +345,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_SNorm, name: "GBuffer1"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_2_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R8G8B8A8_UNorm, name: "GBuffer2"), 1);
+			_historyBuffers.AllocBuffer(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, 
+				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.B10G11R11_UFloatPack32, filterMode: FilterMode.Bilinear, name: "ScreenSpaceCubemap"), 1);
 		}
 
 		public void ResetBufferSize() {
@@ -359,8 +369,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_prevVelocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 1);
 			_gbuffer1Tex = _historyBuffers.GetFrameRT(ShaderKeywordManager.GBUFFER_1_TEXTURE, 0);
 			_gbuffer2Tex = _historyBuffers.GetFrameRT(ShaderKeywordManager.GBUFFER_2_TEXTURE, 0);
-			
-			
+			_screenSpaceCubemap = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, 0);
+
 			// Debug.Log("Raw Color S: " + _rawColorTex.referenceSize);
 			// Debug.Log("Velocity S: " + _rawColorTex.referenceSize);
 			// Debug.Log("Depth S: " + _depthTex.referenceSize)

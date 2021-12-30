@@ -52,6 +52,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int VELOCITY_TEXTURE = Shader.PropertyToID("_VelocityTex");
 		public static readonly int GBUFFER_1_TEXTURE = Shader.PropertyToID("_GBuffer1");
 		public static readonly int GBUFFER_2_TEXTURE = Shader.PropertyToID("_GBuffer2");
+		public static readonly int SCREEN_SPACE_CUBEMAP = Shader.PropertyToID("_ScreenSpaceCubemap");
 		public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
 
 		#endregion

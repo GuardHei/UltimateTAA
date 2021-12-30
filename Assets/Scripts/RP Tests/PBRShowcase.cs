@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using UnityEditor;
 using UnityEngine;
 
 namespace RP_Tests {
@@ -51,6 +50,7 @@ namespace RP_Tests {
 
 		private void OnValidate() => Setup();
 
+#if UNITY_EDITOR
 		[Conditional("UNITY_EDITOR")]
 		private void OnDrawGizmosSelected() {
 			GUIStyle redStyle = new GUIStyle {
@@ -69,9 +69,10 @@ namespace RP_Tests {
 			var ss = _mpb.GetFloatArray("_SmoothnessScale");
 			
 			for (var i = 0; i < _matrices.Length; i++) {
-				Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1f, .0f), "M: " + ms[i].ToString("F1"), greenStyle);
-				Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1.25f, .0f), "S: " + ss[i].ToString("F1"), greenStyle);
+				UnityEditor.Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1f, .0f), "M: " + ms[i].ToString("F1"), greenStyle);
+				UnityEditor.Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1.25f, .0f), "S: " + ss[i].ToString("F1"), greenStyle);
 			}
 		}
+#endif
 	}
 }

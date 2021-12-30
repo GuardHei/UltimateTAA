@@ -10,6 +10,15 @@ namespace AdvancedRenderPipeline.Runtime {
 		public AdvancedRenderPipelineSettings settings;
 
 		protected override RenderPipeline CreatePipeline() => new AdvancedRenderPipeline(settings);
+
+		public override Shader defaultShader {
+			get {
+				if (standardShader == null) standardShader = Shader.Find("Advanced Render Pipeline/ARPStandard");
+				return standardShader;
+			}
+		}
+
+		private static Shader standardShader;
 	}
 
 	[Serializable]
@@ -33,6 +42,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Texture2D iblLut;
 		public Cubemap globalEnvMapDiffuse;
 		public Cubemap globalEnvMapSpecular;
+		public Shader screenSpaceCubemapReflectionShader;
 		[Range(.0f, 8.0f)]
 		public float globalEnvMapExposure = 1.0f;
 		[Range(.0f, 360.0f)]
@@ -49,7 +59,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		Depth,
 		GBuffer1,
 		GBuffer2,
-		MotionVector
+		MotionVector,
+		ScreenSpaceCubemap
 	}
 
 	public enum ShadowmapSize {

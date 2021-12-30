@@ -15,8 +15,8 @@ Shader "Hidden/ARPTonemapping" {
             
             HLSLPROGRAM
 
-            #pragma vertex BlitVert
-            #pragma fragment BlitFragment
+            #pragma vertex TonemapVert
+            #pragma fragment TonemapFragment
 
             #include "ARPCommon.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
@@ -28,14 +28,14 @@ Shader "Hidden/ARPTonemapping" {
 
             int _TonemappingMode;
 
-            VertexOutput BlitVert(uint vertexID : SV_VertexID) {
+            VertexOutput TonemapVert(uint vertexID : SV_VertexID) {
                 VertexOutput output;
                 output.posCS = VertexIDToPosCS(vertexID);
                 output.screenUV = VertexIDToScreenUV(vertexID);
                 return output;
             }
 
-            float4 BlitFragment(VertexOutput input) : SV_TARGET {
+            float4 TonemapFragment(VertexOutput input) : SV_TARGET {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
                 float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, uv);
