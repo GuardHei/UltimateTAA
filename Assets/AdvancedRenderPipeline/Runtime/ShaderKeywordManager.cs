@@ -6,6 +6,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		#region Camera Params
 
 		public static readonly int CAMERA_DATA = Shader.PropertyToID("CameraData");
+		public static readonly int UNITY_MATRIX_I_VP = Shader.PropertyToID("unity_InvMatrixVP");
 
 		#endregion
 

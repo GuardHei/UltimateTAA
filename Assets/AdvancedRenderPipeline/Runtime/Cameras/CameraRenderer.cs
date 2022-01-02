@@ -47,6 +47,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         protected int _frameNum;
         protected float3 _cameraPosWS;
         protected float3 _cameraFwdWS;
+        protected float3 _cameraUpWS;
+        protected float3 _cameraRightWS;
+        protected Matrix4x4 _frustumCornersWS;
 
         public abstract void Render(ScriptableRenderContext context);
 

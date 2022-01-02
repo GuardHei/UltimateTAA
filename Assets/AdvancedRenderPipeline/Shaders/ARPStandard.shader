@@ -55,6 +55,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
             struct VertexOutput {
                 float4 posCS : SV_POSITION;
+                float3 posWS : VAR_POSITION;
                 float3 normalWS : VAR_NORMAL;
                 float4 tangentWS : VAR_TANGENT;
                 float3 viewDirWS : TEXCOORD1;
@@ -87,6 +88,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
 
                 float3 posWS = TransformObjectToWorld(input.posOS);
+                output.posWS = posWS;
                 // output.posCS = TransformObjectToHClip(input.posOS);
                 output.posCS = TransformWorldToHClip(posWS);
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -171,13 +173,14 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 float3 indirectLighting = indirectDiffuse + indirectSpecular;
                 
+                // output.forward = indirectSpecular;
                 output.forward = directLighting + indirectLighting + emissive;
                 // output.forward = energyCompensation - 1.0f;
                 // output.forward = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation);
                 // output.forward = metallicSmoothness;
                 // output.forward = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)) * lut.rgb;
                 output.gbuffer1 = PackNormalOctQuadEncode(N);
-                output.gbuffer2 = float4(f0, roughness);
+                output.gbuffer2 = float4(f0, linearRoughness);
                 return output;
             }
 

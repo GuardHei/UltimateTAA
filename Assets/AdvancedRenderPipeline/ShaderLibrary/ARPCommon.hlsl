@@ -15,6 +15,7 @@
 #define UNITY_PREV_MATRIX_I_M prevWorldToObject
 #define UNITY_MATRIX_V unity_MatrixV
 #define UNITY_MATRIX_VP unity_MatrixVP
+#define UNITY_MATRIX_I_VP unity_InvMatrixVP
 #define UNITY_MATRIX_UNJITTERED_VP unjitteredVP
 #define UNITY_MATRIX_P glstate_matrix_projection
 
@@ -30,9 +31,10 @@ struct DirectionalLight {
 };
 
 CBUFFER_START(CameraData)
-    float3 _CameraPosWS;
-    float3 _CameraFwdWS;
+    float4 _CameraPosWS;
+    float4 _CameraFwdWS;
     float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
+    float4x4 _FrustumCornersWS; // row 0: topLeft, row 1: bottomLeft, row 2: topRight, row 3: float4 _ZBufferParams { (f - n) / n, 1, (f - n) / n * f, 1 / f }
     RTHandleProperties _RTHandleProps;
 CBUFFER_END
 
@@ -50,6 +52,7 @@ float4x4 unity_MatrixVP;
 float4x4 unjitteredVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
+float4x4 unity_InvMatrixVP;
 
 float4x4 prevObjectToWorld;
 
@@ -131,16 +134,53 @@ SAMPLER(sampler_GlobalEnvMapDiffuse);
 
 float4 VertexIDToPosCS(uint vertexID) {
     return float4(
-        vertexID <= 1 ? -1.0 : 3.0,
-        vertexID == 1 ? 3.0 : -1.0,
-        0.0,
-        1.0);
+        vertexID <= 1 ? -1.0f : 3.0f,
+        vertexID == 1 ? 3.0f : -1.0f,
+        .0f,
+        1.0f);
 }
 
 float2 VertexIDToScreenUV(uint vertexID) {
     return float2(
-        vertexID <= 1 ? 0.0 : 2.0,
-        vertexID ==1 ? 2.0 : 0.0);
+        vertexID <= 1 ? .0f : 2.0f,
+        vertexID == 1 ? 2.0f : .0f);
+}
+
+float4 VertexIDToFrustumCorners(uint vertexID) {
+    return _FrustumCornersWS[vertexID];
+}
+
+float4 GetZBufferParams() {
+    return _FrustumCornersWS[3];
+}
+
+float SampleDepth(float2 uv) {
+    return SAMPLE_DEPTH_TEXTURE(_DepthTex, sampler_point_clamp, uv);
+}
+
+float SampleCorrectedDepth(float2 uv) {
+    float depth = SampleDepth(uv);
+    #if defined(UNITY_REVERSED_Z)
+    depth = 1.0f - depth;
+    #endif
+    return depth;
+}
+
+float3 SampleNormalWS(float2 uv) {
+    float2 packed = SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv).rg;
+    return UnpackNormalOctQuadEncode(packed);
+}
+
+float4 DepthToWorldPosFast(float depth, float3 ray) {
+    float3 worldPos = _CameraPosWS.xyz + Linear01Depth(depth, GetZBufferParams()) * ray;
+    return float4(worldPos, 0.0f);
+}
+
+float4 DepthToWorldPos(float depth, float2 uv) {
+    float4 ndc = float4(uv.x * 2.0f - 1.0f, uv.y * 2.0f - 1.0f, depth, 1.0f);
+    float4 worldPosAccurate = mul(UNITY_MATRIX_I_VP, ndc);
+    worldPosAccurate /= worldPosAccurate.w;
+    return worldPosAccurate;
 }
 
 float4 TransformObjectToWorldTangent(float4 tangentOS) {

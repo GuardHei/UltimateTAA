@@ -44,8 +44,9 @@ namespace AdvancedRenderPipeline.Runtime {
 			cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMaterial, (int) BlitPass.ScaledBlit, MeshTopology.Triangles, 3);
 		}
 
-		public static void FullScreenPass(this CommandBuffer cmd, RenderTargetIdentifier dest, Material mat, int pass) {
+		public static void FullScreenPass(this CommandBuffer cmd, RenderTargetIdentifier dest, Material mat, int pass, bool clearColor = false) {
 			cmd.SetRenderTarget(dest, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+			if (clearColor) cmd.ClearRenderTarget(false, true, Color.black);
 			cmd.DrawProcedural(Matrix4x4.identity, mat, pass, MeshTopology.Triangles, 3);
 		}
 	}

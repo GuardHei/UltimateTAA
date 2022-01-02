@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
@@ -117,6 +118,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			var transform = camera.transform;
 			_cameraPosWS = transform.position;
 			_cameraFwdWS = transform.forward;
+			_cameraUpWS = transform.up;
+			_cameraRightWS = transform.right;
 
 			var screenSize = Vector4.one;
 			screenSize.x = InternalRes.x;
@@ -134,10 +137,57 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			}
 			*/
 
+			var matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix;
+			var invMatrixVP = matrixVP.inverse;
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, invMatrixVP);
+
+			var aspect = camera.aspect;
+			var nearClip = camera.nearClipPlane;
+			var farClip = camera.farClipPlane;
+			var farHalfFovTan = farClip * Mathf.Tan(camera.fieldOfView * .5f * Mathf.Deg2Rad);
+
+			_frustumCornersWS = new Matrix4x4();
+			
+			var fwdDir = _cameraFwdWS * farClip;
+			var upDir = _cameraUpWS * farHalfFovTan;
+			var rightDir = _cameraRightWS * farHalfFovTan * aspect;
+			
+			var topLeft = fwdDir + upDir - rightDir;
+			var topRight = fwdDir + upDir + rightDir * 3f;
+			var bottomLeft = fwdDir - upDir * 3f - rightDir;
+			// var bottomRight = fwdDir - upDir + dRightDir;
+
+			var zBufferParams = new float4((farClip - nearClip) / nearClip,  1f, (farClip - nearClip) / (nearClip * farClip), 1f / farClip);
+			
+			_frustumCornersWS.SetRow(0, new float4(topLeft, .0f));
+			_frustumCornersWS.SetRow(1, new float4(bottomLeft, .0f));
+			_frustumCornersWS.SetRow(2, new float4(topRight, .0f));
+			_frustumCornersWS.SetRow(3, zBufferParams);
+			
+			// Debug.Log(topLeft + " | " + bottomLeft + " | " + bottomRight);
+
+			/*
+			var fwdDir = _cameraFwdWS * farClip;
+			var upDir = _cameraUpWS * farHalfFovTan;
+			var rightDir = _cameraRightWS * farHalfFovTan * aspect;
+			
+			var topLeft = fwdDir + upDir - rightDir;
+			var topRight = fwdDir + upDir + rightDir;
+			var bottomRight = fwdDir - upDir + rightDir;
+			var bottomLeft = fwdDir - upDir - rightDir;
+			
+			// align like this to avoid branching on shader side
+			_frustumCornersWS.SetRow(0, new float4(topLeft, .0f));
+			_frustumCornersWS.SetRow(0, new float4(topRight, .0f));
+			_frustumCornersWS.SetRow(0, new float4(bottomRight, .0f));
+			_frustumCornersWS.SetRow(0, new float4(bottomLeft, .0f));
+			*/
+
 			_cameraData[0] = new CameraData {
-				cameraPosWS = _cameraPosWS,
-				cameraFwdWS = _cameraFwdWS,
+				cameraPosWS = new float4(_cameraPosWS, .0f),
+				cameraFwdWS = new float4(_cameraFwdWS, 1.0f),
 				screenSize = screenSize,
+				frustumCornersWS = _frustumCornersWS,
 				_rtHandleProps = rtProps
 			};
 			
@@ -222,7 +272,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			SetRenderTarget(_rawColorTex, _forwardMRTs, _depthTex);
 			ClearRenderTarget(true, false, clearColor);
 			
-			ExecuteCommand(_cmd);
+			ExecuteCommand();
 			
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.OptimizeStateChanges };
 			var drawSettings = new DrawingSettings(ShaderTagManager.FORWARD, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
@@ -250,6 +300,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_1_TEXTURE, _gbuffer1Tex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_2_TEXTURE, _gbuffer2Tex);
 			_cmd.FullScreenPass(_screenSpaceCubemap, MaterialManager.ScreenSpaceCubemapReflectionMaterial, 0);
+			ExecuteCommand();
 		}
 
 		public void ComputeScreenSpaceReflectionPass() {

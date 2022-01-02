@@ -18,9 +18,10 @@ namespace AdvancedRenderPipeline.Runtime {
 
 	[Serializable]
 	public struct CameraData {
-		public float3 cameraPosWS;
-		public float3 cameraFwdWS;
+		public float4 cameraPosWS;
+		public float4 cameraFwdWS;
 		public float4 screenSize;
+		public float4x4 frustumCornersWS;
 		public PackedRTHandleProperties _rtHandleProps;
 	}
 
