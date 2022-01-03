@@ -8,7 +8,7 @@ Shader "Advanced Render Pipeline/Unlit" {
     
     SubShader {
         
-        UsePass "Hidden/ARPDepthNormal/DefaultDynamicDepthNormal"
+        UsePass "Hidden/ARPDepth/DefaultDynamicDepth"
         
         UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
         
@@ -52,7 +52,7 @@ Shader "Advanced Render Pipeline/Unlit" {
                 return output;
             }
 
-            float4 UnlitFragment(BasicVertexOutput input) : SV_TARGET {
+            float4 UnlitFragment() : SV_TARGET0 {
                 UNITY_SETUP_INSTANCE_ID(input);
                 float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
                 return color;

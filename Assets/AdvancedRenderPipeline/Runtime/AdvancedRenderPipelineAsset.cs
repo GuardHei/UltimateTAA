@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 namespace AdvancedRenderPipeline.Runtime {
 	[CreateAssetMenu(fileName = "ARP Asset", menuName = "Advanced Render Pipeline/ARP Asset")]
@@ -32,6 +32,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public bool enableSRPBatching = true;
 		[Header("Builtin Shaders")]
 		public Shader blitShader;
+		public Shader integrateOpaqueLightingShader;
 		[Header("Transparency"), Min(0f)]
 		public float alphaTestDepthCutOff = .001f;
 		[Header("Shadow"), Min(0f)]
@@ -40,9 +41,11 @@ namespace AdvancedRenderPipeline.Runtime {
 		public SoftShadowMode mainLightSoftShadow = SoftShadowMode.None;
 		[Header("Image Based Lighting")]
 		public Texture2D iblLut;
+		public Texture2D diffuseIBLLut;
+		public Texture2D specularIBLLut;
 		public Cubemap globalEnvMapDiffuse;
 		public Cubemap globalEnvMapSpecular;
-		public Shader screenSpaceCubemapReflectionShader;
+		public Shader indirectSpecularShader;
 		[Range(.0f, 8.0f)]
 		public float globalEnvMapExposure = 1.0f;
 		[Range(.0f, 360.0f)]
@@ -59,8 +62,16 @@ namespace AdvancedRenderPipeline.Runtime {
 		Depth,
 		GBuffer1,
 		GBuffer2,
-		MotionVector,
-		ScreenSpaceCubemap
+		Velocity,
+		ScreenSpaceCubemap,
+		ScreenSpaceReflection,
+		ScreenSpaceReflectionHistory,
+		IndirectSpecular,
+		RawColor,
+		Color,
+		TAAColor,
+		TAAColorHistory,
+		HDRColor
 	}
 
 	public enum ShadowmapSize {

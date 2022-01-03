@@ -32,7 +32,9 @@ namespace AdvancedRenderPipeline.Runtime {
 		#region IBL Params
 
 		public static readonly int PREINTEGRATED_DGF_LUT = Shader.PropertyToID("_PreintegratedDGFLut");
-		public static readonly int GLOBAL_ENV_MAP        = Shader.PropertyToID("_GlobalEnvMap");
+		public static readonly int PREINTEGRATED_D_LUT = Shader.PropertyToID("_PreintegratedDLut");
+		public static readonly int PREINTEGRATED_GF_LUT = Shader.PropertyToID("_PreintegratedGFLut");
+		public static readonly int GLOBAL_ENV_MAP = Shader.PropertyToID("_GlobalEnvMap");
 		public static readonly int GLOBAL_ENV_MAP_SPECULAR = Shader.PropertyToID("_GlobalEnvMapSpecular");
 		public static readonly int GLOBAL_ENV_MAP_DIFFUSE = Shader.PropertyToID("_GlobalEnvMapDiffuse");
 		public static readonly int GLOBAL_ENV_MAP_EXPOSURE = Shader.PropertyToID("_GlobalEnvMapExposure");
@@ -45,6 +47,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		public static readonly int MAIN_TEXTURE = Shader.PropertyToID("_MainTex");
 		public static readonly int RAW_COLOR_TEXTURE = Shader.PropertyToID("_RawColorTex");
+		public static readonly int COLOR_TEXTURE = Shader.PropertyToID("_ColorTex");
 		public static readonly int TAA_COLOR_TEXTURE = Shader.PropertyToID("_TAAColorTex");
 		public static readonly int HDR_COLOR_TEXTURE = Shader.PropertyToID("_HdrColorTex");
 		public static readonly int DISPLAY_TEXTURE = Shader.PropertyToID("_DisplayTex");
@@ -54,6 +57,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int GBUFFER_1_TEXTURE = Shader.PropertyToID("_GBuffer1");
 		public static readonly int GBUFFER_2_TEXTURE = Shader.PropertyToID("_GBuffer2");
 		public static readonly int SCREEN_SPACE_CUBEMAP = Shader.PropertyToID("_ScreenSpaceCubemap");
+		public static readonly int SCREEN_SPACE_REFLECTION = Shader.PropertyToID("_ScreenSpaceReflection");
+		public static readonly int INDIRECT_SPECULAR = Shader.PropertyToID("_IndirectSpecular");
 		public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
 
 		#endregion

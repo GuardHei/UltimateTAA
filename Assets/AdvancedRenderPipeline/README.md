@@ -27,13 +27,13 @@
 
  ## Thin - GBuffer
 
- | GBuffer   | Format        | Channel R  | Channel G  | Channel B  | Channel A        |
- | :-------- | :------------ | :--------  | :--------  | :--------  | :--------------- |
- | GBuffer 0 | RGBA16_SFloat | Forward R  | Forward G  | Forward B  | TAA Anti-flicker |
- | GBuffer 1 | RG16_SNorm    | Normal X   | Normal Y   | N/A        | N/A              | 
- | GBuffer 2 | RGBA8_UNorm   | Specular R | Specular G | Specular B | Roughness        |
- | Velocity  | RG16_SNorm    | Velocity X | Velocity Y | N/A        | N/A              |
- | Depth     | D24S8         | Depth      | Depth      | Depth      | Stencil          |
+ | GBuffer   | Format           | Channel R  | Channel G  | Channel B  | Channel A                             |
+ | :-------- | :--------------- | :--------  | :--------  | :--------  | :------------------------------------ |
+ | GBuffer 0 | RGBA16_SFloat    | Forward R  | Forward G  | Forward B  | Specular Occlusion / TAA Anti-flicker |
+ | GBuffer 1 | R11G11B10_UFloat | Normal X   | Normal Y   | Normal Z   | N/A                                   | 
+ | GBuffer 2 | RGBA8_UNorm      | Specular R | Specular G | Specular B | Linear Roughness                      |
+ | Velocity  | RG16_SNorm       | Velocity X | Velocity Y | N/A        | N/A                                   |
+ | Depth     | D24S8            | Depth      | Depth      | Depth      | Stencil                               |
 
  ## Render Pass Overview
 

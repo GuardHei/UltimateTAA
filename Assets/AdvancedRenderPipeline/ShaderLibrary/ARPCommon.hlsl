@@ -4,6 +4,9 @@
 #define KILL_MICRO_MOVEMENT
 #define MICRO_MOVEMENT_THRESHOLD (.01f * _ScreenSize.zw)
 
+#define SPEC_IBL_MAX_MIP 6u
+#define DIFF_IBL_MAX_MIP 11u
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
@@ -91,6 +94,7 @@ SAMPLER(sampler_point_clamp);
 SAMPLER(sampler_linear_clamp);
 
 TEXTURE2D(_RawColorTex);
+TEXTURE2D(_ColorTex);
 TEXTURE2D(_TAAColorTex);
 TEXTURE2D(_HdrColorTex);
 TEXTURE2D(_DisplayTex);
@@ -100,6 +104,8 @@ TEXTURE2D(_VelocityTex);
 TEXTURE2D(_GBuffer1);
 TEXTURE2D(_GBuffer2);
 TEXTURE2D(_ScreenSpaceCubemap);
+TEXTURE2D(_ScreenSpaceReflection);
+TEXTURE2D(_IndirectSpecular);
 
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);
@@ -122,6 +128,10 @@ SAMPLER(sampler_EmissiveMap);
 
 TEXTURE2D(_PreintegratedDGFLut);
 SAMPLER(sampler_PreintegratedDGFLut);
+TEXTURE2D(_PreintegratedDLut);
+SAMPLER(sampler_PreintegratedDLut);
+TEXTURE2D(_PreintegratedGFLut);
+SAMPLER(sampler_PreintegratedGFLut);
 
 TEXTURECUBE(_GlobalEnvMapSpecular);
 SAMPLER(sampler_GlobalEnvMapSpecular);
@@ -131,6 +141,28 @@ SAMPLER(sampler_GlobalEnvMapDiffuse);
 //////////////////////////////////////////
 // Built-in Utility Functions           //
 //////////////////////////////////////////
+
+// Convert from Clip space (-1..1) to NDC 0..1 space.
+// Note it doesn't mean we don't have negative value, we store negative or positive offset in NDC space.
+// Note: ((positionCS * 0.5 + 0.5) - (previousPositionCS * 0.5 + 0.5)) = (motionVector * 0.5)
+// PS: From Unity HDRP
+float2 EncodeMotionVector(float2 mv) {
+    return mv * .5f;
+}
+
+float2 DecodeMotionVector(float2 encoded) {
+    return encoded * 2.0f;
+}
+
+// Convert Normal from [-1, 1] to [0, 1]
+float3 EncodeNormal(float3 N) {
+    return N * .5f + .5f;
+}
+
+// Convert Normal from [0, 1] to [-1, 1]
+float3 DecodeNormal(float3 packed) {
+    return packed * 2.0f - 1.0f;
+}
 
 float4 VertexIDToPosCS(uint vertexID) {
     return float4(
@@ -167,8 +199,7 @@ float SampleCorrectedDepth(float2 uv) {
 }
 
 float3 SampleNormalWS(float2 uv) {
-    float2 packed = SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv).rg;
-    return UnpackNormalOctQuadEncode(packed);
+    return DecodeNormal(SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv).rgb);
 }
 
 float4 DepthToWorldPosFast(float depth, float3 ray) {
@@ -218,18 +249,6 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     return mv;
 }
 
-// Convert from Clip space (-1..1) to NDC 0..1 space.
-// Note it doesn't mean we don't have negative value, we store negative or positive offset in NDC space.
-// Note: ((positionCS * 0.5 + 0.5) - (previousPositionCS * 0.5 + 0.5)) = (motionVector * 0.5)
-// PS: From Unity HDRP
-float2 EncodeMotionVector(float2 mv) {
-    return mv * .5;
-}
-
-float2 DecodeMotionVector(float2 encoded) {
-    return encoded * 2.0;
-}
-
 //////////////////////////////////////////
 // PBR Utility Functions                //
 //////////////////////////////////////////
@@ -274,7 +293,7 @@ float ClampMinRoughness(float roughness) {
 
 // maxMipLevel: start from 0
 float LinearRoughnessToMipmapLevel(float linearRoughness, uint maxMipLevel) {
-    return linearRoughness * maxMipLevel;
+    // return linearRoughness * maxMipLevel;
     linearRoughness = linearRoughness * (1.7f - 0.7f * linearRoughness);
     return linearRoughness * maxMipLevel;
 }
@@ -484,7 +503,7 @@ float4 PrefilterEnvMap(TextureCube envMap, float resolution, float roughness, fl
 
 float3 SampleGlobalEnvMapDiffuse(float3 dir) {
     dir = RotateAroundYInDegrees(dir, _GlobalEnvMapRotation);
-    return _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, dir, 11u).rgb * _GlobalEnvMapExposure;
+    return _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, dir, DIFF_IBL_MAX_MIP).rgb * _GlobalEnvMapExposure;
 }
 
 float3 SampleGlobalEnvMapSpecular(float3 dir, float mipLevel) {
@@ -503,21 +522,21 @@ float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal) {
 }
 
 float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 albedo, float d) {
-    // float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, 11u).rgb;
+    // float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, DIFF_IBL_MAX_MIP).rgb;
     float3 indirectDiffuse = SampleGlobalEnvMapDiffuse(N);
     indirectDiffuse *= albedo * kD * d;
     return indirectDiffuse;
 }
 
-float3 EvaluateSpecularIBL(float3 kS, float3 R, float linearRoughness, float3 GFD, float energyCompensation) {
+float3 EvaluateSpecularIBL(float3 kS, float3 R, float linearRoughness, float3 GF, float3 energyCompensation) {
     // GFD = 1.0f;
-    // float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)).rgb;
-    float3 indirectSpecular = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, 11u));
-    indirectSpecular *= GFD * kS * energyCompensation;
+    // float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, SPEC_IBL_MAX_MIP)).rgb;
+    float3 indirectSpecular = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, SPEC_IBL_MAX_MIP));
+    indirectSpecular *= GF * kS * energyCompensation;
     return indirectSpecular;
 }
 
-float3 EvaluateIBL(float3 N, float3 R, float NdotV, float linearRoughness, float3 albedo, float3 f0, float4 lut, float energyCompensation) {
+float3 EvaluateIBL(float3 N, float3 R, float NdotV, float linearRoughness, float3 albedo, float3 f0, float4 lut, float3 energyCompensation) {
     float3 kS = F_SchlickRoughness(f0, NdotV, linearRoughness);
     float3 kD = 1.0f - kS;
     
@@ -527,16 +546,32 @@ float3 EvaluateIBL(float3 N, float3 R, float NdotV, float linearRoughness, float
     return indirectDiffuse + indirectSpecular;
 }
 
-float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, float3 specularColor) {
-    float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGFD.ggg, envGFD.rrr, specularColor);
-    energyCompensation = 1.0f + specularColor * (1.0f / envGFD.r - 1.0f);
+float3 CompensateDirectBRDF(float2 envGF, inout float3 energyCompensation, float3 specularColor) {
+    float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGF.ggg, envGF.rrr, specularColor);
+    energyCompensation = 1.0f + specularColor * (1.0f / envGF.r - 1.0f);
     
-    return float4(reflectionGF, envGFD.b);
+    return reflectionGF;
+}
+
+float4 CompensateDirectBRDF(float3 envGFD, inout float3 energyCompensation, float3 specularColor) {
+    float3 GF = CompensateDirectBRDF(envGFD.rg, energyCompensation, specularColor);
+    return float4(GF, envGFD.b);
 }
 
 float4 GetDGFFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
-    float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, 1.0f - roughness), 0).rgb;
+    float3 envGFD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDGFLut, sampler_PreintegratedDGFLut, float2(NdotV, roughness), 0).rgb;
     return CompensateDirectBRDF(envGFD, energyCompensation, specularColor);
+}
+
+float GetDFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
+    float2 envGD = SAMPLE_TEXTURE2D_LOD(_PreintegratedDLut, sampler_PreintegratedDLut, float2(NdotV, roughness), 0).rg;
+    energyCompensation = 1.0f + specularColor * (1.0f / envGD.r - 1.0f);
+    return envGD.g;
+}
+
+float3 GetGFFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
+    float2 envGF = SAMPLE_TEXTURE2D_LOD(_PreintegratedGFLut, sampler_PreintegratedGFLut, float2(NdotV, roughness), 0).rg;
+    return CompensateDirectBRDF(envGF, energyCompensation, specularColor);
 }
 
 #endif

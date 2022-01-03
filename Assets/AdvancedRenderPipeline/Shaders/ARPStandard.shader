@@ -33,8 +33,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 "LightMode" = "Forward"
             }
             
-            ZTest LEqual
-            ZWrite On
+            ZTest Equal
+            ZWrite Off
 			Cull [_Cull]
             
             HLSLPROGRAM
@@ -64,8 +64,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             };
 
             struct GBufferOutput {
-                float3 forward : SV_TARGET0;
-                float2 gbuffer1 : SV_TARGET1;
+                float4 forward : SV_TARGET0;
+                float3 gbuffer1 : SV_TARGET1;
                 float4 gbuffer2 : SV_TARGET2;
             };
 
@@ -94,7 +94,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
 
-                output.viewDirWS = normalize(_CameraPosWS - posWS);
+                output.viewDirWS = normalize(_CameraPosWS.xyz - posWS);
                 
                 float4 albedoST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoMap_ST);
                 output.baseUV = input.baseUV * albedoST.xy + albedoST.zw;
@@ -146,9 +146,10 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
                 float3 diffuse = (1.0 - metallic) * albedo;
                 float3 f0 = GetF0(albedo, metallic);
-
+                
                 float3 energyCompensation;
-                float4 lut = GetDGFFromLut(energyCompensation, f0, roughness, NdotV);
+                float lut = GetDFromLut(energyCompensation, f0, roughness, NdotV);
+                // lut = GetDGFFromLut(energyCompensation, f0, roughness, NdotV).a;
 
                 float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
                 float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, f0, energyCompensation);
@@ -168,18 +169,15 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 float3 R = reflect(-V, N);
 
-                float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut.a) * occlusion;
-                float3 indirectSpecular = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation) * ComputeHorizonSpecularOcclusion(R, normalWS);
+                float iblOcclusion = ComputeHorizonSpecularOcclusion(R, normalWS);
+
+                float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut) * min(occlusion, iblOcclusion);
                 
-                float3 indirectLighting = indirectDiffuse + indirectSpecular;
-                
-                // output.forward = indirectSpecular;
-                output.forward = directLighting + indirectLighting + emissive;
-                // output.forward = energyCompensation - 1.0f;
-                // output.forward = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation);
-                // output.forward = metallicSmoothness;
-                // output.forward = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, 11u)) * lut.rgb;
-                output.gbuffer1 = PackNormalOctQuadEncode(N);
+                output.forward = float4(directLighting + indirectDiffuse + emissive, iblOcclusion);
+                // output.forward = float4(indirectDiffuse, iblOcclusion);
+                // output.forward = float4(energyCompensation - 1.0f, 1.0f);
+                // output.gbuffer1 = PackNormalOctQuadEncode(N);
+                output.gbuffer1 = EncodeNormal(N);
                 output.gbuffer2 = float4(f0, linearRoughness);
                 return output;
             }

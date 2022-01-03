@@ -8,9 +8,9 @@ Shader "Advanced Render Pipeline/ARPSimpleSkybox" {
             ZWrite Off
         
             Tags {
-                "Queue"="Background"
-                "RenderType"="Background"
-                "PreviewType"="Skybox"
+                "Queue" = "Background"
+                "RenderType" = "Background"
+                "PreviewType" = "Skybox"
             }
 
             HLSLPROGRAM
@@ -21,7 +21,7 @@ Shader "Advanced Render Pipeline/ARPSimpleSkybox" {
             #include "ARPCommon.hlsl"
 
             struct VertexInput {
-                float4 posOS : POSITION;
+                float3 posOS : POSITION;
             };
 
             struct VertexOutput {

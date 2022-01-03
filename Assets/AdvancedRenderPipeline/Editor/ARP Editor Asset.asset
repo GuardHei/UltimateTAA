@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: ARP Editor Asset
   m_EditorClassIdentifier: 
   iblLutResolution: 1024
-  iblLutFormat: 52
+  separateLuts: 1
+  iblLutFormat: 24
+  diffuseLutFormat: 22
+  specularLutFormat: 22
   displayLutRefereces: 1
   referenceLut1: {fileID: 2800000, guid: e2e3e4fb8736241bc9bde57f001d4b86, type: 3}
   referenceLut2: {fileID: 2800000, guid: adffd39497e9940fc88d23b8cec40644, type: 3}

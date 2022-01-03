@@ -1,18 +1,36 @@
 #pragma kernel GenerateIBLLut
+#pragma kernel GenerateSeparateIBLLuts
 
 #include "ARPCommon.hlsl"
 
 float _Width;
 float _Height;
 RWTexture2D<float4> _ResultLut;
+RWTexture2D<float2> _DiffuseLut;
+RWTexture2D<float2> _SpecularLut;
 
 [numthreads(8, 8, 1)]
 void GenerateIBLLut(uint3 id : SV_DispatchThreadID) {
     float NdotV = ((float) id.x) / _Width;
     // float linearRoughness = 1.0f - ((float) id.y) / _Height;
-    float roughness = 1.0f - ((float) id.y) / _Height;
+    // float roughness = 1.0f - ((float) id.y) / _Height;
+    float roughness = ((float) id.y) / _Height;
     float linearRoughness = sqrt(roughness);
     
     _ResultLut[id.xy] = PrecomputeL_DFG(NdotV, linearRoughness);
     // _ResultLut[id.xy] = float4(NdotV, linearRoughness, 0, 1);
+} 
+
+[numthreads(8, 8, 1)]
+void GenerateSeparateIBLLuts(uint3 id : SV_DispatchThreadID) {
+    float NdotV = ((float) id.x) / _Width;
+    // float linearRoughness = 1.0f - ((float) id.y) / _Height;
+    // float roughness = 1.0f - ((float) id.y) / _Height;
+    float roughness = ((float) id.y) / _Height;
+    float linearRoughness = sqrt(roughness);
+    
+    float4 DFG = PrecomputeL_DFG(NdotV, linearRoughness);
+
+    _DiffuseLut[id.xy] = DFG.rb;
+    _SpecularLut[id.xy] = DFG.rg;
 }
