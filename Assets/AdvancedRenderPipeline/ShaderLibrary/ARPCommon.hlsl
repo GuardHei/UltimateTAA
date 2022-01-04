@@ -294,7 +294,7 @@ float ClampMinRoughness(float roughness) {
 // maxMipLevel: start from 0
 float LinearRoughnessToMipmapLevel(float linearRoughness, uint maxMipLevel) {
     // return linearRoughness * maxMipLevel;
-    linearRoughness = linearRoughness * (1.7f - 0.7f * linearRoughness);
+    linearRoughness = linearRoughness * (1.7f - .7f * linearRoughness);
     return linearRoughness * maxMipLevel;
 }
 
@@ -347,8 +347,23 @@ float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float lin
     return lightScatter * viewScatter * energyFactor;
 }
 
+float DisneyDiffuseMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2) {
+    float g = saturate(.18455f * log(2.0f / alphaG2 - 1.0f));
+    float f0 = LdotH + pow5(1.0f - LdotH);
+    float f1 = (1.0f - .75f * pow5(1.0f - NdotL)) * (1.0f - .75f * pow5(1.0f - NdotV));
+    float t = saturate(2.2f * g - .5f);
+    float fd = f0 + (f1 - f0) * t;
+    float fb = ((34.5f * g - 59.0f) * g + 24.5f) * LdotH * exp2(-max(73.2f * g - 21.2f, 8.9f) * sqrt(NdotH));
+    return max(fd + fb, .0f);
+}
+
 float CalculateFd(float NdotV, float NdotL, float LdotH, float linearRoughness) {
     float d = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
+    return d / PI;
+}
+
+float CalculateFdMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float linearRoughness) {
+    float d = DisneyDiffuseMultiScatter(NdotV, NdotL, NdotH, LdotH, linearRoughness);
     return d / PI;
 }
 

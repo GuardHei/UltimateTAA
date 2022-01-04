@@ -12,20 +12,15 @@ RWTexture2D<float2> _SpecularLut;
 [numthreads(8, 8, 1)]
 void GenerateIBLLut(uint3 id : SV_DispatchThreadID) {
     float NdotV = ((float) id.x) / _Width;
-    // float linearRoughness = 1.0f - ((float) id.y) / _Height;
-    // float roughness = 1.0f - ((float) id.y) / _Height;
     float roughness = ((float) id.y) / _Height;
     float linearRoughness = sqrt(roughness);
     
     _ResultLut[id.xy] = PrecomputeL_DFG(NdotV, linearRoughness);
-    // _ResultLut[id.xy] = float4(NdotV, linearRoughness, 0, 1);
 } 
 
 [numthreads(8, 8, 1)]
 void GenerateSeparateIBLLuts(uint3 id : SV_DispatchThreadID) {
     float NdotV = ((float) id.x) / _Width;
-    // float linearRoughness = 1.0f - ((float) id.y) / _Height;
-    // float roughness = 1.0f - ((float) id.y) / _Height;
     float roughness = ((float) id.y) / _Height;
     float linearRoughness = sqrt(roughness);
     

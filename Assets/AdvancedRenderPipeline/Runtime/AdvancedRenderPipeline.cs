@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using AdvancedRenderPipeline.Runtime.Cameras;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
@@ -99,7 +100,6 @@ namespace AdvancedRenderPipeline.Runtime {
 
 			foreach (var camera in cameras) {
 				var cameraRenderer = GetCameraRenderer(camera);
-				// Debug.Log(Time.frameCount + " " + camera.name);
 				cameraRenderer.PreUpdate();
 				cameraRenderer.SetResolutionAndRatio(screenWidth, screenHeight, 1f, 1f);
 				cameraRenderer.Render(context);

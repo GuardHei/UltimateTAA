@@ -151,13 +151,14 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float lut = GetDFromLut(energyCompensation, f0, roughness, NdotV);
                 // lut = GetDGFFromLut(energyCompensation, f0, roughness, NdotV).a;
 
-                float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
-                float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, f0, energyCompensation);
+                // float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
+                float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, linearRoughness);
+                // float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, f0, energyCompensation);
+                float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, f0);
 
                 float3 mainLighting = NdotL * _MainLight.color.rgb;
 
                 diffuse *= fd * mainLighting;
-                // diffuse += emission;
 
                 float3 specular = fr * mainLighting;
 
