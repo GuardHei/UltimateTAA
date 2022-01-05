@@ -146,6 +146,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			var matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix;
 			var invMatrixVP = matrixVP.inverse;
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, invMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_UNJITTERED_VP, matrixVP);
 
 			var aspect = camera.aspect;
 			var nearClip = camera.nearClipPlane;
@@ -231,7 +232,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		public void DrawStaticDepthStencilPrepass() {
 			SetRenderTarget(_velocityTex, _depthTex);
-			ClearRenderTarget(false, true);
+			ClearRenderTarget(true, true);
 			
 			ExecuteCommand(_cmd);
 			
@@ -244,14 +245,13 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		public void DrawDynamicDepthStencilPrepass() {
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
-			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_STENCIL, sortingSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
+			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortingSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
 			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.All ^ (RenderLayerManager.STATIC | RenderLayerManager.TERRAIN));
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 		}
 
 		public void SetupSkybox() {
-			_cmd.SetGlobalFloat(ShaderKeywordManager.GLOBAL_ENV_MAP_EXPOSURE, settings.globalEnvMapExposure);
 			_cmd.SetGlobalFloat(ShaderKeywordManager.GLOBAL_ENV_MAP_ROTATION, settings.globalEnvMapRotation);
 			_cmd.SetGlobalFloat(ShaderKeywordManager.SKYBOX_MIP_LEVEL, settings.skyboxMipLevel);
 		}
@@ -345,8 +345,16 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void TonemapPass() {
-			// _cmd.Blit(_hdrColorTex, _displayTex);
+
+			var colorGradeParams = new Vector4(
+				Mathf.Pow(2f, settings.colorSettings.postExposure), 
+				settings.colorSettings.contrast * .01f + 1f, 
+				settings.colorSettings.hueShift * (1f / 360f), 
+				settings.colorSettings.saturation * .01f + 1f);
+			
 			MaterialManager.TonemappingMat.SetInteger(ShaderKeywordManager.TONEMAPPING_MODE, (int) settings.tonemappingSettings.tonemappingMode);
+			MaterialManager.TonemappingMat.SetVector(ShaderKeywordManager.COLOR_GRADE_PARAMS, colorGradeParams);
+			MaterialManager.TonemappingMat.SetColor(ShaderKeywordManager.COLOR_FILTER, settings.colorSettings.colorFilter.linear);
 			_cmd.Blit(_hdrColorTex, _displayTex, MaterialManager.TonemappingMat, 0);
 			ExecuteCommand();
 		}
@@ -356,8 +364,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 #if !UNITY_EDITOR
 			_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
 #else
-			if (AdvancedRenderPipeline.settings.enableDebugView && this is not SceneViewCameraRenderer) { // this is ugly but convenient
-				switch (AdvancedRenderPipeline.settings.debugOutput) {
+			if (settings.enableDebugView && (this is not SceneViewCameraRenderer || settings.enableDebugViewInEditor)) { // this is ugly but convenient
+				switch (settings.debugOutput) {
 					case DebugOutput.Depth:
 						src = _depthTex;
 						_cmd.BlitDepth(src, BuiltinRenderTextureType.CameraTarget);

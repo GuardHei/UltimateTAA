@@ -1,4 +1,5 @@
 Shader "Hidden/ARPTonemapping" {
+    
     Properties {
         _MainTex("Texture", 2D) = "white" { }
     }
@@ -27,6 +28,53 @@ Shader "Hidden/ARPTonemapping" {
             };
 
             int _TonemappingMode;
+            float4 _ColorGradeParams;
+            float4 _ColorFilter;
+
+            float3 ColorGradePostExposure(float3 input) {
+                return input * _ColorGradeParams.x;
+            }
+
+            float3 ColorGradeContrast(float3 input) {
+                float3 output = LinearToLogC(input);
+                output = (output - ACEScc_MIDGRAY) * _ColorGradeParams.y + ACEScc_MIDGRAY;
+                output = LogCToLinear(output);
+                return output;
+            }
+
+            float3 ColorGradeFilter(float3 input) {
+                return input * _ColorFilter.rgb;
+            }
+
+            float3 ColorGradeHueShift(float3 input) {
+                float3 output = RgbToHsv(input);
+                float hue = output.x + _ColorGradeParams.z;
+                output.x = RotateHue(hue, .0f, 1.0f);
+                output = HsvToRgb(output);
+                return output;
+            }
+
+            float3 ColorGradeSaturation(float3 input) {
+                float luminance = Luminance(input);
+                return (input - luminance) * _ColorGradeParams.w + luminance;
+            }
+
+            float3 ColorGrade(float3 input) {
+                float3 output = input;
+
+                output = ColorGradePostExposure(output);
+                output = ColorGradeContrast(output);
+                output = ColorGradeFilter(output);
+                
+                output = max(output, .0f);
+
+                output = ColorGradeHueShift(output);
+                output = ColorGradeSaturation(output);
+
+                output = max(output, .0f);
+                
+                return output;
+            }
 
             VertexOutput TonemapVert(uint vertexID : SV_VertexID) {
                 VertexOutput output;
@@ -39,6 +87,8 @@ Shader "Hidden/ARPTonemapping" {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
                 float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, uv);
+
+                output.rgb = ColorGrade(output.rgb);
                 
                 if (_TonemappingMode == 1) output.rgb = AcesTonemap(unity_to_ACES(output.rgb));
                 else if (_TonemappingMode == 2) output.rgb = NeutralTonemap(output.rgb);

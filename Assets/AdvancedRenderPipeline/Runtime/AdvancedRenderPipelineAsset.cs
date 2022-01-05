@@ -25,8 +25,8 @@ namespace AdvancedRenderPipeline.Runtime {
 	public class AdvancedRenderPipelineSettings {
 		[Header("Editor")]
 		public bool enableDebugView;
+		public bool enableDebugViewInEditor;
 		public DebugOutput debugOutput;
-		public bool enablePostFXInEditor = true;
 		[Header("Batch Settings")]
 		public bool enableAutoInstancing = true;
 		public bool enableSRPBatching = true;
@@ -46,14 +46,14 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Cubemap globalEnvMapDiffuse;
 		public Cubemap globalEnvMapSpecular;
 		public Shader indirectSpecularShader;
-		[Range(.0f, 8.0f)]
-		public float globalEnvMapExposure = 1.0f;
 		[Range(.0f, 360.0f)]
 		public float globalEnvMapRotation;
 		[Range(.0f, 11.0f)]
 		public float skyboxMipLevel;
+		[Header("Anti Aliasing")]
+		public TemporalAntiAliasingSettings taaSettings;
 		[Header("Color Grading & Tonemapping")]
-		public ColorGradingSettings colorSettings;
+		public ColorGradingSettings colorSettings = new ColorGradingSettings { colorFilter = Color.white };
 		public TonemappingSettings tonemappingSettings;
 	}
 
@@ -97,7 +97,16 @@ namespace AdvancedRenderPipeline.Runtime {
 	}
 
 	[Serializable]
+	public struct TemporalAntiAliasingSettings {
+		[Range(0f, 1f)]
+		public float historyWeight;
+		public float minSharpness;
+		public float maxSharpness;
+	}
+
+	[Serializable]
 	public struct ColorGradingSettings {
+		[Range(-10f, 10f)]
 		public float postExposure;
 		[Range(-100f, 100f)]
 		public float contrast;

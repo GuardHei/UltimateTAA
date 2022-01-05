@@ -21,6 +21,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly ShaderTagId STENCIL = new ShaderTagId("Stencil");
 		public static readonly ShaderTagId DEPTH_STENCIL = new ShaderTagId("DepthStencil");
 		public static readonly ShaderTagId DEPTH_NORMAL = new ShaderTagId("DepthNormal");
+		public static readonly ShaderTagId MOTION_VECTORS = new ShaderTagId("MotionVectors");
 		public static readonly ShaderTagId SHADOW_CASTER = new ShaderTagId("ShadowCaster");
 		public static readonly ShaderTagId FORWARD = new ShaderTagId("Forward");
 	}

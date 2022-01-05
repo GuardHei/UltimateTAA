@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   settings:
     enableDebugView: 1
-    debugOutput: 0
-    enablePostFXInEditor: 1
+    enableDebugViewInEditor: 1
+    debugOutput: 3
     enableAutoInstancing: 1
     enableSRPBatching: 1
     blitShader: {fileID: 4800000, guid: 770f6fb14c9b4bab86e1be1af449fb0a, type: 3}
@@ -30,13 +30,16 @@ MonoBehaviour:
     globalEnvMapDiffuse: {fileID: 8900000, guid: e51fdd5f41a3f43abb924252c34d1fbd, type: 3}
     globalEnvMapSpecular: {fileID: 8900000, guid: 176063b10f7b745f4ba5fb659931f61f, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
-    globalEnvMapExposure: 1
     globalEnvMapRotation: 119
     skyboxMipLevel: 0.3
+    taaSettings:
+      historyWeight: 0
+      minSharpness: 0
+      maxSharpness: 0
     colorSettings:
-      postExposure: 0
+      postExposure: 0.55
       contrast: 0
-      colorFilter: {r: 0, g: 0, b: 0, a: 0}
+      colorFilter: {r: 1, g: 1, b: 1, a: 0}
       hueShift: 0
       saturation: 0
     tonemappingSettings:

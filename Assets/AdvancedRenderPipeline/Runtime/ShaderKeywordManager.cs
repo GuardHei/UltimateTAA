@@ -7,6 +7,7 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		public static readonly int CAMERA_DATA = Shader.PropertyToID("CameraData");
 		public static readonly int UNITY_MATRIX_I_VP = Shader.PropertyToID("unity_InvMatrixVP");
+		public static readonly int UNITY_MATRIX_UNJITTERED_VP = Shader.PropertyToID("_NonJitteredMatrixVP");
 
 		#endregion
 
@@ -37,7 +38,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int GLOBAL_ENV_MAP = Shader.PropertyToID("_GlobalEnvMap");
 		public static readonly int GLOBAL_ENV_MAP_SPECULAR = Shader.PropertyToID("_GlobalEnvMapSpecular");
 		public static readonly int GLOBAL_ENV_MAP_DIFFUSE = Shader.PropertyToID("_GlobalEnvMapDiffuse");
-		public static readonly int GLOBAL_ENV_MAP_EXPOSURE = Shader.PropertyToID("_GlobalEnvMapExposure");
 		public static readonly int GLOBAL_ENV_MAP_ROTATION = Shader.PropertyToID("_GlobalEnvMapRotation");
 		public static readonly int SKYBOX_MIP_LEVEL = Shader.PropertyToID("_SkyboxMipLevel");
 
@@ -66,6 +66,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		#region Color Grading & Tonemapping
 
 		public static readonly int TONEMAPPING_MODE = Shader.PropertyToID("_TonemappingMode");
+		public static readonly int COLOR_GRADE_PARAMS = Shader.PropertyToID("_ColorGradeParams");
+		public static readonly int COLOR_FILTER = Shader.PropertyToID("_ColorFilter");
 
 		#endregion
 	}

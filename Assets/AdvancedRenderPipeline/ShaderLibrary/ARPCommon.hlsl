@@ -13,13 +13,13 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Sampling.hlsl"
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
-#define UNITY_PREV_MATRIX_M prevObjectToWorld
+#define UNITY_PREV_MATRIX_M unity_MatrixPreviousM
 #define UNITY_MATRIX_I_M unity_WorldToObject
 #define UNITY_PREV_MATRIX_I_M prevWorldToObject
 #define UNITY_MATRIX_V unity_MatrixV
 #define UNITY_MATRIX_VP unity_MatrixVP
 #define UNITY_MATRIX_I_VP unity_InvMatrixVP
-#define UNITY_MATRIX_UNJITTERED_VP unjitteredVP
+#define UNITY_MATRIX_UNJITTERED_VP _NonJitteredMatrixVP
 #define UNITY_MATRIX_P glstate_matrix_projection
 
 struct RTHandleProperties {
@@ -50,14 +50,17 @@ CBUFFER_START(UnityPerDraw)
 CBUFFER_END
 
 float4 _ProjectionParams;
-float4 unity_MotionVectorsParams;
 float4x4 unity_MatrixVP;
-float4x4 unjitteredVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
 float4x4 unity_InvMatrixVP;
+float4x4 _NonJitteredMatrixVP;
 
-float4x4 prevObjectToWorld;
+//X : Use last frame positions (right now skinned meshes are the only objects that use this
+//Y : Force No Motion
+//Z : Z bias value
+float4 unity_MotionVectorsParams;
+float4x4 unity_MatrixPreviousM;
 
 #include "ARPInstancing.hlsl"
 // #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
@@ -82,7 +85,6 @@ static float _AlphaCutOff;
 // Image Based Lighting Variables       //
 //////////////////////////////////////////
 
-float _GlobalEnvMapExposure;
 float _GlobalEnvMapRotation;
 float _SkyboxMipLevel;
 
@@ -237,14 +239,14 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     float2 mv = posNDC - prevPosNDC;
     
     #ifdef KILL_MICRO_MOVEMENT
-    mv.x = abs(mv.x) < MICRO_MOVEMENT_THRESHOLD.x ? 0 : mv.x;
-    mv.y = abs(mv.y) < MICRO_MOVEMENT_THRESHOLD.y ? 0 : mv.y;
-    mv = clamp(mv, -1.0 + MICRO_MOVEMENT_THRESHOLD, 1.0 - MICRO_MOVEMENT_THRESHOLD);
+    mv.x = abs(mv.x) < MICRO_MOVEMENT_THRESHOLD.x ? .0f : mv.x;
+    mv.y = abs(mv.y) < MICRO_MOVEMENT_THRESHOLD.y ? .0f : mv.y;
+    mv = clamp(mv, -1.0f + MICRO_MOVEMENT_THRESHOLD, 1.0f - MICRO_MOVEMENT_THRESHOLD);
     #else
-    mv = clamp(mv, -1.0, 1.0);
+    mv = clamp(mv, -1.0f + MICRO_MOVEMENT_THRESHOLD, 1.0f - MICRO_MOVEMENT_THRESHOLD);
     #endif
 
-    if (_ProjectionParams.x < 0.0) mv.y = -mv.y;
+    if (_ProjectionParams.x < .0f) mv.y = -mv.y;
 
     return mv;
 }
@@ -518,12 +520,12 @@ float4 PrefilterEnvMap(TextureCube envMap, float resolution, float roughness, fl
 
 float3 SampleGlobalEnvMapDiffuse(float3 dir) {
     dir = RotateAroundYInDegrees(dir, _GlobalEnvMapRotation);
-    return _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, dir, DIFF_IBL_MAX_MIP).rgb * _GlobalEnvMapExposure;
+    return _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, dir, DIFF_IBL_MAX_MIP).rgb;
 }
 
 float3 SampleGlobalEnvMapSpecular(float3 dir, float mipLevel) {
     dir = RotateAroundYInDegrees(dir, _GlobalEnvMapRotation);
-    return _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, dir, mipLevel).rgb * _GlobalEnvMapExposure;
+    return _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, dir, mipLevel).rgb;
 }
 
 float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal, float horizonFade) {

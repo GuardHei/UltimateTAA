@@ -61,10 +61,10 @@ Shader "Hidden/ARPDepth" {
         
         Pass {
             
-            Name "DefaultDynamicDepth"
+            Name "MotionVectors"
             
             Tags {
-                "LightMode" = "DepthStencil"
+                "LightMode" = "MotionVectors"
             }
             
             Stencil {
@@ -104,14 +104,19 @@ Shader "Hidden/ARPDepth" {
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
                 output.posCS = TransformObjectToHClip(input.posOS);
-                output.mv_posCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetObjectToWorldMatrix(), float4(input.posOS, 1.0)));
-                output.mv_prevPosCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetPrevObjectToWorldMatrix(), float4(input.prevPosOS, 1.0)));
+                float4 mv_posCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetObjectToWorldMatrix(), float4(input.posOS, 1.0)));
+                mv_posCS.z = .0f;
+                float4 mv_prevPosCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetPrevObjectToWorldMatrix(), float4(input.prevPosOS, 1.0)));
+                mv_prevPosCS = .0f;
+                output.mv_posCS = mv_posCS;
+                output.mv_prevPosCS = mv_prevPosCS;
                 return output;
             }
 
             float2 DepthFragment(DepthMVVertexOutput input) : SV_TARGET {
                 UNITY_SETUP_INSTANCE_ID(input);
                 float2 mv = EncodeMotionVector(CalculateMotionVector(input.posCS, input.mv_prevPosCS));
+                // return(input.mv_prevPosCS.z);
                 return mv;
             }
             
