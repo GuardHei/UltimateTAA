@@ -15,7 +15,7 @@ MonoBehaviour:
   settings:
     enableDebugView: 1
     enableDebugViewInEditor: 1
-    debugOutput: 0
+    debugOutput: 5
     enableAutoInstancing: 1
     enableSRPBatching: 1
     blitShader: {fileID: 4800000, guid: 770f6fb14c9b4bab86e1be1af449fb0a, type: 3}

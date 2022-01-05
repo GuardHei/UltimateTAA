@@ -67,6 +67,7 @@ namespace AdvancedRenderPipeline.Runtime {
 	public enum DebugOutput {
 		Default,
 		Depth,
+		Stencil,
 		GBuffer1,
 		GBuffer2,
 		Velocity,

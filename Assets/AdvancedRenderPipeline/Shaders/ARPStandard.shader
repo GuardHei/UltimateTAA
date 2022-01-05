@@ -23,9 +23,9 @@ Shader "Advanced Render Pipeline/ARPStandard" {
     
     SubShader {
         
-        UsePass "Hidden/ARPDepth/DynamicDepth"
-        
         UsePass "Hidden/ARPDepth/MotionVectors"
+        
+        UsePass "Hidden/ARPDepth/DynamicDepth"
         
         UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
         

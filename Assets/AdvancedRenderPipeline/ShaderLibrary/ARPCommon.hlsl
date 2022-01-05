@@ -7,6 +7,12 @@
 #define SPEC_IBL_MAX_MIP 6u
 #define DIFF_IBL_MAX_MIP 11u
 
+#if SHADER_API_D3D11
+#define STENCIL_CHANNEL g
+#else
+#define STENCIL_CHANNEL r
+#endif
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
@@ -15,10 +21,12 @@
 #define UNITY_MATRIX_M unity_ObjectToWorld
 #define UNITY_PREV_MATRIX_M unity_MatrixPreviousM
 #define UNITY_MATRIX_I_M unity_WorldToObject
-#define UNITY_PREV_MATRIX_I_M prevWorldToObject
+#define UNITY_PREV_MATRIX_I_M unity_MatrixPreviousMI
 #define UNITY_MATRIX_V unity_MatrixV
 #define UNITY_MATRIX_VP unity_MatrixVP
 #define UNITY_MATRIX_I_VP unity_InvMatrixVP
+#define UNITY_PREV_MATRIX_VP unity_MatrixPreviousVP // unjittered
+#define UNITY_PREV_MATRIX_I_VP unity_InvMatrixPreviousVP // unjittered
 #define UNITY_MATRIX_UNJITTERED_VP _NonJitteredMatrixVP
 #define UNITY_MATRIX_P glstate_matrix_projection
 
@@ -44,9 +52,11 @@ CBUFFER_END
 CBUFFER_START(UnityPerDraw)
     float4x4 unity_ObjectToWorld;
     float4x4 unity_WorldToObject;
-    float4x4 prevWorldToObject;
     float4 unity_LODFade;
-    real4 unity_WorldTransformParams;
+    float4 unity_WorldTransformParams;
+    float4x4 unity_MatrixPreviousM;
+    float4x4 unity_MatrixPreviousMI;
+    float4 unity_MotionVectorsParams; // X : Use last frame positions (right now skinned meshes are the only objects that use this; Y : Force No Motion; Z : Z bias value
 CBUFFER_END
 
 float4 _ProjectionParams;
@@ -54,13 +64,9 @@ float4x4 unity_MatrixVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
 float4x4 unity_InvMatrixVP;
+float4x4 unity_MatrixPreviousVP;
+float4x4 unity_InvMatrixPreviousVP;
 float4x4 _NonJitteredMatrixVP;
-
-//X : Use last frame positions (right now skinned meshes are the only objects that use this
-//Y : Force No Motion
-//Z : Z bias value
-float4 unity_MotionVectorsParams;
-float4x4 unity_MatrixPreviousM;
 
 #include "ARPInstancing.hlsl"
 // #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
@@ -101,7 +107,7 @@ TEXTURE2D(_TAAColorTex);
 TEXTURE2D(_HdrColorTex);
 TEXTURE2D(_DisplayTex);
 TEXTURE2D(_DepthTex);
-TEXTURE2D(_StencilTex);
+Texture2D<uint2> _StencilTex;
 TEXTURE2D(_VelocityTex);
 TEXTURE2D(_GBuffer1);
 TEXTURE2D(_GBuffer2);

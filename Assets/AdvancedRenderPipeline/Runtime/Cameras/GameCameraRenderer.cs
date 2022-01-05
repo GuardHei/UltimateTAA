@@ -145,8 +145,15 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 			var matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix;
 			var invMatrixVP = matrixVP.inverse;
+			
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, invMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? matrixVP : _prevMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? invMatrixVP : _prevInvMatrixVP);
+			
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_UNJITTERED_VP, matrixVP);
+
+			_prevMatrixVP = matrixVP;
+			_prevInvMatrixVP = invMatrixVP;
 
 			var aspect = camera.aspect;
 			var nearClip = camera.nearClipPlane;
@@ -162,7 +169,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			var topLeft = fwdDir + upDir - rightDir;
 			var topRight = fwdDir + upDir + rightDir * 3f;
 			var bottomLeft = fwdDir - upDir * 3f - rightDir;
-			// var bottomRight = fwdDir - upDir + dRightDir;
+			// var bottomRight = fwdDir - upDir * 3f + rightDir * 3f;
 
 			var zBufferParams = new float4((farClip - nearClip) / nearClip,  1f, (farClip - nearClip) / (nearClip * farClip), 1f / farClip);
 			
@@ -170,25 +177,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_frustumCornersWS.SetRow(1, new float4(bottomLeft, .0f));
 			_frustumCornersWS.SetRow(2, new float4(topRight, .0f));
 			_frustumCornersWS.SetRow(3, zBufferParams);
-			
-			// Debug.Log(topLeft + " | " + bottomLeft + " | " + bottomRight);
-
-			/*
-			var fwdDir = _cameraFwdWS * farClip;
-			var upDir = _cameraUpWS * farHalfFovTan;
-			var rightDir = _cameraRightWS * farHalfFovTan * aspect;
-			
-			var topLeft = fwdDir + upDir - rightDir;
-			var topRight = fwdDir + upDir + rightDir;
-			var bottomRight = fwdDir - upDir + rightDir;
-			var bottomLeft = fwdDir - upDir - rightDir;
-			
-			// align like this to avoid branching on shader side
-			_frustumCornersWS.SetRow(0, new float4(topLeft, .0f));
-			_frustumCornersWS.SetRow(0, new float4(topRight, .0f));
-			_frustumCornersWS.SetRow(0, new float4(bottomRight, .0f));
-			_frustumCornersWS.SetRow(0, new float4(bottomLeft, .0f));
-			*/
 
 			_cameraData[0] = new CameraData {
 				cameraPosWS = new float4(_cameraPosWS, .0f),
@@ -256,7 +244,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			// Assume RT is correctly set by the previous step
 
 			var sortSettings = new SortingSettings(camera) { criteria = SortingCriteria.OptimizeStateChanges };
-			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortSettings) { enableInstancing = settings.enableAutoInstancing };
+			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
+			drawSettings.SetShaderPassName(0, ShaderTagManager.MOTION_VECTORS);
 			var filterSettings = new FilteringSettings(RenderQueueRange.opaque);
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
@@ -343,7 +332,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cmd.SetGlobalTexture(ShaderKeywordManager.INDIRECT_SPECULAR, _indirectSpecular);
 			_cmd.FullScreenPass(_colorTex, MaterialManager.IntegrateOpaqueLightingMat, MaterialManager.INTEGRATE_OPAQUE_LIGHTING_PASS);
 			ExecuteCommand();
-			
 		}
 
 		public void DrawPostFXPass() {
@@ -384,6 +372,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 					case DebugOutput.Depth:
 						src = _depthTex;
 						_cmd.BlitDepth(src, BuiltinRenderTextureType.CameraTarget);
+						break;
+					case DebugOutput.Stencil:
+						src = _depthTex;
+						_cmd.BlitDebugStencil(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					case DebugOutput.GBuffer1:
 						src = _gbuffer1Tex;

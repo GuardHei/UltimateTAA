@@ -136,39 +136,45 @@ Shader "Hidden/ARPDepth" {
             
             #include "ARPCommon.hlsl"
 
-            struct DepthMVVertexInput {
+            struct MVVertexInput {
                 float3 posOS : POSITION;
                 float3 prevPosOS : TEXCOORD4;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            struct DepthMVVertexOutput {
+            struct MVVertexOutput {
                 float4 posCS : SV_POSITION;
                 float4 mv_posCS : TEXCOORD0;
                 float4 mv_prevPosCS : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            DepthMVVertexOutput MVVertex(DepthMVVertexInput input) {
-                DepthMVVertexOutput output;
+            MVVertexOutput MVVertex(MVVertexInput input) {
+                MVVertexOutput output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
-                output.posCS = TransformObjectToHClip(input.posOS);
-                float4 mv_posCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetObjectToWorldMatrix(), float4(input.posOS, 1.0)));
-                mv_posCS.z = .0f;
-                float4 mv_prevPosCS = mul(UNITY_MATRIX_UNJITTERED_VP, mul(GetPrevObjectToWorldMatrix(), float4(input.prevPosOS, 1.0)));
-                mv_prevPosCS.z = .0f;
+                float4 posWS = mul(GetObjectToWorldMatrix(), float4(input.posOS, 1.0f));
+                // output.posCS = TransformObjectToHClip(input.posOS);
+                output.posCS = mul(GetWorldToHClipMatrix(), posWS);
+                float4 mv_posCS = mul(UNITY_MATRIX_UNJITTERED_VP, posWS);
+                // mv_posCS.z = .0f;
+                float4 prevPosOS = unity_MotionVectorsParams.x == 1 ? float4(input.prevPosOS, 1.0f) : float4(input.posOS, 1.0f);
+                float4 mv_prevPosCS = mul(UNITY_PREV_MATRIX_VP, mul(GetPrevObjectToWorldMatrix(), prevPosOS));
+                // mv_prevPosCS.z = .0f;
                 output.mv_posCS = mv_posCS;
                 output.mv_prevPosCS = mv_prevPosCS;
                 return output;
             }
 
-            float2 MVFragment(DepthMVVertexOutput input) : SV_TARGET {
+            float2 MVFragment(MVVertexOutput input) : SV_TARGET {
                 UNITY_SETUP_INSTANCE_ID(input);
+
+                if (unity_MotionVectorsParams.y == .0f) return float2(.0f, .0f);
+                
                 float2 mv = EncodeMotionVector(CalculateMotionVector(input.posCS, input.mv_prevPosCS));
                 // return(input.mv_prevPosCS.z);
-
-                mv = float2(.5f, .5f);
+                // mv = float2(1, 0);
+                mv.r = .0f;
                 return mv;
             }
             

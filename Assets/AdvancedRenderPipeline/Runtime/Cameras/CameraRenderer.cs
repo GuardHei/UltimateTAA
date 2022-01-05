@@ -50,6 +50,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         protected float3 _cameraUpWS;
         protected float3 _cameraRightWS;
         protected Matrix4x4 _frustumCornersWS;
+        protected Matrix4x4 _prevMatrixVP;
+        protected Matrix4x4 _prevInvMatrixVP;
 
         public abstract void Render(ScriptableRenderContext context);
 
@@ -59,6 +61,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             _frameNum++;
             _lastRenderOutputRes = OutputRes;
             _lastRenderRatio = Ratio;
+        }
+
+        public virtual void ResetFrameHistory() {
+            _frameNum = 0;
         }
 
         #region Command Buffer Utils
