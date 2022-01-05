@@ -6,6 +6,8 @@ using UnityEngine.Rendering;
 namespace AdvancedRenderPipeline.Runtime {
 	public static class ShaderTagManager {
 
+		#region ShaderTagIds
+		
 		public static readonly ShaderTagId[] LEGACY_SHADER_TAGS = {
 			new ShaderTagId("Always"),
 			new ShaderTagId("ForwardBase"),
@@ -18,11 +20,18 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly ShaderTagId NONE = ShaderTagId.none;
 		public static readonly ShaderTagId SRP_DEFAULT_UNLIT = new ShaderTagId("SRPDefaultUnlit");
 		public static readonly ShaderTagId DEPTH = new ShaderTagId("Depth");
-		public static readonly ShaderTagId STENCIL = new ShaderTagId("Stencil");
-		public static readonly ShaderTagId DEPTH_STENCIL = new ShaderTagId("DepthStencil");
-		public static readonly ShaderTagId DEPTH_NORMAL = new ShaderTagId("DepthNormal");
+		public static readonly ShaderTagId OCCLUDER_DEPTH = new ShaderTagId("OccluderDepth");
 		public static readonly ShaderTagId MOTION_VECTORS = new ShaderTagId("MotionVectors");
 		public static readonly ShaderTagId SHADOW_CASTER = new ShaderTagId("ShadowCaster");
 		public static readonly ShaderTagId FORWARD = new ShaderTagId("Forward");
+		public static readonly ShaderTagId OPAQUE_FORWARD = new ShaderTagId("OpaqueForward");
+		
+		#endregion
+
+		#region Shader Pass Names
+
+		public const string MOTION_VECTORS_PASS = "MotionVectors";
+
+		#endregion
 	}
 }

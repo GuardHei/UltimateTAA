@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
 namespace AdvancedRenderPipeline.Runtime {
 	[CreateAssetMenu(fileName = "ARP Asset", menuName = "Advanced Render Pipeline/ARP Asset")]
@@ -15,6 +14,14 @@ namespace AdvancedRenderPipeline.Runtime {
 			get {
 				if (standardShader == null) standardShader = Shader.Find("Advanced Render Pipeline/ARPStandard");
 				return standardShader;
+			}
+		}
+
+		public override Material defaultMaterial {
+			get {
+				var mat = new Material(defaultShader);
+				mat.SetShaderPassEnabled(ShaderTagManager.MOTION_VECTORS_PASS, false);
+				return mat;
 			}
 		}
 

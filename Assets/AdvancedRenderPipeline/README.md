@@ -21,7 +21,14 @@
  |  10   | Alpha   |
  |  11   | Custom  |
 
- ### Bits 2 - 7
+ ### Bit 2
+
+ Reserved to exclude pixels from static velocity calculation. Can be used as custom bit after the velocity passes.
+
+ 1: Already calculated dynamic velocity
+ 0: Still requires the full screen static velocity pass
+
+ ### Bits 3 - 7
 
  Unused
 
@@ -37,24 +44,58 @@
 
  ## Render Pass Overview
 
- ### Static Depth Stencil Prepass
+ ### Occluder Depth Stencil Prepass
 
-    Draw depth and stencil of all static objects.
+    Draw depth and stencil of all occluder objects.
  
- ### Dynamic Depth Stencil Prepass with Motion Vector
+ ### Depth Stencil Prepass
 
-    Draw depth and stencil of all dynamic objects. For certain materials, output motion vectors to the velocity texture.
+    Draw depth and stencil of all the rest objects.
 
- ### Static Motion Vector Pass
+ ### Dynamic Velocity Pass (WIP)
+
+    Draw the velocity of the dynamic objects, toggle stencil[2] to 1.
+
+ ### Static Velocity Pass (Roadmap)
     
-    Draw motion vectors of the static objects, using stencil[1:0] to kill dynamic pixels.
+    Draw the velocity of the static objects, using stencil[2] to kill dynamic pixels.
 
- ### Directional Light Shadowmap Pass
+ ### Directional Light Shadowmap Pass (Roadmap)
 
     Draw shadowmap of the main directional light.
- 
- ### Forward Lighting Pass
 
-    Shade forward materials. Output lighting result to GBuffer 0. Output normalized normals (Oct Quad Encode) to GBuffer 1. Output specular color and roughness to GBuffer 2.
+ ### Forward Opaque Lighting Pass
 
- ###
+    Shade forward opaque materials. Output lighting (direct lighting + indirect diffuse + emissive) result and specular occlusion to RawColorTex. Output world space normal to GBuffer 1. Output specular color and linear roughness to GBuffer 2.
+
+ ### Specular Image Based Lighting Pass
+
+    Evaluate specular IBL.
+
+ ### Screen Space Reflection Pass (Roadmap)
+
+    Compute screen space reflection, output mixing intensity in the alpha channel.
+
+ ### Integrate Indirect Specular Pass
+
+    Mix IBL and SSR results together.
+
+### Integrate Opaque Lighting Pass
+
+   Integrate indirect specular result back the lighting buffer, output to ColorTex.
+
+### Skybox Pass
+
+   Draw Skybox Pass.
+
+### Forward Transparent Lighting Pass (Roadmap)
+
+   Shade forward transparent materials. Evaluate specular IBL within the forward pass.
+
+### Resolve Temporal Antialiasing Pass (WIP)
+
+   Resolve taa.
+
+### Tonemap Pass
+
+   Color grade and tonemap.

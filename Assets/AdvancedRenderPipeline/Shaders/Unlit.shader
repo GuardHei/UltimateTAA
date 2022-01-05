@@ -8,14 +8,12 @@ Shader "Advanced Render Pipeline/Unlit" {
     
     SubShader {
         
-        UsePass "Hidden/ARPDepth/MotionVectors"
-        
-        UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
+        UsePass "Hidden/ARPDepth/DynamicDepth"
         
         Pass {
             
             Tags {
-                "LightMode" = "Forward"
+                "LightMode" = "OpaqueForward"
             }
             
             ZTest Equal
@@ -52,7 +50,7 @@ Shader "Advanced Render Pipeline/Unlit" {
                 return output;
             }
 
-            float4 UnlitFragment() : SV_TARGET0 {
+            float4 UnlitFragment(BasicVertexOutput input) : SV_TARGET0 {
                 UNITY_SETUP_INSTANCE_ID(input);
                 float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
                 return color;

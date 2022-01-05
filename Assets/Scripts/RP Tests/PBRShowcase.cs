@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
+using AdvancedRenderPipeline.Runtime;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace RP_Tests {
 	[ExecuteInEditMode]

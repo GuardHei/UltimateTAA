@@ -23,6 +23,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
     
     SubShader {
         
+        UsePass "Hidden/ARPDepth/DynamicDepth"
+        
         UsePass "Hidden/ARPDepth/MotionVectors"
         
         UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
@@ -30,7 +32,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         Pass {
             
             Tags {
-                "LightMode" = "Forward"
+                "LightMode" = "OpaqueForward"
             }
             
             ZTest Equal
@@ -186,4 +188,6 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             ENDHLSL
         }
     }
+    
+    CustomEditor "AdvancedRenderPipeline.Editor.ShaderGUIs.MVShaderGUI"
 }

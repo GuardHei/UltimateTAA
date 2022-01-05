@@ -78,14 +78,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			beforeCull?.Invoke();
 
 			Cull();
+			SetupSkybox();
 
 			beforeFirstPass?.Invoke();
 			
 			DrawShadowPass();
-
-			DrawDepthStencilPrepass();
-
-			SetupSkybox();
+			DrawDepthPrepass();
+			DrawVelocityPass();
+			
 			SetupLights();
 			
 			DrawOpaqueLightingPass();
@@ -225,30 +225,45 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cullingResults = _context.Cull(ref cullingParameters);
 		}
 
-		public void DrawDepthStencilPrepass() {
-			DrawStaticDepthStencilPrepass();
-			DrawDynamicDepthStencilPrepass();
+		public void DrawDepthPrepass() {
+			DrawOccluderDepthPrepass();
+			DrawRestDepthPrepass();
 		}
 
-		public void DrawStaticDepthStencilPrepass() {
+		public void DrawOccluderDepthPrepass() {
+			
+		}
+
+		public void DrawRestDepthPrepass() {
 			SetRenderTarget(_velocityTex, _depthTex);
 			ClearRenderTarget(true, true);
 			
 			ExecuteCommand(_cmd);
 			
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
-			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH_STENCIL, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
-			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.STATIC | RenderLayerManager.TERRAIN);
+			var drawSettings = new DrawingSettings(ShaderTagManager.DEPTH, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
+			var filterSettings = new FilteringSettings(RenderQueueRange.opaque);
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 		}
 
-		public void DrawDynamicDepthStencilPrepass() {
-			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
-			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortingSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
-			var filterSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask: RenderLayerManager.All ^ (RenderLayerManager.STATIC | RenderLayerManager.TERRAIN));
+		public void DrawVelocityPass() {
+			DrawDynamicVelocityPass();
+			DrawStaticVelocityPass();
+		}
+
+		public void DrawDynamicVelocityPass() {
+			// Assume RT is correctly set by the previous step
+
+			var sortSettings = new SortingSettings(camera) { criteria = SortingCriteria.OptimizeStateChanges };
+			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortSettings) { enableInstancing = settings.enableAutoInstancing };
+			var filterSettings = new FilteringSettings(RenderQueueRange.opaque);
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
+		}
+
+		public void DrawStaticVelocityPass() {
+			
 		}
 
 		public void SetupSkybox() {
@@ -283,7 +298,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			ExecuteCommand();
 			
 			var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.OptimizeStateChanges };
-			var drawSettings = new DrawingSettings(ShaderTagManager.FORWARD, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
+			var drawSettings = new DrawingSettings(ShaderTagManager.OPAQUE_FORWARD, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
 			var filterSettings = new FilteringSettings(RenderQueueManager.OPAQUE_QUEUE);
 
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
