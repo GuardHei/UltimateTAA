@@ -37,9 +37,12 @@ namespace AdvancedRenderPipeline.Runtime {
 		[Header("Batch Settings")]
 		public bool enableAutoInstancing = true;
 		public bool enableSRPBatching = true;
+		public bool enableMVAutoInstancing;
+		public bool enableMVSRPBatching;
 		[Header("Builtin Shaders")]
 		public Shader blitShader;
 		public Shader integrateOpaqueLightingShader;
+		public Shader cameraMotionShader;
 		[Header("Transparency"), Min(0f)]
 		public float alphaTestDepthCutOff = .001f;
 		[Header("Shadow"), Min(0f)]

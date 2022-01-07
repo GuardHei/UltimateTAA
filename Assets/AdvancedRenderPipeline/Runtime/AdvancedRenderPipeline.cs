@@ -103,6 +103,7 @@ namespace AdvancedRenderPipeline.Runtime {
 				cameraRenderer.PreUpdate();
 				cameraRenderer.SetResolutionAndRatio(screenWidth, screenHeight, 1f, 1f);
 				cameraRenderer.Render(context);
+				cameraRenderer.PostUpdate();
 			}
 		}
 

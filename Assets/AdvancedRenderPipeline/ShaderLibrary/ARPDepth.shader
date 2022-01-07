@@ -172,9 +172,11 @@ Shader "Hidden/ARPDepth" {
                 if (unity_MotionVectorsParams.y == .0f) return float2(.0f, .0f);
                 
                 float2 mv = EncodeMotionVector(CalculateMotionVector(input.posCS, input.mv_prevPosCS));
+                return mv;
+                if (mv.g > 0) mv = float2(1, 1);
+                else mv = float2(0, 1);
                 // return(input.mv_prevPosCS.z);
                 // mv = float2(1, 0);
-                mv.r = .0f;
                 return mv;
             }
             

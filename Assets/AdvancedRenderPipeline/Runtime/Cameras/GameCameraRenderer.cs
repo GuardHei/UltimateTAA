@@ -143,17 +143,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			}
 			*/
 
-			var matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix;
-			var invMatrixVP = matrixVP.inverse;
-			
-			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, invMatrixVP);
-			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? matrixVP : _prevMatrixVP);
-			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? invMatrixVP : _prevInvMatrixVP);
-			
-			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_UNJITTERED_VP, matrixVP);
+			_matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix;
+			_invMatrixVP = _matrixVP.inverse;
 
-			_prevMatrixVP = matrixVP;
-			_prevInvMatrixVP = invMatrixVP;
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, _invMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _matrixVP : _prevMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invMatrixVP : _prevInvMatrixVP);
+			
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_UNJITTERED_VP, _matrixVP);
 
 			var aspect = camera.aspect;
 			var nearClip = camera.nearClipPlane;
@@ -236,7 +233,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void DrawVelocityPass() {
-			DrawDynamicVelocityPass();
+			// DrawDynamicVelocityPass();
 			DrawStaticVelocityPass();
 		}
 
@@ -244,15 +241,16 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			// Assume RT is correctly set by the previous step
 
 			var sortSettings = new SortingSettings(camera) { criteria = SortingCriteria.OptimizeStateChanges };
-			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortSettings) { enableInstancing = settings.enableAutoInstancing, perObjectData = PerObjectData.MotionVectors };
-			drawSettings.SetShaderPassName(0, ShaderTagManager.MOTION_VECTORS);
-			var filterSettings = new FilteringSettings(RenderQueueRange.opaque);
+			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortSettings) { enableInstancing = settings.enableMVAutoInstancing, perObjectData = PerObjectData.MotionVectors };
+			// drawSettings.SetShaderPassName(0, ShaderTagManager.MOTION_VECTORS);
+			var filterSettings = new FilteringSettings(RenderQueueRange.opaque) { excludeMotionVectorObjects = false };
 			
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 		}
 
 		public void DrawStaticVelocityPass() {
-			
+			_cmd.FullScreenPass(MaterialManager.CameraMotionMat, MaterialManager.CAMERA_MOTION_VECTORS_PASS);
+			ExecuteCommand();
 		}
 
 		public void SetupSkybox() {
@@ -365,7 +363,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		public void FinalBlit() {
 			RTHandle src = _displayTex;
 #if !UNITY_EDITOR
-			_cmd.ScaledBlit(src, BuiltinRenderTextureType.CameraTarget);
+			_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 #else
 			if (settings.enableDebugView && (this is not SceneViewCameraRenderer || settings.enableDebugViewInEditor)) { // this is ugly but convenient
 				switch (settings.debugOutput) {
@@ -387,7 +385,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 						break;
 					case DebugOutput.Velocity:
 						src = _velocityTex;
-						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
+						// _cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
+						_cmd.BlitDebugVelocity(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					case DebugOutput.ScreenSpaceCubemap:
 						src = _screenSpaceCubemap;
@@ -426,7 +425,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					default:
-						src = _displayTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 				}

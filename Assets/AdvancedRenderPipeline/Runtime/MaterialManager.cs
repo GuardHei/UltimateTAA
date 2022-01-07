@@ -73,6 +73,20 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 
 		private static Material integrateOpaqueLightingMat;
+
+		public static Material CameraMotionMat {
+			get {
+				if (cameraMotionMat == null) {
+					if (!AdvancedRenderPipeline.settings.cameraMotionShader) AdvancedRenderPipeline.settings.cameraMotionShader = Shader.Find("Hidden/ARPCameraMotion");
+					cameraMotionMat = new Material(AdvancedRenderPipeline.settings.cameraMotionShader) {
+						hideFlags = HideFlags.HideAndDontSave
+					};
+				}
+				return cameraMotionMat;
+			}
+		}
+
+		private static Material cameraMotionMat;
 		
 		#endregion
 
@@ -82,6 +96,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int SCREEN_SPACE_REFLECTION_PASS = IndirectSpecularMat.FindPass("ScreenSpaceReflection");
 		public static readonly int INTEGRATE_INDIRECT_SPECULAR_PASS = IndirectSpecularMat.FindPass("IntegrateIndirectSpecular");
 		public static readonly int INTEGRATE_OPAQUE_LIGHTING_PASS = IntegrateOpaqueLightingMat.FindPass("IntegrateOpaqueLighting");
+		public static readonly int CAMERA_MOTION_VECTORS_PASS = CameraMotionMat.FindPass("CameraMotionVectors");
 
 		#endregion
 	}

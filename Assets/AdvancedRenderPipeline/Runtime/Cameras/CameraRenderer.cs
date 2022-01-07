@@ -50,6 +50,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         protected float3 _cameraUpWS;
         protected float3 _cameraRightWS;
         protected Matrix4x4 _frustumCornersWS;
+        protected Matrix4x4 _matrixVP;
+        protected Matrix4x4 _invMatrixVP;
         protected Matrix4x4 _prevMatrixVP;
         protected Matrix4x4 _prevInvMatrixVP;
 
@@ -61,6 +63,11 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             _frameNum++;
             _lastRenderOutputRes = OutputRes;
             _lastRenderRatio = Ratio;
+        }
+
+        public virtual void PostUpdate() {
+            _prevMatrixVP = _matrixVP;
+            _prevInvMatrixVP = _invMatrixVP;
         }
 
         public virtual void ResetFrameHistory() {

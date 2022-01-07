@@ -212,13 +212,14 @@ float3 SampleNormalWS(float2 uv) {
 
 float4 DepthToWorldPosFast(float depth, float3 ray) {
     float3 worldPos = _CameraPosWS.xyz + Linear01Depth(depth, GetZBufferParams()) * ray;
-    return float4(worldPos, 0.0f);
+    return float4(worldPos, 1.0f);
 }
 
 float4 DepthToWorldPos(float depth, float2 uv) {
     float4 ndc = float4(uv.x * 2.0f - 1.0f, uv.y * 2.0f - 1.0f, depth, 1.0f);
     float4 worldPosAccurate = mul(UNITY_MATRIX_I_VP, ndc);
     worldPosAccurate /= worldPosAccurate.w;
+    worldPosAccurate.w = 1.0f;
     return worldPosAccurate;
 }
 
