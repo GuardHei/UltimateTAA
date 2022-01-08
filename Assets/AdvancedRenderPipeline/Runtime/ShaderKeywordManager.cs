@@ -50,16 +50,21 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int MAIN_TEXTURE = Shader.PropertyToID("_MainTex");
 		public static readonly int RAW_COLOR_TEXTURE = Shader.PropertyToID("_RawColorTex");
 		public static readonly int COLOR_TEXTURE = Shader.PropertyToID("_ColorTex");
-		public static readonly int TAA_COLOR_TEXTURE = Shader.PropertyToID("_TAAColorTex");
+		public static readonly int TAA_COLOR_TEXTURE = Shader.PropertyToID("_TaaColorTex");
+		public static readonly int PREV_TAA_COLOR_TEXTURE = Shader.PropertyToID("_PrevTaaColorTex");
 		public static readonly int HDR_COLOR_TEXTURE = Shader.PropertyToID("_HdrColorTex");
 		public static readonly int DISPLAY_TEXTURE = Shader.PropertyToID("_DisplayTex");
 		public static readonly int DEPTH_TEXTURE = Shader.PropertyToID("_DepthTex");
+		public static readonly int PREV_DEPTH_TEXTURE = Shader.PropertyToID("_PrevDepthTex");
 		public static readonly int STENCIL_TEXTURE = Shader.PropertyToID("_StencilTex");
+		public static readonly int PREV_STENCIL_TEXTURE = Shader.PropertyToID("_PrevStencilTex");
 		public static readonly int VELOCITY_TEXTURE = Shader.PropertyToID("_VelocityTex");
+		public static readonly int PREV_VELOCITY_TEXTURE = Shader.PropertyToID("_PrevVelocityTex");
 		public static readonly int GBUFFER_1_TEXTURE = Shader.PropertyToID("_GBuffer1");
 		public static readonly int GBUFFER_2_TEXTURE = Shader.PropertyToID("_GBuffer2");
 		public static readonly int SCREEN_SPACE_CUBEMAP = Shader.PropertyToID("_ScreenSpaceCubemap");
 		public static readonly int SCREEN_SPACE_REFLECTION = Shader.PropertyToID("_ScreenSpaceReflection");
+		public static readonly int PREV_SCREEN_SPACE_REFLECTION = Shader.PropertyToID("_PrevScreenSpaceReflection");
 		public static readonly int INDIRECT_SPECULAR = Shader.PropertyToID("_IndirectSpecular");
 		public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
 
@@ -70,6 +75,12 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int TONEMAPPING_MODE = Shader.PropertyToID("_TonemappingMode");
 		public static readonly int COLOR_GRADE_PARAMS = Shader.PropertyToID("_ColorGradeParams");
 		public static readonly int COLOR_FILTER = Shader.PropertyToID("_ColorFilter");
+
+		#endregion
+
+		#region Miscs
+
+		public static readonly int ENABLE_REPROJECTION = Shader.PropertyToID("_EnableReprojection");
 
 		#endregion
 	}

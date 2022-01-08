@@ -20,6 +20,7 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
             #pragma fragment Fragment
 
             #include "ARPCommon.hlsl"
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
             struct VertexOutput {
                 float4 posCS : SV_POSITION;
@@ -37,6 +38,10 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
                 float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, uv);
+
+                output = FastTonemap(output);
+
+                output = FastTonemapInvert(output);
 
                 return output;
             }

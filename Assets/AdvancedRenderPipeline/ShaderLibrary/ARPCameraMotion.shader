@@ -54,23 +54,6 @@ Shader "Hidden/ARPCameraMotion" {
 
                 float2 mv = EncodeMotionVector(CalculateMotionVector(posCS, prevPosCS));
                 
-                // mv = float2(.0f, 1.0f);
-
-                /*
-                float2 posH = posCS.xy / posCS.w;
-                float2 prePosH = prevPosCS.xy / prevPosCS.w;
-                
-                float2 posV = (posH.xy + 1.0f) / 2.0f;
-                float2 prevPosV = (prePosH.xy + 1.0f) / 2.0f;
-
-                #if UNITY_UV_STARTS_AT_TOP
-                posV.y = 1.0f - posV.y;
-                prevPosV.y = 1.0f - prevPosV.y;
-                #endif
-
-                float2 mv = posV - prevPosV;
-                */
-                
                 return mv;
             }
             

@@ -152,7 +152,7 @@ Shader "Hidden/ARPBlit" {
 
                 float3 output = float3(.0f, float(stencil) / 255.0f, .0f);
 
-                if ((stencil >> 2) == 1) output.r = 1.0f;
+                // if ((stencil >> 2) == 1) output.r = 1.0f;
                 
                 return output;
             }
@@ -205,6 +205,43 @@ Shader "Hidden/ARPBlit" {
                 
                 float2 output = SAMPLE_TEXTURE2D(_MainTex, sampler_point_clamp, uv).rg * 1.0f;
                 return VectorToColor(output);
+            }
+            
+            ENDHLSL
+        }
+        
+        Pass {
+            
+            Name "DebugPrevTAATex"
+            
+            Cull Off
+            ZWrite Off
+            ZTest Always
+            
+            HLSLPROGRAM
+
+            #pragma vertex BlitVert
+            #pragma fragment BlitFragment
+
+            #include "ARPCommon.hlsl"
+
+            struct VertexOutput {
+                float4 posCS : SV_POSITION;
+                float2 screenUV : VAR_SCREEN_UV;
+            };
+
+            VertexOutput BlitVert(uint vertexID : SV_VertexID) {
+                VertexOutput output;
+                output.posCS = VertexIDToPosCS(vertexID);
+                output.screenUV = VertexIDToScreenUV(vertexID);
+                return output;
+            }
+
+            float4 BlitFragment(VertexOutput input) : SV_TARGET {
+                float2 uv = input.screenUV;
+                if (_ProjectionParams.x < .0f) uv.y = 1.0f - uv.y;
+                
+                return SAMPLE_TEXTURE2D(_PrevTaaColorTex, sampler_point_clamp, uv);
             }
             
             ENDHLSL

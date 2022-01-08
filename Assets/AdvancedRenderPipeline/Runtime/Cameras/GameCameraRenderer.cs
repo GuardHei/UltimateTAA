@@ -356,7 +356,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			MaterialManager.TonemappingMat.SetInteger(ShaderKeywordManager.TONEMAPPING_MODE, (int) settings.tonemappingSettings.tonemappingMode);
 			MaterialManager.TonemappingMat.SetVector(ShaderKeywordManager.COLOR_GRADE_PARAMS, colorGradeParams);
 			MaterialManager.TonemappingMat.SetColor(ShaderKeywordManager.COLOR_FILTER, settings.colorSettings.colorFilter.linear);
-			_cmd.Blit(_hdrColorTex, _displayTex, MaterialManager.TonemappingMat, 0);
+			_cmd.Blit(_hdrColorTex, _displayTex, MaterialManager.TonemappingMat, MaterialManager.TONEMAPPING_PASS);
 			ExecuteCommand();
 		}
 
@@ -412,13 +412,18 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 						src = _colorTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
-					case DebugOutput.TAAColor:
+					case DebugOutput.TaaColor:
 						src = _taaColorTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
-					case DebugOutput.TAAColorHistory:
+					case DebugOutput.TaaColorHistory:
 						src = _prevTaaColorTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
+						/*
+						_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_TAA_COLOR_TEXTURE, _prevTaaColorTex);
+						_cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+						_cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMat, (int) BlitPass.DebugPrevTAATex, MeshTopology.Triangles, 3);
+						*/
 						break;
 					case DebugOutput.HDRColor:
 						src = _hdrColorTex;
@@ -448,7 +453,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 					filterMode: FilterMode.Bilinear, name: "ColorTex"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.TAA_COLOR_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16B16A16_SFloat,
-					filterMode: FilterMode.Bilinear, name: "TaaColorTex"), 2);
+					filterMode: FilterMode.Bilinear, name: "TaaColorTex " + i), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.HDR_COLOR_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16B16A16_SFloat,
 					filterMode: FilterMode.Bilinear, name: "HDRColorTex"), 1);
@@ -457,9 +462,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 					filterMode: FilterMode.Bilinear, name: "DisplayColorTex"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.DEPTH_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.None,
-					depthBufferBits: DepthBits.Depth32, name: "DepthTex"), 2);
+					depthBufferBits: DepthBits.Depth32, name: "DepthTex " + i), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.VELOCITY_TEXTURE,
-				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_SNorm, name: "VelocityTex"), 2);
+				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_SNorm, name: "VelocityTex " + i), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_1_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.B10G11R11_UFloatPack32, name: "GBuffer1"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_2_TEXTURE,
@@ -467,7 +472,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, 
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.B10G11R11_UFloatPack32, name: "ScreenSpaceCubemap"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 
-				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, name: "ScreenSpaceReflection"), 2);
+				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, name: "ScreenSpaceReflection " + i), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.INDIRECT_SPECULAR, 
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.B10G11R11_UFloatPack32, name: "IndirectSpecular"), 1);
 		}
@@ -480,22 +485,30 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void GetBuffers() {
+			
+			_historyBuffers.SwapAndSetReferenceSize(OutputRes.x, OutputRes.y);
+			
 			_rawColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.RAW_COLOR_TEXTURE, 0);
 			_colorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.COLOR_TEXTURE, 0);
 			_taaColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.TAA_COLOR_TEXTURE, 0);
-			_prevTaaColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.TAA_COLOR_TEXTURE, 1);
+			// _prevTaaColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.TAA_COLOR_TEXTURE, 1);
 			_hdrColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.HDR_COLOR_TEXTURE, 0);
 			_displayTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DISPLAY_TEXTURE, 0);
 			_depthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 0);
-			_prevDepthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 1);
+			// _prevDepthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 1);
 			_velocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 0);
-			_prevVelocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 1);
+			// _prevVelocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 1);
 			_gbuffer1Tex = _historyBuffers.GetFrameRT(ShaderKeywordManager.GBUFFER_1_TEXTURE, 0);
 			_gbuffer2Tex = _historyBuffers.GetFrameRT(ShaderKeywordManager.GBUFFER_2_TEXTURE, 0);
 			_screenSpaceCubemap = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, 0);
 			_screenSpaceReflection = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 0);
-			_prevScreenSpaceReflection = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 1);
+			// _prevScreenSpaceReflection = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 1);
 			_indirectSpecular = _historyBuffers.GetFrameRT(ShaderKeywordManager.INDIRECT_SPECULAR, 0);
+
+			_prevTaaColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.TAA_COLOR_TEXTURE, 1);
+			_prevDepthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 1);
+			_prevVelocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 1);
+			_prevScreenSpaceReflection = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 1);
 		}
 
 		public void ReleaseBuffers() { }

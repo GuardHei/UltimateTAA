@@ -103,16 +103,21 @@ SAMPLER(sampler_linear_clamp);
 
 TEXTURE2D(_RawColorTex);
 TEXTURE2D(_ColorTex);
-TEXTURE2D(_TAAColorTex);
+TEXTURE2D(_TaaColorTex);
+TEXTURE2D(_PrevTaaColorTex);
 TEXTURE2D(_HdrColorTex);
 TEXTURE2D(_DisplayTex);
 TEXTURE2D(_DepthTex);
+TEXTURE2D(_PrevDepthTex);
 Texture2D<uint2> _StencilTex;
+Texture2D<uint2> _PrevStencilTex;
 TEXTURE2D(_VelocityTex);
+TEXTURE2D(_PrevVelocityTex);
 TEXTURE2D(_GBuffer1);
 TEXTURE2D(_GBuffer2);
 TEXTURE2D(_ScreenSpaceCubemap);
 TEXTURE2D(_ScreenSpaceReflection);
+TEXTURE2D(_PrevScreenSpaceReflection);
 TEXTURE2D(_IndirectSpecular);
 
 TEXTURE2D(_MainTex);

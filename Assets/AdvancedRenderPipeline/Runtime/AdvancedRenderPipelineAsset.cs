@@ -80,8 +80,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		IndirectSpecular,
 		RawColor,
 		Color,
-		TAAColor,
-		TAAColorHistory,
+		TaaColor,
+		TaaColorHistory,
 		HDRColor
 	}
 
