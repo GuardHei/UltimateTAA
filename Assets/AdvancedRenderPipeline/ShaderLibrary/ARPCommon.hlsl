@@ -25,9 +25,10 @@
 #define UNITY_MATRIX_V unity_MatrixV
 #define UNITY_MATRIX_VP unity_MatrixVP
 #define UNITY_MATRIX_I_VP unity_InvMatrixVP
-#define UNITY_PREV_MATRIX_VP unity_MatrixPreviousVP // unjittered
-#define UNITY_PREV_MATRIX_I_VP unity_InvMatrixPreviousVP // unjittered
-#define UNITY_MATRIX_UNJITTERED_VP _NonJitteredMatrixVP
+#define UNITY_PREV_MATRIX_VP unity_MatrixPreviousVP // nonjittered
+#define UNITY_PREV_MATRIX_I_VP unity_InvMatrixPreviousVP // nonjittered
+#define UNITY_MATRIX_NONJITTERED_VP _NonJitteredMatrixVP
+#define UNITY_MATRIX_NONJITTERED_I_VP _InvNonJitteredMatrixVP;
 #define UNITY_MATRIX_P glstate_matrix_projection
 
 struct RTHandleProperties {
@@ -60,6 +61,7 @@ CBUFFER_START(UnityPerDraw)
 CBUFFER_END
 
 float4 _ProjectionParams;
+float4 _JitterParams;
 float4x4 unity_MatrixVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
@@ -67,6 +69,7 @@ float4x4 unity_InvMatrixVP;
 float4x4 unity_MatrixPreviousVP;
 float4x4 unity_InvMatrixPreviousVP;
 float4x4 _NonJitteredMatrixVP;
+float4x4 _InvNonJitteredMatrixVP;
 
 #include "ARPInstancing.hlsl"
 // #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"

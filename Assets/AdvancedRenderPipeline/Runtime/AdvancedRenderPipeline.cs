@@ -97,14 +97,24 @@ namespace AdvancedRenderPipeline.Runtime {
 
 			var screenWidth = Screen.width;
 			var screenHeight = Screen.height;
+			
+			BeginFrameRendering(context, cameras);
 
 			foreach (var camera in cameras) {
 				var cameraRenderer = GetCameraRenderer(camera);
 				cameraRenderer.PreUpdate();
 				cameraRenderer.SetResolutionAndRatio(screenWidth, screenHeight, 1f, 1f);
+				
+				BeginCameraRendering(context, camera);
+				
 				cameraRenderer.Render(context);
+				
+				EndCameraRendering(context, camera);
+				
 				cameraRenderer.PostUpdate();
 			}
+			
+			EndFrameRendering(context, cameras);
 		}
 
 		protected override void Dispose(bool disposing) {

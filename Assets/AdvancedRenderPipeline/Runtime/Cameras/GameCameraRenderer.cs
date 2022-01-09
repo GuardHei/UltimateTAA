@@ -119,6 +119,13 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public override void Setup() {
+			
+			_currJitter = _jitterPatterns[_frameNum % 8];
+			_currJitter *= settings.taaSettings.jitterSpread;
+			var taaJitter = new Vector4(_currJitter.x, _currJitter.y, _currJitter.x / InternalRes.x, _currJitter.y / InternalRes.y);
+			
+			ConfigureProjectionMatrix(_currJitter);
+			
 			_context.SetupCameraProperties(camera);
 
 			var transform = camera.transform;
@@ -143,32 +150,41 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			}
 			*/
 
-			_matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix;
+			var viewMatrix = camera.worldToCameraMatrix;
+			_matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * viewMatrix;
 			_invMatrixVP = _matrixVP.inverse;
+			_nonjitteredMatrixVP = GL.GetGPUProjectionMatrix(camera.nonJitteredProjectionMatrix, false) * viewMatrix;
+			_invNonJitteredMatrixVP = _nonjitteredMatrixVP.inverse;
+			
+			/*
+			Debug.Log("======");
+			Debug.Log("VP: \n" + _matrixVP.ToString("F3"));
+			Debug.Log("NonJittered VP: \n" + _nonjitteredMatrixVP.ToString("F3"));
+			*/
 
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, _invMatrixVP);
-			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _matrixVP : _prevMatrixVP);
-			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invMatrixVP : _prevInvMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _nonjitteredMatrixVP : _prevMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invNonJitteredMatrixVP : _prevInvMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_VP, _nonjitteredMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_I_VP, _invNonJitteredMatrixVP);
+			_cmd.SetGlobalVector(ShaderKeywordManager.JITTER_PARAMS, taaJitter);
 			
-			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_UNJITTERED_VP, _matrixVP);
-
-			var aspect = camera.aspect;
-			var nearClip = camera.nearClipPlane;
-			var farClip = camera.farClipPlane;
-			var farHalfFovTan = farClip * Mathf.Tan(camera.fieldOfView * .5f * Mathf.Deg2Rad);
+			// Debug.Log(_matrixVP);
+			
+			var farHalfFovTan = _farPlane * _verticalFovTan;
 
 			_frustumCornersWS = new Matrix4x4();
 			
-			var fwdDir = _cameraFwdWS * farClip;
+			var fwdDir = _cameraFwdWS * _farPlane;
 			var upDir = _cameraUpWS * farHalfFovTan;
-			var rightDir = _cameraRightWS * farHalfFovTan * aspect;
+			var rightDir = _cameraRightWS * farHalfFovTan * _aspect;
 			
 			var topLeft = fwdDir + upDir - rightDir;
 			var topRight = fwdDir + upDir + rightDir * 3f;
 			var bottomLeft = fwdDir - upDir * 3f - rightDir;
 			// var bottomRight = fwdDir - upDir * 3f + rightDir * 3f;
 
-			var zBufferParams = new float4((farClip - nearClip) / nearClip,  1f, (farClip - nearClip) / (nearClip * farClip), 1f / farClip);
+			var zBufferParams = new float4((_farPlane - _nearPlane) / _nearPlane,  1f, (_farPlane - _nearPlane) / (_nearPlane * _farPlane), 1f / _farPlane);
 			
 			_frustumCornersWS.SetRow(0, new float4(topLeft, .0f));
 			_frustumCornersWS.SetRow(1, new float4(bottomLeft, .0f));

@@ -6,10 +6,12 @@ namespace AdvancedRenderPipeline.Runtime {
 		#region Camera Params
 
 		public static readonly int CAMERA_DATA = Shader.PropertyToID("CameraData");
+		public static readonly int UNITY_MATRIX_VP = Shader.PropertyToID("unity_MatrixVP");
 		public static readonly int UNITY_MATRIX_I_VP = Shader.PropertyToID("unity_InvMatrixVP");
 		public static readonly int UNITY_PREV_MATRIX_VP = Shader.PropertyToID("unity_MatrixPreviousVP");
 		public static readonly int UNITY_PREV_MATRIX_I_VP = Shader.PropertyToID("unity_InvMatrixPreviousVP");
-		public static readonly int UNITY_MATRIX_UNJITTERED_VP = Shader.PropertyToID("_NonJitteredMatrixVP");
+		public static readonly int UNITY_MATRIX_NONJITTERED_VP = Shader.PropertyToID("_NonJitteredMatrixVP");
+		public static readonly int UNITY_MATRIX_NONJITTERED_I_VP = Shader.PropertyToID("_InvNonJitteredMatrixVP");
 
 		#endregion
 
@@ -78,9 +80,16 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#endregion
 
-		#region Miscs
+		#region Temporal Related
 
 		public static readonly int ENABLE_REPROJECTION = Shader.PropertyToID("_EnableReprojection");
+		public static readonly int JITTER_PARAMS = Shader.PropertyToID("_JitterParams");
+
+		#endregion
+
+		#region Miscs
+
+
 
 		#endregion
 	}

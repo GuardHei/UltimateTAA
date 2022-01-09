@@ -1,7 +1,9 @@
 using System;
+using System.Numerics;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Matrix4x4 = UnityEngine.Matrix4x4;
 using Vector2 = UnityEngine.Vector2;
 
 namespace AdvancedRenderPipeline.Runtime.Cameras {
@@ -45,15 +47,24 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         protected CullingResults _cullingResults;
 
         protected int _frameNum;
+        protected float _fov;
+        protected float _aspect;
+        protected float _nearPlane;
+        protected float _farPlane;
+        protected float _verticalFovTan;
         protected float3 _cameraPosWS;
         protected float3 _cameraFwdWS;
         protected float3 _cameraUpWS;
         protected float3 _cameraRightWS;
         protected Matrix4x4 _frustumCornersWS;
+        protected Vector2[] _jitterPatterns = new Vector2[8];
+        protected Vector2 _currJitter;
+        protected Matrix4x4 _nonjitteredMatrixVP;
+        protected Matrix4x4 _invNonJitteredMatrixVP;
         protected Matrix4x4 _matrixVP;
         protected Matrix4x4 _invMatrixVP;
-        protected Matrix4x4 _prevMatrixVP;
-        protected Matrix4x4 _prevInvMatrixVP;
+        protected Matrix4x4 _prevMatrixVP; // nonjittered
+        protected Matrix4x4 _prevInvMatrixVP; // nonjittered
 
         public abstract void Render(ScriptableRenderContext context);
 
@@ -63,11 +74,16 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             _frameNum++;
             _lastRenderOutputRes = OutputRes;
             _lastRenderRatio = Ratio;
+            _aspect = camera.aspect;
+            _nearPlane = camera.nearClipPlane;
+            _farPlane = camera.farClipPlane;
+            _fov = camera.fieldOfView;
+            _verticalFovTan = Mathf.Tan(.5f * Mathf.Deg2Rad * _fov);
         }
 
         public virtual void PostUpdate() {
-            _prevMatrixVP = _matrixVP;
-            _prevInvMatrixVP = _invMatrixVP;
+            _prevMatrixVP = _nonjitteredMatrixVP;
+            _prevInvMatrixVP = _invNonJitteredMatrixVP;
         }
 
         public virtual void ResetFrameHistory() {
@@ -280,11 +296,63 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         public CameraRenderer(Camera camera) {
             this.camera = camera;
             camera.forceIntoRenderTexture = true;
+
+            for (var i = 0; i < 8; i++) {
+                _jitterPatterns[i] = new Vector2(HaltonSequence.Get((i & 1023) + 1, 2) - .5f, HaltonSequence.Get((i & 1023) + 1, 3) - .5f);
+                // _jitterPatterns[i] = new Vector2(HaltonSequence.Get((i & 1023) + 1, 2), HaltonSequence.Get((i & 1023) + 1, 3));
+            }
         }
 
         public virtual void Dispose() {
             camera = null;
             DisposeCommandBuffer();
+        }
+
+        public void ConfigureProjectionMatrix(Vector2 jitter) {
+            camera.ResetProjectionMatrix();
+            camera.nonJitteredProjectionMatrix = camera.projectionMatrix;
+            camera.projectionMatrix = GetJitteredProjectionMatrix(jitter);
+            camera.useJitteredProjectionMatrixForTransparentRendering = true;
+        }
+
+        public Matrix4x4 GetJitteredProjectionMatrix(Vector2 jitter) => camera.orthographic ? GetJitteredOrthographicProjectionMatrix(jitter) : GetJitteredPerspectiveProjectionMatrix(jitter);
+
+        public Matrix4x4 GetJitteredOrthographicProjectionMatrix(Vector2 jitter) {
+            var vertical = camera.orthographicSize;
+            var horizontal = vertical * _aspect;
+
+            jitter.x *= horizontal / (.5f * InternalRes.x);
+            jitter.y *= vertical / (.5f * InternalRes.y);
+
+            var left = jitter.x - horizontal;
+            var right = jitter.x + horizontal;
+            var top = jitter.y + vertical;
+            var bottom = jitter.y - vertical;
+
+            return Matrix4x4.Ortho(left, right, bottom, top, _nearPlane, _farPlane);
+        }
+
+        public Matrix4x4 GetJitteredPerspectiveProjectionMatrix(Vector2 jitter) {
+            var vertical = _verticalFovTan * _nearPlane;
+            var horizontal = vertical * _aspect;
+            
+            /*
+            jitter.x *= horizontal / (.5f * InternalRes.x);
+            jitter.y *= vertical / (.5f * InternalRes.y);
+
+            var proj = camera.projectionMatrix;
+            proj.m02 += jitter.x / horizontal;
+            proj.m12 += jitter.y / vertical;
+            */
+            
+            jitter.x *= 1f / (.5f * InternalRes.x);
+            jitter.y *= 1f / (.5f * InternalRes.y);
+
+            var proj = camera.projectionMatrix;
+            proj.m02 += jitter.x;
+            proj.m12 += jitter.y;
+
+            return proj;
         }
 
         public static CameraRenderer CreateCameraRenderer(Camera camera, AdvancedCameraType type) {

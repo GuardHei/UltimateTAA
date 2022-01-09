@@ -156,7 +156,7 @@ Shader "Hidden/ARPDepth" {
                 float4 posWS = mul(GetObjectToWorldMatrix(), float4(input.posOS, 1.0f));
                 // output.posCS = TransformObjectToHClip(input.posOS);
                 output.posCS = mul(GetWorldToHClipMatrix(), posWS);
-                float4 mv_posCS = mul(UNITY_MATRIX_UNJITTERED_VP, posWS);
+                float4 mv_posCS = mul(UNITY_MATRIX_NONJITTERED_VP, posWS);
                 // mv_posCS.z = .0f;
                 float4 prevPosOS = unity_MotionVectorsParams.x == 1 ? float4(input.prevPosOS, 1.0f) : float4(input.posOS, 1.0f);
                 float4 mv_prevPosCS = mul(UNITY_PREV_MATRIX_VP, mul(GetPrevObjectToWorldMatrix(), prevPosOS));

@@ -61,9 +61,9 @@ namespace AdvancedRenderPipeline.Runtime {
 		[Range(.0f, 11.0f)]
 		public float skyboxMipLevel;
 		[Header("Anti Aliasing")]
-		public TemporalAntiAliasingSettings taaSettings;
+		public TemporalAntiAliasingSettings taaSettings = new() { enabled = true, jitterSpread = .75f, minHistoryWeight = .6f, maxHistoryWeight = .95f };
 		[Header("Color Grading & Tonemapping")]
-		public ColorGradingSettings colorSettings = new ColorGradingSettings { colorFilter = Color.white };
+		public ColorGradingSettings colorSettings = new() { colorFilter = Color.white };
 		public TonemappingSettings tonemappingSettings;
 	}
 
@@ -109,8 +109,13 @@ namespace AdvancedRenderPipeline.Runtime {
 
 	[Serializable]
 	public struct TemporalAntiAliasingSettings {
+		public bool enabled;
 		[Range(0f, 1f)]
-		public float historyWeight;
+		public float jitterSpread;
+		[Range(0f, 1f)]
+		public float minHistoryWeight;
+		[Range(0f, 1f)]
+		public float maxHistoryWeight;
 		public float minSharpness;
 		public float maxSharpness;
 	}

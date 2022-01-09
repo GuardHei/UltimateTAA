@@ -49,7 +49,7 @@ Shader "Hidden/ARPCameraMotion" {
                 float depth = SampleDepth(uv);
                 float4 posWS = DepthToWorldPosFast(depth, input.ray);
 
-                float4 posCS = mul(UNITY_MATRIX_UNJITTERED_VP, posWS);
+                float4 posCS = mul(UNITY_MATRIX_NONJITTERED_VP, posWS);
                 float4 prevPosCS = mul(UNITY_PREV_MATRIX_VP, posWS);
 
                 float2 mv = EncodeMotionVector(CalculateMotionVector(posCS, prevPosCS));

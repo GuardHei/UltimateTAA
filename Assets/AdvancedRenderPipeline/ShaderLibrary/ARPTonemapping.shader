@@ -152,6 +152,10 @@ Shader "Hidden/ARPTonemapping" {
                 return output;
             }
 
+            float3 ReinhardTonemap(float3 input) {
+                return input.rgb / (input.rgb + 1.0f);
+            }
+
             VertexOutput TonemapVert(uint vertexID : SV_VertexID) {
                 VertexOutput output;
                 output.posCS = VertexIDToPosCS(vertexID);
@@ -168,7 +172,7 @@ Shader "Hidden/ARPTonemapping" {
                 
                 if (_TonemappingMode == 1) output.rgb = AcesTonemap(unity_to_ACES(output.rgb));
                 else if (_TonemappingMode == 2) output.rgb = NeutralTonemap(output.rgb);
-                else if (_TonemappingMode == 3) output.rgb = output.rgb / (output.rgb + 1.0f);
+                else if (_TonemappingMode == 3) output.rgb = ReinhardTonemap(output.rgb);
                 return output;
             }
             
