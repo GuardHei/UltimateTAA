@@ -36,6 +36,7 @@ namespace RP_Tests {
 			_mpb.SetVectorArray(colorKeyWord, _baseColors);
 
 			if (isPbr) {
+				_mpb.SetVectorArray("_AlbedoTint", _baseColors);
 				_mpb.SetFloatArray("_MetallicScale", _metallicValues);
 				_mpb.SetFloatArray("_SmoothnessScale", _smoothnessValues);
 			}

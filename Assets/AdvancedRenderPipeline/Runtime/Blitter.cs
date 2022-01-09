@@ -85,6 +85,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		BlitStencil,
 		DebugStencil,
 		DebugVelocity,
-		DebugPrevTAATex
+		DebugLinearRoughness
 	}
 }

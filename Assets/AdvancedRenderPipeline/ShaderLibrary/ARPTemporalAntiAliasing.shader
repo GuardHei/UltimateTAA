@@ -27,6 +27,9 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 float2 screenUV : VAR_SCREEN_UV;
             };
 
+            float _EnableReprojection;
+            float4 _TaaParams; // { minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale }
+
             VertexOutput Vert(uint vertexID : SV_VertexID) {
                 VertexOutput output;
                 output.posCS = VertexIDToPosCS(vertexID);
@@ -36,13 +39,20 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
 
             float4 Fragment(VertexOutput input) : SV_TARGET {
                 float2 uv = input.screenUV;
-                if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
-                float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, uv);
+                if (_ProjectionParams.x < .0f) uv.y = 1.0f - uv.y;
 
-                output = FastTonemap(output);
+                float4 curr = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, uv);
+                curr = FastTonemap(curr);
+                float4 output;
 
-                output = FastTonemapInvert(output);
+                if (_EnableReprojection < .0f) {
+                    output = curr;
+                    return output;
+                }
 
+                float4 prev = SAMPLE_TEXTURE2D(_PrevTaaColorTex, sampler_linear_clamp, uv);
+
+                output = lerp(curr, prev, _TaaParams.y);
                 return output;
             }
             

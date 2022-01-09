@@ -16,6 +16,7 @@ namespace RP_Tests {
 		public Mesh mesh;
 		public Material mat;
 
+		public Color color;
 		public bool  changeMetallic;
 		public float defaultMetallic;
 		public float endMetallic;
@@ -31,6 +32,7 @@ namespace RP_Tests {
 		public void Update() => Graphics.DrawMeshInstanced(mesh, 0, mat, _matrices, num, _mpb);
 
 		private void Setup() {
+			Vector4[] _colorValues = new Vector4[num];
 			float[] _metallicValues = new float[num];
 			float[] _smoothnessValues = new float[num];
 			_matrices = new Matrix4x4[num];
@@ -39,13 +41,15 @@ namespace RP_Tests {
 
 			for (int i = 0; i < num; i++) {
 				var pos = transform.position + offset;
-				pos.x = (i - mid) * interval;
+				pos.x += (i - mid) * interval;
 				_matrices[i] = Matrix4x4.TRS(pos, Quaternion.identity, scale);
+				_colorValues[i] = color.linear;
 				_metallicValues[i] = changeMetallic ? Mathf.Lerp(defaultMetallic, endMetallic, i / (num - 1f)) : defaultMetallic;
 				_smoothnessValues[i] = changeSmoothness ? Mathf.Lerp(defaultSmoothness, endSmoothness, i / (num - 1f)) : defaultSmoothness;
 			}
 			
 			_mpb = new MaterialPropertyBlock();
+			_mpb.SetVectorArray("_AlbedoTint", _colorValues);
 			_mpb.SetFloatArray("_MetallicScale", _metallicValues);
 			_mpb.SetFloatArray("_SmoothnessScale", _smoothnessValues);
 		}
@@ -71,8 +75,8 @@ namespace RP_Tests {
 			var ss = _mpb.GetFloatArray("_SmoothnessScale");
 			
 			for (var i = 0; i < _matrices.Length; i++) {
-				UnityEditor.Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1f, .0f), "M: " + ms[i].ToString("F1"), greenStyle);
-				UnityEditor.Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1.25f, .0f), "S: " + ss[i].ToString("F1"), greenStyle);
+				UnityEditor.Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1f, .0f), "M: " + ms[i], greenStyle);
+				UnityEditor.Handles.Label(_matrices[i].GetPosition() + new Vector3(-.5f, 1.25f, .0f), "S: " + ss[i], greenStyle);
 			}
 		}
 #endif

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
 	public static class ShaderKeywordManager {
@@ -81,9 +82,10 @@ namespace AdvancedRenderPipeline.Runtime {
 		#endregion
 
 		#region Temporal Related
-
+		
 		public static readonly int ENABLE_REPROJECTION = Shader.PropertyToID("_EnableReprojection");
 		public static readonly int JITTER_PARAMS = Shader.PropertyToID("_JitterParams");
+		public static readonly int TAA_PARAMS = Shader.PropertyToID("_TaaParams");
 
 		#endregion
 

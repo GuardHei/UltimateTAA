@@ -297,7 +297,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             this.camera = camera;
             camera.forceIntoRenderTexture = true;
 
-            for (var i = 0; i < 8; i++) {
+            for (var i = 0; i < (int) settings.taaSettings.jitterNum; i++) {
                 _jitterPatterns[i] = new Vector2(HaltonSequence.Get((i & 1023) + 1, 2) - .5f, HaltonSequence.Get((i & 1023) + 1, 3) - .5f);
                 // _jitterPatterns[i] = new Vector2(HaltonSequence.Get((i & 1023) + 1, 2), HaltonSequence.Get((i & 1023) + 1, 3));
             }

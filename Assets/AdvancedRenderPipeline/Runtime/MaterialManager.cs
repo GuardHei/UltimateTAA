@@ -87,6 +87,19 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 
 		private static Material cameraMotionMat;
+
+		public static Material TaaMat {
+			get {
+				if (taaMat == null) {
+					taaMat = new Material(Shader.Find("Hidden/ARPTemporalAntiAliasing")) {
+						hideFlags = HideFlags.HideAndDontSave
+					};
+				}
+				return taaMat;
+			}
+		}
+		
+		private static Material taaMat;
 		
 		#endregion
 
@@ -97,7 +110,10 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int INTEGRATE_INDIRECT_SPECULAR_PASS = IndirectSpecularMat.FindPass("IntegrateIndirectSpecular");
 		public static readonly int INTEGRATE_OPAQUE_LIGHTING_PASS = IntegrateOpaqueLightingMat.FindPass("IntegrateOpaqueLighting");
 		public static readonly int CAMERA_MOTION_VECTORS_PASS = CameraMotionMat.FindPass("CameraMotionVectors");
+		public static readonly int FAST_TONEMAPPING_PASS = TonemappingMat.FindPass("FastTonemapping");
+		public static readonly int FAST_INVERT_TONEMAPPING_PASS = TonemappingMat.FindPass("FastInvertTonemapping");
 		public static readonly int TONEMAPPING_PASS = TonemappingMat.FindPass("Tonemapping");
+		public static readonly int TEMPORAL_ANTI_ALIASING_PASS = TaaMat.FindPass("TemporalAntiAliasing");
 
 		#endregion
 	}

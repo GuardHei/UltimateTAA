@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 namespace AdvancedRenderPipeline.Runtime {
 	[CreateAssetMenu(fileName = "ARP Asset", menuName = "Advanced Render Pipeline/ARP Asset")]
@@ -56,12 +57,16 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Cubemap globalEnvMapDiffuse;
 		public Cubemap globalEnvMapSpecular;
 		public Shader indirectSpecularShader;
-		[Range(.0f, 360.0f)]
+		[Range(0f, 360.0f)]
 		public float globalEnvMapRotation;
-		[Range(.0f, 11.0f)]
+		[Range(0f, 11.0f)]
 		public float skyboxMipLevel;
 		[Header("Anti Aliasing")]
-		public TemporalAntiAliasingSettings taaSettings = new() { enabled = true, jitterSpread = .75f, minHistoryWeight = .6f, maxHistoryWeight = .95f };
+		public TemporalAntiAliasingSettings taaSettings = new() {
+			enabled = true, jitterNum = JitterNum._8, jitterSpread = .75f, 
+			minHistoryWeight = .6f, maxHistoryWeight = .95f, minClipScale = .5f, maxClipScale = 1.25f, 
+			minSharpness = 0f, maxSharpness = 0f
+		};
 		[Header("Color Grading & Tonemapping")]
 		public ColorGradingSettings colorSettings = new() { colorFilter = Color.white };
 		public TonemappingSettings tonemappingSettings;
@@ -107,17 +112,31 @@ namespace AdvancedRenderPipeline.Runtime {
 		Reinhard = 3
 	}
 
+	public enum JitterNum {
+		_2 = 2,
+		_4 = 4,
+		_8 = 8,
+		_16 = 16
+	}
+
 	[Serializable]
 	public struct TemporalAntiAliasingSettings {
 		public bool enabled;
+		public JitterNum jitterNum;
 		[Range(0f, 1f)]
 		public float jitterSpread;
 		[Range(0f, 1f)]
 		public float minHistoryWeight;
 		[Range(0f, 1f)]
 		public float maxHistoryWeight;
+		[Range(.05f, 6f)]
+		public float minClipScale;
+		[Range(.05f, 6f)]
+		public float maxClipScale;
 		public float minSharpness;
 		public float maxSharpness;
+
+		public Vector4 ToTaaParams() => new(minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale);
 	}
 
 	[Serializable]

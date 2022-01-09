@@ -120,12 +120,16 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		public override void Setup() {
 			
-			_currJitter = _jitterPatterns[_frameNum % 8];
+			_currJitter = _jitterPatterns[_frameNum % (int) settings.taaSettings.jitterNum];
 			_currJitter *= settings.taaSettings.jitterSpread;
+			
 			var taaJitter = new Vector4(_currJitter.x, _currJitter.y, _currJitter.x / InternalRes.x, _currJitter.y / InternalRes.y);
-			
-			ConfigureProjectionMatrix(_currJitter);
-			
+			_cmd.SetGlobalVector(ShaderKeywordManager.JITTER_PARAMS, taaJitter);
+
+			if (settings.taaSettings.enabled) {
+				ConfigureProjectionMatrix(_currJitter);
+			} else camera.ResetProjectionMatrix();
+
 			_context.SetupCameraProperties(camera);
 
 			var transform = camera.transform;
@@ -155,21 +159,12 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_invMatrixVP = _matrixVP.inverse;
 			_nonjitteredMatrixVP = GL.GetGPUProjectionMatrix(camera.nonJitteredProjectionMatrix, false) * viewMatrix;
 			_invNonJitteredMatrixVP = _nonjitteredMatrixVP.inverse;
-			
-			/*
-			Debug.Log("======");
-			Debug.Log("VP: \n" + _matrixVP.ToString("F3"));
-			Debug.Log("NonJittered VP: \n" + _nonjitteredMatrixVP.ToString("F3"));
-			*/
 
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, _invMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _nonjitteredMatrixVP : _prevMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invNonJitteredMatrixVP : _prevInvMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_VP, _nonjitteredMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_I_VP, _invNonJitteredMatrixVP);
-			_cmd.SetGlobalVector(ShaderKeywordManager.JITTER_PARAMS, taaJitter);
-			
-			// Debug.Log(_matrixVP);
 			
 			var farHalfFovTan = _farPlane * _verticalFovTan;
 
@@ -354,10 +349,26 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void ResolveTAAPass() {
-			_cmd.Blit(_colorTex, _taaColorTex);
 
-			_cmd.Blit(_taaColorTex, _hdrColorTex);
+			if (!IsOnFirstFrame && settings.taaSettings.enabled) {
+				
+				MaterialManager.TaaMat.SetFloat(ShaderKeywordManager.ENABLE_REPROJECTION, 1f);
+				MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS, settings.taaSettings.ToTaaParams());
+				
+				_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_TAA_COLOR_TEXTURE, _prevTaaColorTex);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_DEPTH_TEXTURE, _prevDepthTex);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.STENCIL_TEXTURE, _depthTex, RenderTextureSubElement.Stencil);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_STENCIL_TEXTURE, _prevDepthTex, RenderTextureSubElement.Stencil);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.VELOCITY_TEXTURE, _velocityTex);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_VELOCITY_TEXTURE, _prevVelocityTex);
+			} else MaterialManager.TaaMat.SetFloat(ShaderKeywordManager.ENABLE_REPROJECTION, -1f);
+
+			// _cmd.Blit(_colorTex, _taaColorTex);
+			_cmd.Blit(_colorTex, _taaColorTex, MaterialManager.TaaMat, MaterialManager.TEMPORAL_ANTI_ALIASING_PASS);
 			
+			// _cmd.Blit(_taaColorTex, _hdrColorTex);
+			_cmd.Blit(_taaColorTex, _hdrColorTex, MaterialManager.TonemappingMat, MaterialManager.FAST_INVERT_TONEMAPPING_PASS);
+
 			ExecuteCommand();
 		}
 
@@ -435,11 +446,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 					case DebugOutput.TaaColorHistory:
 						src = _prevTaaColorTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
-						/*
-						_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_TAA_COLOR_TEXTURE, _prevTaaColorTex);
-						_cmd.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
-						_cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMat, (int) BlitPass.DebugPrevTAATex, MeshTopology.Triangles, 3);
-						*/
 						break;
 					case DebugOutput.HDRColor:
 						src = _hdrColorTex;
@@ -456,7 +462,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		protected override void UpdateRenderScale(bool outputChanged = true) {
 			base.UpdateRenderScale(outputChanged);
-			if (outputChanged) ResetBufferSize();
+			if (outputChanged) {
+				ResetFrameHistory();
+				ResetBufferSize();
+			}
 		}
 
 		public void InitBuffers() {
@@ -507,18 +516,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_rawColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.RAW_COLOR_TEXTURE, 0);
 			_colorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.COLOR_TEXTURE, 0);
 			_taaColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.TAA_COLOR_TEXTURE, 0);
-			// _prevTaaColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.TAA_COLOR_TEXTURE, 1);
 			_hdrColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.HDR_COLOR_TEXTURE, 0);
 			_displayTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DISPLAY_TEXTURE, 0);
 			_depthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 0);
-			// _prevDepthTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.DEPTH_TEXTURE, 1);
 			_velocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 0);
-			// _prevVelocityTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.VELOCITY_TEXTURE, 1);
 			_gbuffer1Tex = _historyBuffers.GetFrameRT(ShaderKeywordManager.GBUFFER_1_TEXTURE, 0);
 			_gbuffer2Tex = _historyBuffers.GetFrameRT(ShaderKeywordManager.GBUFFER_2_TEXTURE, 0);
 			_screenSpaceCubemap = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, 0);
 			_screenSpaceReflection = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 0);
-			// _prevScreenSpaceReflection = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 1);
 			_indirectSpecular = _historyBuffers.GetFrameRT(ShaderKeywordManager.INDIRECT_SPECULAR, 0);
 
 			_prevTaaColorTex = _historyBuffers.GetFrameRT(ShaderKeywordManager.TAA_COLOR_TEXTURE, 1);
