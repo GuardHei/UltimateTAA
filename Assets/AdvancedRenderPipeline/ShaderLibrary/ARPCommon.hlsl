@@ -4,6 +4,14 @@
 #define KILL_MICRO_MOVEMENT
 #define MICRO_MOVEMENT_THRESHOLD (.01f * _ScreenSize.zw)
 
+#if UNITY_REVERSED_Z
+#define CLOSET_DEPTH(d1, d2) max(d1, d2)
+#define CLOSER_DEPTH(d1, d2) d1 > d2
+#else
+#define CLOSET_DEPTH(d1, d2) min(d1, d2)
+#define CLOSER_DEPTH(d1, d2) d1 < d2
+#endif
+
 #define SPEC_IBL_MAX_MIP 6u
 #define DIFF_IBL_MAX_MIP 11u
 
@@ -158,6 +166,7 @@ SAMPLER(sampler_GlobalEnvMapDiffuse);
 // Built-in Utility Functions           //
 //////////////////////////////////////////
 
+/*
 // Convert from Clip space (-1..1) to NDC 0..1 space.
 // Note it doesn't mean we don't have negative value, we store negative or positive offset in NDC space.
 // Note: ((positionCS * 0.5 + 0.5) - (previousPositionCS * 0.5 + 0.5)) = (motionVector * 0.5)
@@ -169,6 +178,7 @@ float2 EncodeMotionVector(float2 mv) {
 float2 DecodeMotionVector(float2 encoded) {
     return encoded * 2.0f;
 }
+*/
 
 // Convert Normal from [-1, 1] to [0, 1]
 float3 EncodeNormal(float3 N) {
@@ -263,7 +273,7 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
 
     if (_ProjectionParams.x < .0f) mv.y = -mv.y;
 
-    return mv;
+    return mv * .5f;
 }
 
 //////////////////////////////////////////
@@ -342,7 +352,7 @@ float3 F_SchlickRoughness(float3 f0, float u, float linearRoughness) {
 float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
     const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
-    return .5f / (lambdaV + lambdaL);
+    return .5f / max(lambdaV + lambdaL, .00001f);
 }
 
 // Requires caller to "div PI"
@@ -350,7 +360,7 @@ float D_GGX(float NdotH, float alphaG2) {
     // Higher accuracy?
     const float f = (alphaG2 - 1.0f) * NdotH * NdotH + 1.0f;
     // const float f = (NdotH * alphaG2 - NdotH) * NdotH + 1;
-    return alphaG2 / (f * f);
+    return alphaG2 / max(f * f, .00001f);
 }
 
 float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float linearRoughness) {

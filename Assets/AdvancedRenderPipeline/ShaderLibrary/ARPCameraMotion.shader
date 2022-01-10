@@ -52,7 +52,7 @@ Shader "Hidden/ARPCameraMotion" {
                 float4 posCS = mul(UNITY_MATRIX_NONJITTERED_VP, posWS);
                 float4 prevPosCS = mul(UNITY_PREV_MATRIX_VP, posWS);
 
-                float2 mv = EncodeMotionVector(CalculateMotionVector(posCS, prevPosCS));
+                float2 mv = CalculateMotionVector(posCS, prevPosCS);
                 
                 return mv;
             }
