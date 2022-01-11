@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ARP Editor Asset
   m_EditorClassIdentifier: 
   iblLutResolution: 1024
-  separateLuts: 1
+  separateLuts: 0
   iblLutFormat: 24
   diffuseLutFormat: 22
   specularLutFormat: 22

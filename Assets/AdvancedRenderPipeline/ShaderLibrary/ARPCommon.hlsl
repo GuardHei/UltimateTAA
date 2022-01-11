@@ -276,6 +276,14 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     return mv * .5f;
 }
 
+float3 FastTonemapInvertSafe(float3 c) {
+    return c * rcp(max(1.0f - Max3(c.r, c.g, c.b), .0001f));
+}
+
+float4 FastTonemapInvertSafe(float4 c) {
+    return float4(FastTonemapInvertSafe(c.rgb), c.a);
+}
+
 //////////////////////////////////////////
 // PBR Utility Functions                //
 //////////////////////////////////////////
@@ -434,7 +442,7 @@ float IBL_G_SmithGGX(float NdotV, float NdotL, float alphaG2) {
     // float alphaG2 = LinearRoughnessToAlphaG2(linearRoughness);
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
     const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
-    return (2 * NdotL) / (lambdaV + lambdaL);
+    return (2 * NdotL) / max(lambdaV + lambdaL, .00001f);
     // return .5f / (lambdaV + lambdaL);
 }
 
@@ -527,7 +535,7 @@ float4 PrefilterEnvMap(TextureCube envMap, float resolution, float roughness, fl
             float D = D_GGX(NdotH, alphaG2) / PI;
             float pdf = D * NdotH / (4.0f * VdotH) + .0001f;
             
-            float omegasS = 1.0f / (float(SAMPLE_COUNT) * pdf);
+            float omegasS = 1.0f / float(SAMPLE_COUNT) * pdf;
             float omegaP = 4.0f * PI / (6.0f * resolution * resolution);
             float mipLevel = roughness == .0f ? .0f : .5f * log2(omegasS / omegaP);
 

@@ -20,6 +20,7 @@ MonoBehaviour:
     enableSRPBatching: 1
     enableMVAutoInstancing: 0
     enableMVSRPBatching: 0
+    stopNaNPropagation: 0
     blitShader: {fileID: 4800000, guid: 770f6fb14c9b4bab86e1be1af449fb0a, type: 3}
     integrateOpaqueLightingShader: {fileID: 4800000, guid: f29b3703c3454c149cc0c39561a8ff6c, type: 3}
     cameraMotionShader: {fileID: 4800000, guid: 0bc3da1da68d4e84affef526b5434fb2, type: 3}

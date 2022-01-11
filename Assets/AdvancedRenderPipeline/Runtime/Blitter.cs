@@ -35,6 +35,18 @@ namespace AdvancedRenderPipeline.Runtime {
 			cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMat, (int) BlitPass.DebugVelocity, MeshTopology.Triangles, 3);
 		}
 
+		public static void BlitDebugSmoothness(this CommandBuffer cmd, RTHandle src, RenderTargetIdentifier dest) {
+			cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_TEXTURE, src);
+			cmd.SetRenderTarget(dest, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+			cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMat, (int) BlitPass.DebugSmoothness, MeshTopology.Triangles, 3);
+		}
+		
+		public static void BlitDebugNaN(this CommandBuffer cmd, RTHandle src, RenderTargetIdentifier dest) {
+			cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_TEXTURE, src);
+			cmd.SetRenderTarget(dest, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+			cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMat, (int) BlitPass.DebugNaN, MeshTopology.Triangles, 3);
+		}
+
 		public static void CustomBlit(this CommandBuffer cmd, RTHandle src, RenderTargetIdentifier dest, Material mat, int pass) {
 			cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_TEXTURE, src, RenderTextureSubElement.Color);
 			// MaterialManager.BlitMaterial.SetTexture(ShaderKeywordManager.MAIN_TEXTURE, src);
@@ -85,6 +97,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		BlitStencil,
 		DebugStencil,
 		DebugVelocity,
-		DebugLinearRoughness
+		DebugSmoothness,
+		DebugNaN
 	}
 }

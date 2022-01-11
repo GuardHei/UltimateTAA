@@ -344,8 +344,16 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void DrawPostFXPass() {
+			StopNaNPropagationPass();
 			ResolveTAAPass();
 			TonemapPass();
+		}
+
+		public void StopNaNPropagationPass() {
+			if (!settings.stopNaNPropagation) return;
+			_cmd.Blit(_colorTex, _taaColorTex, MaterialManager.TonemappingMat, MaterialManager.STOP_NAN_PROPAGATION_PASS);
+			_cmd.Blit(_taaColorTex, _colorTex);
+			ExecuteCommand();
 		}
 
 		public void ResolveTAAPass() {
@@ -410,6 +418,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 						src = _gbuffer2Tex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
 						break;
+					case DebugOutput.Smoothness:
+						src = _gbuffer2Tex;
+						_cmd.BlitDebugSmoothness(src, BuiltinRenderTextureType.CameraTarget);
+						break;
 					case DebugOutput.Velocity:
 						src = _velocityTex;
 						// _cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
@@ -450,6 +462,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 					case DebugOutput.HDRColor:
 						src = _hdrColorTex;
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);
+						break;
+					case DebugOutput.NaN:
+						src = _hdrColorTex;
+						_cmd.BlitDebugNaN(src, BuiltinRenderTextureType.CameraTarget);
 						break;
 					default:
 						_cmd.Blit(src, BuiltinRenderTextureType.CameraTarget);

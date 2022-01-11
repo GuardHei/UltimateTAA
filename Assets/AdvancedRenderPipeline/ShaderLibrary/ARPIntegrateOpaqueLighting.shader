@@ -35,7 +35,7 @@ Shader "Hidden/ARPIntegrateOpaqueLighting" {
                 return output;
             }
 
-            float3 Fragment(VertexOutput input) : SV_TARGET {
+            float4 Fragment(VertexOutput input) : SV_TARGET {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
 
@@ -46,6 +46,7 @@ Shader "Hidden/ARPIntegrateOpaqueLighting" {
                 float indirectOcclusion = 1.0f;
 
                 finalLighting.rgb = (forwardLighting + indirectSpecular) * indirectOcclusion;
+                finalLighting.a = 1.0f;
                 
                 return finalLighting;
             }

@@ -110,6 +110,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int INTEGRATE_INDIRECT_SPECULAR_PASS = IndirectSpecularMat.FindPass("IntegrateIndirectSpecular");
 		public static readonly int INTEGRATE_OPAQUE_LIGHTING_PASS = IntegrateOpaqueLightingMat.FindPass("IntegrateOpaqueLighting");
 		public static readonly int CAMERA_MOTION_VECTORS_PASS = CameraMotionMat.FindPass("CameraMotionVectors");
+		public static readonly int STOP_NAN_PROPAGATION_PASS = TonemappingMat.FindPass("StopNaNPropagation");
 		public static readonly int FAST_TONEMAPPING_PASS = TonemappingMat.FindPass("FastTonemapping");
 		public static readonly int FAST_INVERT_TONEMAPPING_PASS = TonemappingMat.FindPass("FastInvertTonemapping");
 		public static readonly int TONEMAPPING_PASS = TonemappingMat.FindPass("Tonemapping");

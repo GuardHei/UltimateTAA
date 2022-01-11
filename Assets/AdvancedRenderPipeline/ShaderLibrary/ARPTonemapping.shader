@@ -7,6 +7,44 @@ Shader "Hidden/ARPTonemapping" {
     SubShader {
         
         Pass {
+            Name "StopNaNPropagation"
+            
+            Cull off
+            ZWrite off
+            ZTest Always
+            
+            HLSLPROGRAM
+
+            #pragma vertex Vert
+            #pragma fragment Frag
+
+            #include "ARPCommon.hlsl"
+
+            struct VertexOutput {
+                float4 posCS : SV_POSITION;
+                float2 screenUV : VAR_SCREEN_UV;
+            };
+
+            VertexOutput Vert(uint vertexID : SV_VertexID) {
+                VertexOutput output;
+                output.posCS = VertexIDToPosCS(vertexID);
+                output.screenUV = VertexIDToScreenUV(vertexID);
+                return output;
+            }
+
+            float4 Frag(VertexOutput input) : SV_TARGET {
+                float2 uv = input.screenUV;
+                if (_ProjectionParams.x < .0f) uv.y = 1.0f - uv.y;
+                float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_point_clamp, uv);
+                output = AnyIsNaN(output) ? float4(0, 0, 0, 1) : output;
+                output = AnyIsInf(output) ? float4(0, 0, 0, 1) : output;
+                return output;
+            }
+
+            ENDHLSL
+        }
+        
+        Pass {
             Name "FastTonemapping"
             
             Cull Off
@@ -75,7 +113,7 @@ Shader "Hidden/ARPTonemapping" {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < .0f) uv.y = 1.0f - uv.y;
                 float4 output = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, uv);
-                output = FastTonemapInvert(output);
+                output = FastTonemapInvertSafe(output);
                 return output;
             }
             

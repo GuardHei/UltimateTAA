@@ -40,6 +40,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public bool enableSRPBatching = true;
 		public bool enableMVAutoInstancing;
 		public bool enableMVSRPBatching;
+		[Header("Utilities")]
+		public bool stopNaNPropagation;
 		[Header("Builtin Shaders")]
 		public Shader blitShader;
 		public Shader integrateOpaqueLightingShader;
@@ -78,6 +80,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		Stencil,
 		GBuffer1,
 		GBuffer2,
+		Smoothness,
 		Velocity,
 		ScreenSpaceCubemap,
 		ScreenSpaceReflection,
@@ -87,7 +90,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		Color,
 		TaaColor,
 		TaaColorHistory,
-		HDRColor
+		HDRColor,
+		NaN
 	}
 
 	public enum ShadowmapSize {

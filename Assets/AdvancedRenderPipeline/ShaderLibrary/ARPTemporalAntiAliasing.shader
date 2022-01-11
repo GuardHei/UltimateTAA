@@ -124,9 +124,9 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 maxColor = max(maxColor, n7);
                 maxColor = max(maxColor, n8);
 
-                // prev.rgb = clamp(RGBToYCoCg(prev.rgb), minColor, maxColor);
+                // prev.rgb = YCoCgToRGB(clamp(RGBToYCoCg(prev.rgb), minColor, maxColor));
 
-                prev.rgb = YCoCgToRGB(ClipAABB(minColor, maxColor, RGBToYCoCg(prev)));
+                prev.rgb = YCoCgToRGB(ClipAABB(minColor, maxColor, RGBToYCoCg(prev.rgb)));
 
                 output = lerp(curr, prev, _TaaParams.y);
                 output.a = 1.0f;
