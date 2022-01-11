@@ -63,7 +63,7 @@
 
  ### Downsample and Dilate Velocity Pass (Roadmap)
 
-   Downsample velocity texture to quarter resolution (half width, half height), and each pixel represents the closet velocity of the 2x2 quad.
+    Downsample velocity texture to quarter resolution (half width, half height), and each pixel represents the closet velocity of the 2x2 quad.
 
  ### Directional Light Shadowmap Pass (Roadmap)
 
@@ -87,24 +87,24 @@
 
 ### Integrate Opaque Lighting Pass
 
-   Integrate indirect specular result back the lighting buffer, output to ColorTex.
+    Integrate indirect specular result back the lighting buffer, output to ColorTex.
 
 ### Skybox Pass
 
-   Draw Skybox Pass.
+    Draw Skybox Pass.
 
 ### Forward Transparent Lighting Pass (Roadmap)
 
-   Shade forward transparent materials. Evaluate specular IBL within the forward pass.
+    Shade forward transparent materials. Evaluate specular IBL within the forward pass.
 
 ### Stop NaN Propagation Pass (WIP)
 
-   Replace NaN, Inf, -Inf with pure black (0, 0, 0, 1).
+    Replace NaN, Inf, -Inf with pure black (0, 0, 0, 1).
 
 ### Resolve Temporal Antialiasing Pass (WIP)
 
-   Resolve taa.
+    Resolve taa.
 
 ### Tonemap Pass
 
-   Color grade and tonemap.
+    Color grade and tonemap.
