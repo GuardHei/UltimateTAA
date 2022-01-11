@@ -40,7 +40,7 @@
  | GBuffer 1 | R11G11B10_UFloat | Normal X   | Normal Y   | Normal Z   | N/A                                   | 
  | GBuffer 2 | RGBA8_UNorm      | Specular R | Specular G | Specular B | Linear Roughness                      |
  | Velocity  | RG16_SNorm       | Velocity X | Velocity Y | N/A        | N/A                                   |
- | Depth     | D24S8            | Depth      | Depth      | Depth      | Stencil                               |
+ | Depth     | D24S8            | Depth      | N/A        | N/A        | Stencil                               |
 
  ## Render Pass Overview
 
@@ -56,7 +56,7 @@
 
     Draw the velocity of the dynamic objects, toggle stencil[2] to 1.
 
- ### Static Velocity Pass (Roadmap)
+ ### Static Velocity Pass
     
     Draw the velocity of the static objects, using stencil[2] to kill dynamic pixels.
 
@@ -91,6 +91,10 @@
 ### Forward Transparent Lighting Pass (Roadmap)
 
    Shade forward transparent materials. Evaluate specular IBL within the forward pass.
+
+### Stop NaN Propagation Pass (WIP)
+
+   Replace NaN, Inf, -Inf with pure black (0, 0, 0, 1).
 
 ### Resolve Temporal Antialiasing Pass (WIP)
 
