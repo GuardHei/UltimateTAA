@@ -9,6 +9,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		public SceneViewCameraRenderer(Camera camera) : base(camera) {
 			// Debug.Log("SceneView camera render is initing...");
 			cameraType = AdvancedCameraType.SceneView;
+			_enableTaa = settings.enableTaaInEditor;
 			_rendererDesc = "Render Scene View (" + camera.name + ")";
 			beforeCull += EmitUIMesh;
 			beforePostProcess += DrawPreImageGizmosPass;
@@ -43,14 +44,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 			_context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
 		}
-
-		public override void Dispose() {
-			// Debug.Log("SceneView camera renderer is disposing...");
-			base.Dispose();
-		}
 	}
 #else
-	public class SceneViewCameraRenderer {
+	public class SceneViewCameraRenderer : GameCameraRenderer {
 
 	}
 #endif

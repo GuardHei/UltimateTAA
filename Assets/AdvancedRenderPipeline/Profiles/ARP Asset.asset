@@ -34,7 +34,7 @@ MonoBehaviour:
     globalEnvMapDiffuse: {fileID: 8900000, guid: e51fdd5f41a3f43abb924252c34d1fbd, type: 3}
     globalEnvMapSpecular: {fileID: 8900000, guid: 176063b10f7b745f4ba5fb659931f61f, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
-    globalEnvMapRotation: 119
+    globalEnvMapRotation: 57
     skyboxMipLevel: 0
     taaSettings:
       enabled: 1

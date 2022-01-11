@@ -20,6 +20,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		protected readonly BufferedRTHandleSystem _historyBuffers = new();
 
+		protected bool _enableTaa = true;
 		protected string _rendererDesc;
 
 		#region RT Handles & Render Target Identifiers
@@ -126,7 +127,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			var taaJitter = new Vector4(_currJitter.x, _currJitter.y, _currJitter.x / InternalRes.x, _currJitter.y / InternalRes.y);
 			_cmd.SetGlobalVector(ShaderKeywordManager.JITTER_PARAMS, taaJitter);
 
-			if (settings.taaSettings.enabled) {
+			if (_enableTaa && settings.taaSettings.enabled) {
 				ConfigureProjectionMatrix(_currJitter);
 			} else camera.ResetProjectionMatrix();
 
@@ -358,8 +359,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		public void ResolveTAAPass() {
 
-			if (!IsOnFirstFrame && settings.taaSettings.enabled) {
-				
+			if (!IsOnFirstFrame && settings.taaSettings.enabled && _enableTaa) {
 				MaterialManager.TaaMat.SetFloat(ShaderKeywordManager.ENABLE_REPROJECTION, 1f);
 				MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS, settings.taaSettings.ToTaaParams());
 				
@@ -371,10 +371,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_VELOCITY_TEXTURE, _prevVelocityTex);
 			} else MaterialManager.TaaMat.SetFloat(ShaderKeywordManager.ENABLE_REPROJECTION, -1f);
 
-			// _cmd.Blit(_colorTex, _taaColorTex);
 			_cmd.Blit(_colorTex, _taaColorTex, MaterialManager.TaaMat, MaterialManager.TEMPORAL_ANTI_ALIASING_PASS);
-			
-			// _cmd.Blit(_taaColorTex, _hdrColorTex);
 			_cmd.Blit(_taaColorTex, _hdrColorTex, MaterialManager.TonemappingMat, MaterialManager.FAST_INVERT_TONEMAPPING_PASS);
 
 			ExecuteCommand();

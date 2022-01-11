@@ -32,6 +32,7 @@ namespace AdvancedRenderPipeline.Runtime {
 	[Serializable]
 	public class AdvancedRenderPipelineSettings {
 		[Header("Editor")]
+		public bool enableTaaInEditor = true;
 		public bool enableDebugView;
 		public bool enableDebugViewInEditor;
 		public DebugOutput debugOutput;

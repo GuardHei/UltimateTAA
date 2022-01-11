@@ -42,7 +42,7 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < .0f) uv.y = 1.0f - uv.y;
 
-                float4 curr = SAMPLE_TEXTURE2D(_MainTex, sampler_linear_clamp, uv);
+                float4 curr = SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_linear_clamp, uv, 0);
                 curr = FastTonemap(curr);
                 float4 output;
 
@@ -53,6 +53,8 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 }
 
                 int2 coord = int2(floor(uv.x * _ScreenSize.x), floor(uv.y * _ScreenSize.y));
+                
+                /*
                 int2 coord1 = int2(coord.x + 1, coord.y);
                 int2 coord2 = int2(coord.x + 1, coord.y + 1);
                 int2 coord3 = int2(coord.x + 1, coord.y - 1);
@@ -61,50 +63,55 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 int2 coord6 = int2(coord.x - 1, coord.y);
                 int2 coord7 = int2(coord.x - 1, coord.y + 1);
                 int2 coord8 = int2(coord.x - 1, coord.y - 1);
-
-                float d0 = LOAD_TEXTURE2D(_DepthTex, coord).r;
-                float d1 = LOAD_TEXTURE2D(_DepthTex, coord1).r;
-                float d2 = LOAD_TEXTURE2D(_DepthTex, coord2).r;
-                float d3 = LOAD_TEXTURE2D(_DepthTex, coord3).r;
-                float d4 = LOAD_TEXTURE2D(_DepthTex, coord4).r;
-                float d5 = LOAD_TEXTURE2D(_DepthTex, coord5).r;
-                float d6 = LOAD_TEXTURE2D(_DepthTex, coord6).r;
-                float d7 = LOAD_TEXTURE2D(_DepthTex, coord7).r;
-                float d8 = LOAD_TEXTURE2D(_DepthTex, coord8).r;
-
-                int2 closetCoord = CLOSER_DEPTH(d0, d1) ? coord : coord1;
-                closetCoord = CLOSER_DEPTH(closetCoord, d2) ? closetCoord : coord2;
-                closetCoord = CLOSER_DEPTH(closetCoord, d3) ? closetCoord : coord3;
-                closetCoord = CLOSER_DEPTH(closetCoord, d4) ? closetCoord : coord4;
-                closetCoord = CLOSER_DEPTH(closetCoord, d5) ? closetCoord : coord5;
-                closetCoord = CLOSER_DEPTH(closetCoord, d6) ? closetCoord : coord6;
-                closetCoord = CLOSER_DEPTH(closetCoord, d7) ? closetCoord : coord7;
-                closetCoord = CLOSER_DEPTH(closetCoord, d8) ? closetCoord : coord8;
-                
-                float2 mv = LOAD_TEXTURE2D(_VelocityTex, closetCoord).rg;
-                uv -= mv;
-
-                /*
-                if(min(uv.x, uv.y) < 0 || max(uv.x, uv.y) > 1) prev = curr;
-                else prev = SAMPLE_TEXTURE2D(_PrevTaaColorTex, sampler_linear_clamp, uv);
                 */
 
+                int2 offset1 = int2(1, 0);
+                int2 offset2 = int2(1, 1);
+                int2 offset3 = int2(1, -1);
+                int2 offset4 = int2(0, 1);
+                int2 offset5 = int2(0, -1);
+                int2 offset6 = int2(-1, 0);
+                int2 offset7 = int2(-1, 1);
+                int2 offset8 = int2(-1, -1);
+
+                float d0 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0);
+                float d1 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset1);
+                float d2 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset2);
+                float d3 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset3);
+                float d4 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset4);
+                float d5 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset5);
+                float d6 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset6);
+                float d7 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset7);
+                float d8 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset8);
+
+                int2 closetOffset = CLOSER_DEPTH(d0, d1) ? int2(0, 0) : offset1;
+                closetOffset = CLOSER_DEPTH(closetOffset, d2) ? closetOffset : offset2;
+                closetOffset = CLOSER_DEPTH(closetOffset, d3) ? closetOffset : offset3;
+                closetOffset = CLOSER_DEPTH(closetOffset, d4) ? closetOffset : offset4;
+                closetOffset = CLOSER_DEPTH(closetOffset, d5) ? closetOffset : offset5;
+                closetOffset = CLOSER_DEPTH(closetOffset, d6) ? closetOffset : offset6;
+                closetOffset = CLOSER_DEPTH(closetOffset, d7) ? closetOffset : offset7;
+                closetOffset = CLOSER_DEPTH(closetOffset, d8) ? closetOffset : offset8;
+                
+                float2 mv = LOAD_TEXTURE2D(_VelocityTex, coord + closetOffset).rg; // if velocity is outside the screen, we want to set it to 0 instead of clamping.
+                uv -= mv;
+
                 float4 prev = SAMPLE_TEXTURE2D(_PrevTaaColorTex, sampler_linear_clamp, uv);
-                prev = AnyIsNaN(prev) ? curr : prev;
+                // prev = AnyIsNaN(prev) ? curr : prev;
 
                 float3 n0 = RGBToYCoCg(curr.rgb);
 
                 float3 minColor = n0;
                 float3 maxColor = minColor;
                 
-                float3 n1 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord1).rgb);
-                float3 n2 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord2).rgb);
-                float3 n3 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord3).rgb);
-                float3 n4 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord4).rgb);
-                float3 n5 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord5).rgb);
-                float3 n6 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord6).rgb);
-                float3 n7 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord7).rgb);
-                float3 n8 = RGBToYCoCg(LOAD_TEXTURE2D(_MainTex, coord8).rgb);
+                float3 n1 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset1).rgb);
+                float3 n2 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset2).rgb);
+                float3 n3 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset3).rgb);
+                float3 n4 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset4).rgb);
+                float3 n5 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset5).rgb);
+                float3 n6 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset6).rgb);
+                float3 n7 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset7).rgb);
+                float3 n8 = RGBToYCoCg(_MainTex.SampleLevel(sampler_linear_clamp, uv, 0, offset8).rgb);
 
                 minColor = min(minColor, n1);
                 minColor = min(minColor, n2);
