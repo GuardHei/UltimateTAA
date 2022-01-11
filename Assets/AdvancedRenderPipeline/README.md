@@ -23,9 +23,10 @@
 
  ### Bit 2
 
- Reserved to exclude pixels from static velocity calculation. Can be used as custom bit after the velocity passes.
+ Reserved to exclude pixels from static velocity calculation. Can be used as a custom bit after the velocity passes.
 
  1: Already calculated dynamic velocity
+ 
  0: Still requires the full screen static velocity pass
 
  ### Bits 3 - 7
@@ -59,6 +60,10 @@
  ### Static Velocity Pass
     
     Draw the velocity of the static objects, using stencil[2] to kill dynamic pixels.
+
+ ### Downsample and Dilate Velocity Pass (Roadmap)
+
+   Downsample velocity texture to quarter resolution (half width, half height), and each pixel represents the closet velocity of the 2x2 quad.
 
  ### Directional Light Shadowmap Pass (Roadmap)
 
