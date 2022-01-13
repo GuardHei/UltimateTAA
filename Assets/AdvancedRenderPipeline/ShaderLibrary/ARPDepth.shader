@@ -159,6 +159,7 @@ Shader "Hidden/ARPDepth" {
                 float4 mv_posCS = mul(UNITY_MATRIX_NONJITTERED_VP, posWS);
                 // mv_posCS.z = .0f;
                 float4 prevPosOS = unity_MotionVectorsParams.x == 1 ? float4(input.prevPosOS, 1.0f) : float4(input.posOS, 1.0f);
+                // float4 prevPosOS = unity_MotionVectorsParams.x == 1 ? float4(input.posOS, 1.0f) : float4(input.posOS, 1.0f);
                 float4 mv_prevPosCS = mul(UNITY_PREV_MATRIX_VP, mul(GetPrevObjectToWorldMatrix(), prevPosOS));
                 // mv_prevPosCS.z = .0f;
                 output.mv_posCS = mv_posCS;
@@ -171,7 +172,8 @@ Shader "Hidden/ARPDepth" {
 
                 if (unity_MotionVectorsParams.y == .0f) return float2(.0f, .0f);
                 
-                float2 mv = CalculateMotionVector(input.posCS, input.mv_prevPosCS);
+                float2 mv = CalculateMotionVector(input.mv_posCS, input.mv_prevPosCS);
+                // mv.r = 1.0f;
                 return mv;
                 if (mv.g > 0) mv = float2(1, 1);
                 else mv = float2(0, 1);

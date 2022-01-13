@@ -24,4 +24,16 @@ float3 ClipAABB(float3 aabbMin, float3 aabbMax, float3 prev) {
 #endif
 }
 
+float3 ClipVariance(float3 m1, float3 m2, float n, float gamma, float3 prev) {
+    float3 mu = m1 / n;
+    float3 sigma = sqrt(abs(m2 / n - mu * mu));
+    sigma *= gamma;
+
+    float3 minColor = mu - sigma;
+    float3 maxColor = mu + sigma;
+
+    float3 clipped = ClipAABB(minColor, maxColor, prev);
+    return clipped;
+}
+
 #endif

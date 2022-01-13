@@ -21,7 +21,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AlbedoMap:
-        m_Texture: {fileID: 2800000, guid: 13ea471b8acad4bce8c562e4e82665a8, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissiveMap:
@@ -29,25 +29,25 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicSmoothnessMap:
-        m_Texture: {fileID: 2800000, guid: b5b7a9b7b15484dfcaade3b020585c36, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 6a6b68e7f166b4334bbf7c07773fa681, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
-        m_Texture: {fileID: 2800000, guid: bf97a57fa3ce44a3aa15bf212729bfeb, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _Cull: 2
-    - _MetallicScale: 1
+    - _MetallicScale: 0
     - _NormalScale: 1
     - _SmoothnessScale: 1
     - _StencilRef: 1
     m_Colors:
-    - _AlbedoTint: {r: 1, g: 1, b: 1, a: 1}
+    - _AlbedoTint: {r: 1, g: 0, b: 0, a: 1}
     - _EmissiveTint: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

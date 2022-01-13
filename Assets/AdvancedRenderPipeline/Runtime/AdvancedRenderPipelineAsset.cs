@@ -68,7 +68,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public TemporalAntiAliasingSettings taaSettings = new() {
 			enabled = true, jitterNum = JitterNum._8, jitterSpread = .75f, 
 			minHistoryWeight = .6f, maxHistoryWeight = .95f, minClipScale = .5f, maxClipScale = 1.25f, 
-			minSharpness = 0f, maxSharpness = 0f
+			minVelocityRejection = 1f, velocityRejectionScale = 0f, minDepthRejection = 1f, depthRejectionScale = 0f, 
+			minSharpness = .25f, maxSharpness = .25f
 		};
 		[Header("Color Grading & Tonemapping")]
 		public ColorGradingSettings colorSettings = new() { colorFilter = Color.white };
@@ -138,10 +139,22 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float minClipScale;
 		[Range(.05f, 6f)]
 		public float maxClipScale;
+		[Range(0f, 1f)]
+		public float minVelocityRejection;
+		[Range(0f, 2f)]
+		public float velocityRejectionScale;
+		[Range(0f, 1f)]
+		public float minDepthRejection;
+		[Range(0f, 2f)]
+		public float depthRejectionScale;
+		[Range(0f, .5f)]
 		public float minSharpness;
+		[Range(0f, .5f)]
 		public float maxSharpness;
 
-		public Vector4 ToTaaParams() => new(minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale);
+		public Vector4 TaaParams0 => new(minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale);
+		public Vector4 TaaParams1 => new(minVelocityRejection, velocityRejectionScale, minDepthRejection, depthRejectionScale);
+		public Vector4 TaaParams2 => new(minSharpness, maxSharpness, 0f, 0f);
 	}
 
 	[Serializable]

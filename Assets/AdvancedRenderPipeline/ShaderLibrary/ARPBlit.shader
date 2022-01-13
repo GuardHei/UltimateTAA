@@ -152,7 +152,7 @@ Shader "Hidden/ARPBlit" {
 
                 float3 output = float3(.0f, float(stencil) / 255.0f, .0f);
 
-                // if ((stencil >> 2) == 1) output.r = 1.0f;
+                if ((stencil & (1 << 2)) == 1 << 2) output.r = .5f;
                 
                 return output;
             }
@@ -203,7 +203,8 @@ Shader "Hidden/ARPBlit" {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < .0f) uv.y = 1.0f - uv.y;
                 
-                float2 output = SAMPLE_TEXTURE2D(_MainTex, sampler_point_clamp, uv).rg * 1.0f;
+                float2 output = SAMPLE_TEXTURE2D(_MainTex, sampler_point_clamp, uv).rg * 5.0f;
+                return float4(output.r, output.g, .0f, 1.0f);
                 return VectorToColor(output);
             }
             

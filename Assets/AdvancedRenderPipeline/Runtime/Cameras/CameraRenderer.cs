@@ -361,7 +361,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
                 case AdvancedCameraType.Reflection: return new GameCameraRenderer(camera);
 #if UNITY_EDITOR
                 case AdvancedCameraType.SceneView: return new SceneViewCameraRenderer(camera);
-                case AdvancedCameraType.Preview: return new GameCameraRenderer(camera);
+                case AdvancedCameraType.Preview: return new PreviewCameraRenderer(camera);
 #endif
                 default: throw new InvalidOperationException("Does not support camera type: " + type);
             }

@@ -58,15 +58,29 @@ CBUFFER_START(CameraData)
     RTHandleProperties _RTHandleProps;
 CBUFFER_END
 
+#ifndef DOTS_INSTANCING_ON // UnityPerDraw cbuffer doesn't exist with hybrid renderer
+
 CBUFFER_START(UnityPerDraw)
+    // "Space" block feature
     float4x4 unity_ObjectToWorld;
     float4x4 unity_WorldToObject;
     float4 unity_LODFade;
     float4 unity_WorldTransformParams;
+
+    // Render Layer block feature
+    float4 unity_RenderingLayer;
+
+    // Motion Vector block feature
     float4x4 unity_MatrixPreviousM;
     float4x4 unity_MatrixPreviousMI;
-    float4 unity_MotionVectorsParams; // X : Use last frame positions (right now skinned meshes are the only objects that use this; Y : Force No Motion; Z : Z bias value
+    // X : Use last frame positions (right now skinned meshes are the only objects that use this
+    // Y : Force No Motion
+    // Z : Z bias value
+    // W : Camera only
+    float4 unity_MotionVectorsParams;
 CBUFFER_END
+
+#endif
 
 float4 _ProjectionParams;
 float4 _JitterParams;
@@ -276,6 +290,10 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     return mv * .5f;
 }
 
+float Luma(float3 color) {
+    return (color.g * .5f) + (color.r + color.b) * .25f;
+}
+
 float3 FastTonemapInvertSafe(float3 c) {
     return c * rcp(max(1.0f - Max3(c.r, c.g, c.b), .0001f));
 }
@@ -287,6 +305,15 @@ float4 FastTonemapInvertSafe(float4 c) {
 //////////////////////////////////////////
 // PBR Utility Functions                //
 //////////////////////////////////////////
+
+float pow2(float b) {
+    return b * b;
+}
+
+float pow4(float b) {
+    float p2 = b *b;
+    return p2 * p2;
+}
 
 float pow5(float b) {
     float temp0 = b * b;

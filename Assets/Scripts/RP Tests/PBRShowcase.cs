@@ -7,7 +7,8 @@ using UnityEngine.Rendering;
 namespace RP_Tests {
 	[ExecuteInEditMode]
 	public class PBRShowcase : MonoBehaviour {
-		
+
+		public bool refreshToggle;
 		[Min(1)]
 		public int num = 11;
 		public float interval = 1.2f;
@@ -17,12 +18,15 @@ namespace RP_Tests {
 		public Material mat;
 
 		public Color color;
+		public bool customizedInput;
 		public bool  changeMetallic;
 		public float defaultMetallic;
 		public float endMetallic;
 		public bool  changeSmoothness;
 		public float defaultSmoothness;
 		public float endSmoothness;
+		public float[] metallicValues;
+		public float[] smoothnessValues;
 
 		private MaterialPropertyBlock _mpb;
 		private Matrix4x4[] _matrices;
@@ -44,8 +48,9 @@ namespace RP_Tests {
 				pos.x += (i - mid) * interval;
 				_matrices[i] = Matrix4x4.TRS(pos, Quaternion.identity, scale);
 				_colorValues[i] = color.linear;
-				_metallicValues[i] = changeMetallic ? Mathf.Lerp(defaultMetallic, endMetallic, i / (num - 1f)) : defaultMetallic;
+				_metallicValues[i] = changeMetallic ? ( customizedInput ? metallicValues[i] : Mathf.Lerp(defaultMetallic, endMetallic, i / (num - 1f)) ) : defaultMetallic;
 				_smoothnessValues[i] = changeSmoothness ? Mathf.Lerp(defaultSmoothness, endSmoothness, i / (num - 1f)) : defaultSmoothness;
+				_smoothnessValues[i] = changeSmoothness ? ( customizedInput ? smoothnessValues[i] : Mathf.Lerp(defaultSmoothness, endSmoothness, i / (num - 1f)) ) : defaultSmoothness;
 			}
 			
 			_mpb = new MaterialPropertyBlock();
@@ -59,6 +64,9 @@ namespace RP_Tests {
 #if UNITY_EDITOR
 		[Conditional("UNITY_EDITOR")]
 		private void OnDrawGizmosSelected() {
+
+			if (!enabled) return;
+			
 			GUIStyle redStyle = new GUIStyle {
 				normal = {
 					textColor = Color.red

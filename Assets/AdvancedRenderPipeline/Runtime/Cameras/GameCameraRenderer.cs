@@ -61,6 +61,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		public GameCameraRenderer(Camera camera) : base(camera) {
 			cameraType = AdvancedCameraType.Game;
 			_rendererDesc = "Render Game (" + camera.name + ")";
+			camera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
 			InitBuffers();
 			InitComputeBuffers();
 		}
@@ -245,7 +246,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void DrawVelocityPass() {
-			// DrawDynamicVelocityPass();
+			DrawDynamicVelocityPass();
 			DrawStaticVelocityPass();
 		}
 
@@ -361,7 +362,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 			if (!IsOnFirstFrame && settings.taaSettings.enabled && _enableTaa) {
 				MaterialManager.TaaMat.SetFloat(ShaderKeywordManager.ENABLE_REPROJECTION, 1f);
-				MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS, settings.taaSettings.ToTaaParams());
+				MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS_0, settings.taaSettings.TaaParams0);
+				MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS_1, settings.taaSettings.TaaParams1);
+				MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS_2, settings.taaSettings.TaaParams2);
 				
 				_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_TAA_COLOR_TEXTURE, _prevTaaColorTex);
 				_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_DEPTH_TEXTURE, _prevDepthTex);

@@ -99,13 +99,13 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
-    - _MetallicScale: 0.094
+    - _MetallicScale: 1
     - _Mode: 0
     - _NormalScale: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _RoughnessScale: 1
-    - _SmoothnessScale: 0.274
+    - _SmoothnessScale: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

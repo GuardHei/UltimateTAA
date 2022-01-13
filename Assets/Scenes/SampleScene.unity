@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.48119026, g: 0.54510695, b: 0.7743934, a: 1}
+  m_IndirectSpecularColor: {r: 0.4804958, g: 0.5443354, b: 0.77386785, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -635,6 +635,89 @@ Transform:
   m_Father: {fileID: 1959925061}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &491929273
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 491929274}
+  - component: {fileID: 491929275}
+  m_Layer: 0
+  m_Name: PBR Test Spheres
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &491929274
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491929273}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 4.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1698545157}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &491929275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491929273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  refreshToggle: 1
+  num: 11
+  interval: 1.2
+  offset: {x: 0, y: 0, z: 0}
+  scale: {x: 1, y: 1, z: 1}
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
+  color: {r: 0.76470596, g: 0.76470596, b: 0.76470596, a: 1}
+  customizedInput: 1
+  changeMetallic: 1
+  defaultMetallic: 0
+  endMetallic: 0
+  changeSmoothness: 1
+  defaultSmoothness: 0
+  endSmoothness: 0
+  metallicValues:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  smoothnessValues:
+  - 1
+  - 0.8
+  - 0.6
+  - 0.4
+  - 0.2
+  - 0
+  - 1
+  - 0.75
+  - 0.5
+  - 0.25
+  - 0
 --- !u!1 &664307228
 GameObject:
   m_ObjectHideFlags: 0
@@ -1113,6 +1196,89 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 918733871}
   m_Mesh: {fileID: -2432090755550338912, guid: 351280c33fadb421d8cde65525f59e07, type: 3}
+--- !u!1 &938628013
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 938628014}
+  - component: {fileID: 938628015}
+  m_Layer: 0
+  m_Name: PBR Test Spheres (6)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &938628014
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 938628013}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -4.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1698545157}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &938628015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 938628013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  refreshToggle: 1
+  num: 11
+  interval: 1.2
+  offset: {x: 0, y: 0, z: 0}
+  scale: {x: 1, y: 1, z: 1}
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
+  color: {r: 1, g: 0, b: 0.8093586, a: 1}
+  customizedInput: 1
+  changeMetallic: 1
+  defaultMetallic: 0
+  endMetallic: 0
+  changeSmoothness: 1
+  defaultSmoothness: 0
+  endSmoothness: 0
+  metallicValues:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  smoothnessValues:
+  - 1
+  - 0.8
+  - 0.6
+  - 0.4
+  - 0.2
+  - 0
+  - 1
+  - 0.75
+  - 0.5
+  - 0.25
+  - 0
 --- !u!1001 &942107060
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1246,6 +1412,89 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
+--- !u!1 &959253618
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 959253619}
+  - component: {fileID: 959253620}
+  m_Layer: 0
+  m_Name: PBR Test Spheres (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &959253619
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 959253618}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1698545157}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &959253620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 959253618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  refreshToggle: 1
+  num: 11
+  interval: 1.2
+  offset: {x: 0, y: 0, z: 0}
+  scale: {x: 1, y: 1, z: 1}
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
+  color: {r: 1, g: 0.7254902, b: 0, a: 1}
+  customizedInput: 1
+  changeMetallic: 1
+  defaultMetallic: 0
+  endMetallic: 0
+  changeSmoothness: 1
+  defaultSmoothness: 0
+  endSmoothness: 0
+  metallicValues:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  smoothnessValues:
+  - 1
+  - 0.8
+  - 0.6
+  - 0.4
+  - 0.2
+  - 0
+  - 1
+  - 0.75
+  - 0.5
+  - 0.25
+  - 0
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1465,172 +1714,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
---- !u!1 &997527404
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 997527407}
-  - component: {fileID: 997527406}
-  - component: {fileID: 997527405}
-  m_Layer: 0
-  m_Name: PBR Test Spheres (4)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &997527405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 997527404}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 6
-  interval: 1.2
-  offset: {x: -2.4, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 1, g: 0, b: 0.89411765, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 1
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!114 &997527406
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 997527404}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 5
-  interval: 1.2
-  offset: {x: 3.6, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 1, g: 0, b: 0.8950033, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 0
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!4 &997527407
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 997527404}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -3, z: -15}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 20
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1001887120
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1001887123}
-  - component: {fileID: 1001887122}
-  - component: {fileID: 1001887121}
-  m_Layer: 0
-  m_Name: PBR Test Spheres (3)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1001887121
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1001887120}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 6
-  interval: 1.2
-  offset: {x: -2.4, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 0, g: 0.4627451, b: 1, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 1
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!114 &1001887122
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1001887120}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 5
-  interval: 1.2
-  offset: {x: 3.6, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 0, g: 0.4620726, b: 1, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 0
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!4 &1001887123
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1001887120}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.5, z: -15}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 19
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1015725194
 GameObject:
   m_ObjectHideFlags: 0
@@ -1728,89 +1811,6 @@ Transform:
   m_Father: {fileID: 98454544}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1123612462
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1123612465}
-  - component: {fileID: 1123612464}
-  - component: {fileID: 1123612463}
-  m_Layer: 0
-  m_Name: PBR Test Spheres (2)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1123612463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1123612462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 6
-  interval: 1.2
-  offset: {x: -2.4, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 0, g: 1, b: 0.7411765, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 1
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!114 &1123612464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1123612462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 5
-  interval: 1.2
-  offset: {x: 3.6, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 0, g: 1, b: 0.74100137, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 0
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!4 &1123612465
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1123612462}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -15}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 18
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1205317912
 GameObject:
   m_ObjectHideFlags: 0
@@ -1827,7 +1827,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1205317913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2350,6 +2350,89 @@ Transform:
   m_Father: {fileID: 1959925061}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1626770185
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1626770186}
+  - component: {fileID: 1626770187}
+  m_Layer: 0
+  m_Name: PBR Test Spheres (5)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1626770186
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626770185}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1698545157}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1626770187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626770185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  refreshToggle: 1
+  num: 11
+  interval: 1.2
+  offset: {x: 0, y: 0, z: 0}
+  scale: {x: 1, y: 1, z: 1}
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
+  color: {r: 0, g: 0.30588236, b: 1, a: 1}
+  customizedInput: 1
+  changeMetallic: 1
+  defaultMetallic: 0
+  endMetallic: 0
+  changeSmoothness: 1
+  defaultSmoothness: 0
+  endSmoothness: 0
+  metallicValues:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  smoothnessValues:
+  - 1
+  - 0.8
+  - 0.6
+  - 0.4
+  - 0.2
+  - 0
+  - 1
+  - 0.75
+  - 0.5
+  - 0.25
+  - 0
 --- !u!1 &1637148487
 GameObject:
   m_ObjectHideFlags: 0
@@ -2442,10 +2525,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1660683614}
-  - component: {fileID: 1660683615}
-  - component: {fileID: 1660683617}
+  - component: {fileID: 1660683618}
   m_Layer: 0
-  m_Name: PBR Test Spheres
+  m_Name: PBR Test Spheres (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2459,14 +2541,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1660683613}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: -15}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 16
+  m_Father: {fileID: 1698545157}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1660683615
+--- !u!114 &1660683618
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2478,44 +2560,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  num: 5
+  refreshToggle: 1
+  num: 11
   interval: 1.2
-  offset: {x: 3.6, y: 0, z: 0}
+  offset: {x: 0, y: 0, z: 0}
   scale: {x: 1, y: 1, z: 1}
   mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 1}
-  changeMetallic: 0
+  color: {r: 1, g: 0, b: 0, a: 1}
+  customizedInput: 1
+  changeMetallic: 1
   defaultMetallic: 0
   endMetallic: 0
   changeSmoothness: 1
-  defaultSmoothness: 1
+  defaultSmoothness: 0
   endSmoothness: 0
---- !u!114 &1660683617
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1660683613}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 6
-  interval: 1.2
-  offset: {x: -2.4, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 1
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
+  metallicValues:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  smoothnessValues:
+  - 1
+  - 0.8
+  - 0.6
+  - 0.4
+  - 0.2
+  - 0
+  - 1
+  - 0.75
+  - 0.5
+  - 0.25
+  - 0
 --- !u!1 &1673570661
 GameObject:
   m_ObjectHideFlags: 0
@@ -2549,6 +2632,44 @@ Transform:
   m_Father: {fileID: 1205317914}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+--- !u!1 &1698545156
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1698545157}
+  m_Layer: 0
+  m_Name: PBR Tests
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1698545157
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698545156}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -12.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 491929274}
+  - {fileID: 1660683614}
+  - {fileID: 959253619}
+  - {fileID: 1741055232}
+  - {fileID: 2047932600}
+  - {fileID: 1626770186}
+  - {fileID: 938628014}
+  m_Father: {fileID: 0}
+  m_RootOrder: 16
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1727222745
 GameObject:
   m_ObjectHideFlags: 0
@@ -2582,6 +2703,89 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1741055231
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1741055232}
+  - component: {fileID: 1741055233}
+  m_Layer: 0
+  m_Name: PBR Test Spheres (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1741055232
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741055231}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1698545157}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1741055233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741055231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  refreshToggle: 1
+  num: 11
+  interval: 1.2
+  offset: {x: 0, y: 0, z: 0}
+  scale: {x: 1, y: 1, z: 1}
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
+  color: {r: 0, g: 1, b: 0.12589526, a: 1}
+  customizedInput: 1
+  changeMetallic: 1
+  defaultMetallic: 0
+  endMetallic: 0
+  changeSmoothness: 1
+  defaultSmoothness: 0
+  endSmoothness: 0
+  metallicValues:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  smoothnessValues:
+  - 1
+  - 0.8
+  - 0.6
+  - 0.4
+  - 0.2
+  - 0
+  - 1
+  - 0.75
+  - 0.5
+  - 0.25
+  - 0
 --- !u!1 &1836780202
 GameObject:
   m_ObjectHideFlags: 0
@@ -2679,89 +2883,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
---- !u!1 &1873161670
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1873161673}
-  - component: {fileID: 1873161672}
-  - component: {fileID: 1873161671}
-  m_Layer: 0
-  m_Name: PBR Test Spheres (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1873161671
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1873161670}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 6
-  interval: 1.2
-  offset: {x: -2.4, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 1, g: 0, b: 0, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 1
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!114 &1873161672
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1873161670}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  num: 5
-  interval: 1.2
-  offset: {x: 3.6, y: 0, z: 0}
-  scale: {x: 1, y: 1, z: 1}
-  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
-  color: {r: 1, g: 0, b: 0, a: 1}
-  changeMetallic: 0
-  defaultMetallic: 0
-  endMetallic: 0
-  changeSmoothness: 1
-  defaultSmoothness: 1
-  endSmoothness: 0
---- !u!4 &1873161673
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1873161670}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: -15}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 17
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1875192949
 GameObject:
   m_ObjectHideFlags: 0
@@ -3206,6 +3327,89 @@ Transform:
   m_Father: {fileID: 98454544}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2047932599
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2047932600}
+  - component: {fileID: 2047932601}
+  m_Layer: 0
+  m_Name: PBR Test Spheres (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2047932600
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047932599}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -1.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1698545157}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2047932601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047932599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9666ad7ec1f47a59e43e27f7db50891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  refreshToggle: 1
+  num: 11
+  interval: 1.2
+  offset: {x: 0, y: 0, z: 0}
+  scale: {x: 1, y: 1, z: 1}
+  mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  mat: {fileID: 2100000, guid: b0ab35d8a7bda49269eb8ffeab311802, type: 2}
+  color: {r: 0, g: 1, b: 0.8235294, a: 1}
+  customizedInput: 1
+  changeMetallic: 1
+  defaultMetallic: 0
+  endMetallic: 0
+  changeSmoothness: 1
+  defaultSmoothness: 0
+  endSmoothness: 0
+  metallicValues:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  smoothnessValues:
+  - 1
+  - 0.8
+  - 0.6
+  - 0.4
+  - 0.2
+  - 0
+  - 1
+  - 0.75
+  - 0.5
+  - 0.25
+  - 0
 --- !u!1 &2081674423
 GameObject:
   m_ObjectHideFlags: 0

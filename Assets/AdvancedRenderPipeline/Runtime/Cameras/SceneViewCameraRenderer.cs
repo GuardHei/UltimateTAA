@@ -47,7 +47,12 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 	}
 #else
 	public class SceneViewCameraRenderer : GameCameraRenderer {
-
+		public SceneViewCameraRenderer(Camera camera) : base(camera) {
+			// Debug.Log("SceneView camera render is initing...");
+			cameraType = AdvancedCameraType.SceneView;
+			_enableTaa = settings.enableTaaInEditor;
+			_rendererDesc = "Render Scene View (" + camera.name + ")";
+		}
 	}
 #endif
 }
