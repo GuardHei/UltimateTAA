@@ -42,7 +42,9 @@ Shader "Hidden/ARPIndirectSpecular" {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
 
-                float3 N = SampleNormalWS(uv);
+                float4 unpacked = SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv);
+                float iblOcclusion = unpacked.b;
+                float3 N = DecodeNormalComplex(unpacked.rg);
                 
                 float depth = SampleDepth(uv);
                 float4 posWS = DepthToWorldPosFast(depth, input.ray);
@@ -60,8 +62,7 @@ Shader "Hidden/ARPIndirectSpecular" {
                 float3 energyCompensation;
                 float3 lut = GetGFFromLut(energyCompensation, f0, roughness, NdotV);
 
-                float specularOcclusion = SAMPLE_TEXTURE2D(_RawColorTex, sampler_point_clamp, uv).a;
-                float3 specularIBL = EvaluateSpecularIBL(kS, R, linearRoughness, lut, energyCompensation) * specularOcclusion;
+                float3 specularIBL = EvaluateSpecularIBL(kS, R, linearRoughness, lut, energyCompensation) * iblOcclusion;
                 
                 return specularIBL;
             }

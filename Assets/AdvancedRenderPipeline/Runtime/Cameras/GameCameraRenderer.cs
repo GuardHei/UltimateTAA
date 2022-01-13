@@ -320,7 +320,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		public void ComputeSpecularIBLPass() {
 			_cmd.SetGlobalTexture(ShaderKeywordManager.DEPTH_TEXTURE, _depthTex);
-			_cmd.SetGlobalTexture(ShaderKeywordManager.RAW_COLOR_TEXTURE, _rawColorTex);
+			// _cmd.SetGlobalTexture(ShaderKeywordManager.RAW_COLOR_TEXTURE, _rawColorTex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_1_TEXTURE, _gbuffer1Tex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_2_TEXTURE, _gbuffer2Tex);
 			_cmd.FullScreenPass(_screenSpaceCubemap, MaterialManager.IndirectSpecularMat, MaterialManager.CUBEMAP_REFLECTION_PASS);
@@ -340,6 +340,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void IntegrateOpaqueLightingPass() {
+			_cmd.SetGlobalTexture(ShaderKeywordManager.RAW_COLOR_TEXTURE, _rawColorTex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.INDIRECT_SPECULAR, _indirectSpecular);
 			_cmd.FullScreenPass(_colorTex, MaterialManager.IntegrateOpaqueLightingMat, MaterialManager.INTEGRATE_OPAQUE_LIGHTING_PASS);
 			ExecuteCommand();
@@ -507,7 +508,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.VELOCITY_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_SNorm, name: "VelocityTex " + i), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_1_TEXTURE,
-				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_UNorm, name: "GBuffer1"), 1);
+				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.A2R10G10B10_UNormPack32, name: "GBuffer1"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_2_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R8G8B8A8_UNorm, name: "GBuffer2"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, 

@@ -223,12 +223,14 @@ float3 DecodeNormal(float3 packed) {
 
 // Convert Normal from [-1, 1] to [0, 1]
 float2 EncodeNormalComplex(float3 N) {
-    return PackNormalOctRectEncode(N) * .5f + .5f;
+    return PackNormalOctQuadEncode(N) * .5f + .5f;
+    // return PackNormalOctRectEncode(N) * .5f + .5f;
 }
 
 // Convert Normal from [0, 1] to [-1, 1]
 float3 DecodeNormalComplex(float2 N) {
-    return UnpackNormalOctRectEncode(N * 2.0f - 1.0f);
+    return UnpackNormalOctQuadEncode(N * 2.0f - 1.0f);
+    // return UnpackNormalOctRectEncode(N * 2.0f - 1.0f);
 }
 
 float4 VertexIDToPosCS(uint vertexID) {

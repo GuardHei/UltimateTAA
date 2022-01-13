@@ -35,13 +35,13 @@
 
  ## Thin - GBuffer
 
- | GBuffer   | Format           | Channel R  | Channel G  | Channel B  | Channel A                             |
- | :-------- | :--------------- | :--------  | :--------  | :--------  | :------------------------------------ |
- | GBuffer 0 | RGBA16_SFloat    | Forward R  | Forward G  | Forward B  | Specular Occlusion / TAA Anti-flicker |
- | GBuffer 1 | R11G11B10_UFloat | Normal X   | Normal Y   | Normal Z   | N/A                                   | 
- | GBuffer 2 | RGBA8_UNorm      | Specular R | Specular G | Specular B | Linear Roughness                      |
- | Velocity  | RG16_SNorm       | Velocity X | Velocity Y | N/A        | N/A                                   |
- | Depth     | D24S8            | Depth      | N/A        | N/A        | Stencil                               |
+ | GBuffer   | Format            | Channel R  | Channel G  | Channel B       | Channel A                    |
+ | :-------- | :---------------- | :--------  | :--------  | :-------------- | :--------------------------- |
+ | GBuffer 0 | RGBA16_SFloat     | Forward R  | Forward G  | Forward B       | SSS Param / TAA Anti-flicker |
+ | GBuffer 1 | A2R10G10B10_UNorm | Normal X   | Normal Y   | IBL Occlusion   | Material Shadow              | 
+ | GBuffer 2 | RGBA8_UNorm       | Specular R | Specular G | Specular B      | Linear Roughness             |
+ | Velocity  | RG16_SNorm        | Velocity X | Velocity Y | N/A             | N/A                          |
+ | Depth     | D24S8             | Depth      | N/A        | N/A             | Stencil                      |
 
  ## Render Pass Overview
 
@@ -71,7 +71,7 @@
 
  ### Forward Opaque Lighting Pass
 
-    Shade forward opaque materials. Output lighting (direct lighting + indirect diffuse + emissive) result and specular occlusion to RawColorTex. Output world space normal to GBuffer 1. Output specular color and linear roughness to GBuffer 2.
+    Shade forward opaque materials. Output lighting (direct lighting + indirect diffuse + emissive) result and SSS Param to RawColorTex. Output world space normal (Oct Quad Encoded), IBL occlusion, and material shadow to GBuffer 1. Output specular color and linear roughness to GBuffer 2.
 
  ### Specular Image Based Lighting Pass
 
