@@ -163,6 +163,8 @@ TEXTURE2D(_OcclusionMap);
 SAMPLER(sampler_OcclusionMap);
 TEXTURE2D(_EmissiveMap);
 SAMPLER(sampler_EmissiveMap);
+TEXTURE2D(_HeightMap);
+SAMPLER(sampler_HeightMap);
 
 TEXTURE2D(_PreintegratedDGFLut);
 SAMPLER(sampler_PreintegratedDGFLut);
@@ -179,6 +181,21 @@ SAMPLER(sampler_GlobalEnvMapDiffuse);
 //////////////////////////////////////////
 // Built-in Utility Functions           //
 //////////////////////////////////////////
+
+float pow2(float b) {
+    return b * b;
+}
+
+float pow4(float b) {
+    float p2 = b *b;
+    return p2 * p2;
+}
+
+float pow5(float b) {
+    float temp0 = b * b;
+    float temp1 = temp0 * temp0;
+    return temp1 * b;
+}
 
 /*
 // Convert from Clip space (-1..1) to NDC 0..1 space.
@@ -316,21 +333,6 @@ float4 FastTonemapInvertSafe(float4 c) {
 //////////////////////////////////////////
 // PBR Utility Functions                //
 //////////////////////////////////////////
-
-float pow2(float b) {
-    return b * b;
-}
-
-float pow4(float b) {
-    float p2 = b *b;
-    return p2 * p2;
-}
-
-float pow5(float b) {
-    float temp0 = b * b;
-    float temp1 = temp0 * temp0;
-    return temp1 * b;
-}
 
 float LinearSmoothToLinearRoughness(float linearSmooth) {
     return 1.0f - linearSmooth;
@@ -662,6 +664,39 @@ float GetDFromLut(inout float3 energyCompensation, float3 specularColor, float r
 float3 GetGFFromLut(inout float3 energyCompensation, float3 specularColor, float roughness, float NdotV) {
     float2 envGF = SAMPLE_TEXTURE2D_LOD(_PreintegratedGFLut, sampler_PreintegratedGFLut, float2(NdotV, roughness), 0).rg;
     return CompensateDirectBRDF(envGF, energyCompensation, specularColor);
+}
+
+//////////////////////////////////////////
+// Miscs                                //
+//////////////////////////////////////////
+
+float2 ParallexMapping(float2 uv, float3 viewDir, float scale) {
+    const float minLayers = 2.0f;
+    const float maxLayers = 16.0f;
+    float numLayers = lerp(maxLayers, minLayers, max(dot(float3(.0f, .0f, 1.0f), viewDir), .0f));
+    float layerDepth = 1.0f / numLayers;
+    float currDepth = .0f;
+    float2 step = viewDir.xy * scale;
+    float2 offset = step / numLayers;
+
+    float2 currUV = uv;
+    float height = SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, uv).r;
+    float count = .0f;
+    while (currDepth < height && count < numLayers) {
+        currUV -= offset;
+        height = SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, uv).r;
+        currDepth += layerDepth;
+        count += 1.0f;
+    }
+
+    float2 prevUV = currUV + offset;
+    float depthAfter = height - currDepth;
+    float depthBefore = SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, prevUV).r - currDepth + layerDepth;
+
+    float weight = depthAfter / (depthAfter - depthBefore);
+    currUV = lerp(currUV, prevUV, weight);
+    
+    return currUV;
 }
 
 #endif

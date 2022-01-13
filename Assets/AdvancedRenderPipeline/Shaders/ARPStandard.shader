@@ -10,6 +10,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         _NormalScale("Normal Scale", Range(0, 1)) = 1
         [NoScaleOffset]
         _NormalMap("Normal", 2D) = "bump" { }
+        _HeightScale("Height Scale", Range(0, 2)) = 1
+        _HeightMap("Height", 2D) = "black" { }
         _MetallicScale("Metallic Scale", Range(0, 1)) = 0
         _SmoothnessScale("Smoothness Scale", Range(0, 1)) = 1
         _MetallicSmoothnessMap("Metallic (RGB) Smoothness (A)", 2D) = "white" { }
@@ -74,6 +76,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
                 UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+                UNITY_DEFINE_INSTANCED_PROP(float, _HeightScale)
                 UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)
                 UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
@@ -109,13 +112,17 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 GBufferOutput output;
 
-                float3 normalWS = normalize(input.normalWS);
-                float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
-                float3 normalData = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.baseUV), normalScale);
-                
-                float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS);
                 float3 V = input.viewDirWS;
                 float3 L = _MainLight.direction.xyz;
+
+                float2 uv = input.baseUV;
+                uv = ParallexMapping(uv, V, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
+
+                float3 normalWS = normalize(input.normalWS);
+                float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
+                float3 normalData = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv), normalScale);
+                
+                float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS);
 
                 float NdotV;
                 N = GetViewReflectedNormal(N, V, NdotV);
@@ -124,13 +131,13 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float NdotH = saturate(dot(N, H));
                 float NdotL = saturate(dot(N, L));
 
-                float3 albedo = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.baseUV).rgb;
+                float3 albedo = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, uv).rgb;
                 albedo *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;
 
-                float occlusion = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, input.baseUV).r;
+                float occlusion = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, uv).r;
                 // albedo *= occlusion;
 
-                float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, input.baseUV);
+                float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, uv);
                 
                 float linearSmoothness = metallicSmoothness.a;
                 // float linearSmoothness = 1.0f - metallicSmoothness.g;
@@ -144,7 +151,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 // float metallic = metallicSmoothness.b;
                 metallic *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
 
-                float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, input.baseUV).rgb;
+                float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
                 emissive += UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;
 
                 float3 diffuse = (1.0 - metallic) * albedo;
