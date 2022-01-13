@@ -395,7 +395,9 @@ float D_GGX(float NdotH, float alphaG2) {
     // Higher accuracy?
     const float f = (alphaG2 - 1.0f) * NdotH * NdotH + 1.0f;
     // const float f = (NdotH * alphaG2 - NdotH) * NdotH + 1;
-    return alphaG2 / max(f * f, .00001f);
+    float f_sqr = f * f;
+    f_sqr = f_sqr == .0f ? .0001f : f_sqr;
+    return alphaG2 / f_sqr;
 }
 
 float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float linearRoughness) {
