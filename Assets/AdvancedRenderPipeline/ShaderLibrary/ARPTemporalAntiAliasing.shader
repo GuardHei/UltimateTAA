@@ -156,23 +156,21 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 maxColor = max(maxColor, n8);
                 */
 
-                /*
-                float3 corners = YCoCgToRGB(n2) + YCoCgToRGB(n3) + YCoCgToRGB(n7) + YCoCgToRGB(n8);
-                corners = (corners - curr.rgb) * 2.0f * .166667f;
-                corners = (curr.rgb - corners) * 2.718282f * .25f;
-                curr.rgb += corners;
-                curr = clamp(curr, 0, HALF_MAX);
-                */
-
-                /*
-                float3 sharpen = YCoCgToRGB(n1) + YCoCgToRGB(n4) + YCoCgToRGB(n5) + YCoCgToRGB(n6);
-                curr.rgb = curr.rgb * 1.4f + sharpen * -.1f;
-                curr = clamp(curr, .0f, HALF_MAX);
-                */
-
                 // prev.rgb = YCoCgToRGB(clamp(RGBToYCoCg(prev.rgb), minColor, maxColor));
 
                 // prev.rgb = YCoCgToRGB(ClipAABB(minColor, maxColor, RGBToYCoCg(prev.rgb)));
+
+                float3 corners = YCoCgToRGB(n2) + YCoCgToRGB(n3) + YCoCgToRGB(n7) + YCoCgToRGB(n8);
+                corners = (corners - curr.rgb) * 2.0f * .166667f;
+                corners = (curr.rgb - corners) * 2.718282f * _TaaParams_2.y;
+                curr.rgb += corners;
+                curr = clamp(curr, 0, HALF_MAX);
+
+                /*
+                float3 sharpen = YCoCgToRGB(n1) + YCoCgToRGB(n4) + YCoCgToRGB(n5) + YCoCgToRGB(n6);
+                // curr.rgb = curr.rgb * 5.0f + sharpen * -1.0f;
+                curr = clamp(curr, .0f, HALF_MAX);
+                */
 
                 output = lerp(curr, prev, _TaaParams_0.y);
                 output.a = 1.0f;

@@ -204,6 +204,16 @@ float3 DecodeNormal(float3 packed) {
     return packed * 2.0f - 1.0f;
 }
 
+// Convert Normal from [-1, 1] to [0, 1]
+float2 EncodeNormalComplex(float3 N) {
+    return PackNormalOctRectEncode(N) * .5f + .5f;
+}
+
+// Convert Normal from [0, 1] to [-1, 1]
+float3 DecodeNormalComplex(float2 N) {
+    return UnpackNormalOctRectEncode(N * 2.0f - 1.0f);
+}
+
 float4 VertexIDToPosCS(uint vertexID) {
     return float4(
         vertexID <= 1 ? -1.0f : 3.0f,
@@ -239,7 +249,8 @@ float SampleCorrectedDepth(float2 uv) {
 }
 
 float3 SampleNormalWS(float2 uv) {
-    return DecodeNormal(SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv).rgb);
+    return DecodeNormalComplex(SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv).rg);
+    // return DecodeNormal(SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv).rgb);
 }
 
 float4 DepthToWorldPosFast(float depth, float3 ray) {

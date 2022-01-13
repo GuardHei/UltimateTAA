@@ -507,7 +507,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.VELOCITY_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_SNorm, name: "VelocityTex " + i), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_1_TEXTURE,
-				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.B10G11R11_UFloatPack32, name: "GBuffer1"), 1);
+				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_UNorm, name: "GBuffer1"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_2_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R8G8B8A8_UNorm, name: "GBuffer2"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, 

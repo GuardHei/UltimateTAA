@@ -61,7 +61,8 @@ Shader "Advanced Render Pipeline/ARPStandardStatic" {
 
             struct GBufferOutput {
                 float4 forward : SV_TARGET0;
-                float3 gbuffer1 : SV_TARGET1;
+                // float3 gbuffer1 : SV_TARGET1;
+                float2 gbuffer1 : SV_TARGET1;
                 float4 gbuffer2 : SV_TARGET2;
             };
 
@@ -162,7 +163,8 @@ Shader "Advanced Render Pipeline/ARPStandardStatic" {
                 float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut) * min(occlusion, iblOcclusion);
                 
                 output.forward = float4(directLighting + indirectDiffuse + emissive, iblOcclusion);
-                output.gbuffer1 = EncodeNormal(N);
+                // output.gbuffer1 = EncodeNormal(N);
+                output.gbuffer1 = EncodeNormalComplex(N);
                 output.gbuffer2 = float4(f0, linearRoughness);
                 return output;
             }
