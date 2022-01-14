@@ -10,8 +10,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         _NormalScale("Normal Scale", Range(0, 1)) = 1
         [NoScaleOffset]
         _NormalMap("Normal", 2D) = "bump" { }
-        _HeightScale("Height Scale", Range(0, 2)) = 1
-        _HeightMap("Height", 2D) = "black" { }
+        _HeightScale("Height Scale", Range(0, .3)) = 0
+        _HeightMap("Height", 2D) = "white" { }
         _MetallicScale("Metallic Scale", Range(0, 1)) = 0
         _SmoothnessScale("Smoothness Scale", Range(0, 1)) = 1
         _MetallicSmoothnessMap("Metallic (RGB) Smoothness (A)", 2D) = "white" { }
@@ -44,6 +44,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             HLSLPROGRAM
 
             #pragma multi_compile_instancing
+            #pragma shader_feature_local _PARALLAX_MAP
             #pragma vertex StandardVertex
             #pragma fragment StandardFragment
 
@@ -63,20 +64,25 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 normalWS : VAR_NORMAL;
                 float4 tangentWS : VAR_TANGENT;
                 float3 viewDirWS : TEXCOORD1;
+                // #if defined(_PARALLAX_MAP)
+                float3 viewDirTS : TEXCOORD2;
+                // #endif
                 float2 baseUV : VAR_BASE_UV;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct GBufferOutput {
                 float4 forward : SV_TARGET0;
-                // float3 gbuffer1 : SV_TARGET1;
-                float4 gbuffer1 : SV_TARGET1;
+                float2 gbuffer1 : SV_TARGET1;
                 float4 gbuffer2 : SV_TARGET2;
+                float gbuffer3 : SV_TARGET3;
             };
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
                 UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+                // #if defined(_PARALLAX_MAP)
                 UNITY_DEFINE_INSTANCED_PROP(float, _HeightScale)
+                // #endif
                 UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)
                 UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
@@ -101,6 +107,16 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
 
                 output.viewDirWS = normalize(_CameraPosWS.xyz - posWS);
+
+                // #if defined(_PARALLAX_MAP)
+                float3x3 objectToTangent = float3x3(
+                    input.tangentOS.xyz,
+                    cross(input.normalOS, input.tangentOS.xyz) * input.tangentOS.w,
+                    input.normalOS);
+
+                float3 viewDirOS = mul(GetWorldToObjectMatrix(), float4(_CameraPosWS.xyz, 1.0f)).xyz - input.posOS.xyz;
+                output.viewDirTS = mul(objectToTangent, viewDirOS);
+                // #endif
                 
                 float4 albedoST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoMap_ST);
                 output.baseUV = input.baseUV * albedoST.xy + albedoST.zw;
@@ -116,7 +132,12 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 L = _MainLight.direction.xyz;
 
                 float2 uv = input.baseUV;
-                uv = ParallexMapping(uv, V, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
+                // #if defined(_PARALLAX_MAP)
+                // uv = ParallexMapping(uv, V, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
+                // output.forward = float4(1.0f, .0f, .0f, 1.0f);
+                // return output;
+                uv = ApplyParallax(uv, input.viewDirTS, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
+                // #endif
 
                 float3 normalWS = normalize(input.normalWS);
                 float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
@@ -187,10 +208,9 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 output.forward = float4(directLighting + indirectDiffuse + emissive, 1.0f);
                 // output.forward = float4(indirectDiffuse, iblOcclusion);
                 // output.forward = float4(energyCompensation - 1.0f, 1.0f);
-                // output.gbuffer1 = PackNormalOctQuadEncode(N);
-                // output.gbuffer1 = EncodeNormal(N);
-                output.gbuffer1 = float4(EncodeNormalComplex(N), iblOcclusion, 1.0f);
+                output.gbuffer1 = EncodeNormalComplex(N);
                 output.gbuffer2 = float4(f0, linearRoughness);
+                output.gbuffer3 = iblOcclusion;
                 return output;
             }
 
@@ -198,5 +218,5 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         }
     }
     
-    CustomEditor "AdvancedRenderPipeline.Editor.ShaderGUIs.MVShaderGUI"
+    CustomEditor "AdvancedRenderPipeline.Editor.ShaderGUIs.StandardShaderGUI"
 }

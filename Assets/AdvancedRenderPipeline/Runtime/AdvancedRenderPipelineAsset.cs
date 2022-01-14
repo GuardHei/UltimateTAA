@@ -82,6 +82,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		Stencil,
 		GBuffer1,
 		GBuffer2,
+		GBuffer3,
 		Smoothness,
 		Velocity,
 		ScreenSpaceCubemap,

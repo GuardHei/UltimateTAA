@@ -42,9 +42,8 @@ Shader "Hidden/ARPIndirectSpecular" {
                 float2 uv = input.screenUV;
                 if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
 
-                float4 unpacked = SAMPLE_TEXTURE2D(_GBuffer1, sampler_point_clamp, uv);
-                float iblOcclusion = unpacked.b;
-                float3 N = DecodeNormalComplex(unpacked.rg);
+                float3 N = SampleNormalWS(uv);
+                float iblOcclusion = SAMPLE_TEXTURE2D(_GBuffer3, sampler_point_clamp, uv).r;
                 
                 float depth = SampleDepth(uv);
                 float4 posWS = DepthToWorldPosFast(depth, input.ray);

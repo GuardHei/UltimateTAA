@@ -40,6 +40,12 @@ namespace AdvancedRenderPipeline.Runtime {
 			cmd.SetRenderTarget(dest, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
 			cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMat, (int) BlitPass.DebugSmoothness, MeshTopology.Triangles, 3);
 		}
+
+		public static void BlitDebugIBLOcclusion(this CommandBuffer cmd, RTHandle src, RenderTargetIdentifier dest) {
+			cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_TEXTURE, src);
+			cmd.SetRenderTarget(dest, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+			cmd.DrawProcedural(Matrix4x4.identity, MaterialManager.BlitMat, (int) BlitPass.DebugIBLOcclusion, MeshTopology.Triangles, 3);
+		}
 		
 		public static void BlitDebugNaN(this CommandBuffer cmd, RTHandle src, RenderTargetIdentifier dest) {
 			cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_TEXTURE, src);
@@ -98,6 +104,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		DebugStencil,
 		DebugVelocity,
 		DebugSmoothness,
+		DebugIBLOcclusion,
 		DebugNaN
 	}
 }

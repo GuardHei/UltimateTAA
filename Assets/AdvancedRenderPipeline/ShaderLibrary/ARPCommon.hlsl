@@ -21,6 +21,9 @@
 #define STENCIL_CHANNEL r
 #endif
 
+// #define POM_BIAS .42f
+#define POM_BIAS .3f
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
@@ -140,6 +143,7 @@ TEXTURE2D(_VelocityTex);
 TEXTURE2D(_PrevVelocityTex);
 TEXTURE2D(_GBuffer1);
 TEXTURE2D(_GBuffer2);
+TEXTURE2D(_GBuffer3);
 TEXTURE2D(_ScreenSpaceCubemap);
 TEXTURE2D(_ScreenSpaceReflection);
 TEXTURE2D(_PrevScreenSpaceReflection);
@@ -672,6 +676,10 @@ float3 GetGFFromLut(inout float3 energyCompensation, float3 specularColor, float
 // Miscs                                //
 //////////////////////////////////////////
 
+float SampleHeightMap(float2 uv) {
+    return SAMPLE_TEXTURE2D_LOD(_HeightMap, sampler_HeightMap, uv, 0).r;
+}
+
 float2 ParallexMapping(float2 uv, float3 viewDir, float scale) {
     const float minLayers = 2.0f;
     const float maxLayers = 16.0f;
@@ -699,6 +707,33 @@ float2 ParallexMapping(float2 uv, float3 viewDir, float scale) {
     currUV = lerp(currUV, prevUV, weight);
     
     return currUV;
+}
+
+float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale) {
+    viewDirTS = normalize(viewDirTS);
+    viewDirTS.xy /= viewDirTS.z + POM_BIAS;
+
+    const int minLayers = 1.0f;
+    const int maxLayers = 24.0f;
+    int numLayers = lerp(maxLayers, minLayers, max(dot(float3(.0f, .0f, 1.0f), viewDirTS), .0f));
+    // numLayers = maxLayers;
+
+    const float stepSize = 1.0f / (float) numLayers;
+    const float2 uvDelta = viewDirTS.xy * (stepSize * scale);
+
+    float2 offset = .0f;
+    float stepHeight = 1.0f;
+    float height = SampleHeightMap(uv);
+
+    for (int i = 1; i < maxLayers && i < numLayers && stepHeight > height; i++) {
+        // if (i < numLayers && stepHeight > height) break;
+        // if (i >= numLayers && stepHeight <= height) break;
+        offset -= uvDelta;
+        stepHeight -= stepSize;
+        height = SampleHeightMap(uv + offset);
+    }
+    
+    return uv + offset;
 }
 
 #endif

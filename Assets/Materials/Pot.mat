@@ -28,6 +28,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MetallicSmoothnessMap:
         m_Texture: {fileID: 2800000, guid: 24361d83043ff4576b0187cda5ca94fc, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -43,6 +47,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cull: 2
+    - _HeightScale: 0
     - _MetallicScale: 0
     - _NormalScale: 1
     - _SmoothnessScale: 1
