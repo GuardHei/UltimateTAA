@@ -1,6 +1,10 @@
 #ifndef ARP_COMMON_INCLUDED
 #define ARP_COMMON_INCLUDED
 
+#define PHI (1.61803398874989484820459f * 00000.1f)
+#define SQ2 (1.41421356237309504880169f * 10000.0f)
+#define EI (2.71828182846f)
+
 #define KILL_MICRO_MOVEMENT
 #define MICRO_MOVEMENT_THRESHOLD (.01f * _ScreenSize.zw)
 
@@ -85,7 +89,12 @@ CBUFFER_END
 
 #endif
 
+float4 _Time;
+float4 _SinTime;
+float4 _CosTime;
+float4 unity_DeltaTime;
 float4 _ProjectionParams;
+float4 _FrameParams; // { FrameNum, TotalFrameNum, FrameNum % TotalFrameNum,  FrameNum % TotalFrameNum / TotalFrameNum }
 float4 _JitterParams;
 float4x4 unity_MatrixVP;
 float4x4 unity_MatrixV;
@@ -128,6 +137,8 @@ float _SkyboxMipLevel;
 
 SAMPLER(sampler_point_clamp);
 SAMPLER(sampler_linear_clamp);
+SAMPLER(sampler_point_repeat);
+SAMPLER(sampler_linear_repeat);
 
 TEXTURE2D(_RawColorTex);
 TEXTURE2D(_ColorTex);
@@ -182,6 +193,17 @@ SAMPLER(sampler_GlobalEnvMapSpecular);
 TEXTURECUBE(_GlobalEnvMapDiffuse);
 SAMPLER(sampler_GlobalEnvMapDiffuse);
 
+TEXTURE2D(_BlueNoise16);
+float4 _BlueNoise16_TexelSize;
+TEXTURE2D(_BlueNoise64);
+float4 _BlueNoise64_TexelSize;
+TEXTURE2D(_BlueNoise256);
+float4 _BlueNoise256_TexelSize;
+TEXTURE2D(_BlueNoise512);
+float4 _BlueNoise512_TexelSize;
+TEXTURE2D(_BlueNoise1024);
+float4 _BlueNoise1024_TexelSize;
+
 //////////////////////////////////////////
 // Built-in Utility Functions           //
 //////////////////////////////////////////
@@ -199,6 +221,113 @@ float pow5(float b) {
     float temp0 = b * b;
     float temp1 = temp0 * temp0;
     return temp1 * b;
+}
+
+//////////////////////////////////////////
+// Noise Functions                      //
+//////////////////////////////////////////
+
+
+
+// xy should be a integer position
+float PseudoRandom(float2 xy) {
+    float2 pos = frac(xy / 128.0f) * 128.0f + float2(-64.340622f, -72.465622f);
+    // found by experimentation
+    return frac(dot(pos.xyx * pos.xyy, float3(20.390625f, 60.703125f, 2.4281209f)));
+}
+
+// [0, 1]
+// ~10 ALU operations (2 frac, 5 *, 3 mad)
+float FastRandom(uint2 xy, float Magic = 3571.0) {
+    float2 random2 = (1.0f / 4320.0f) * xy + float2(.25f, .0f);
+    float random = frac(dot(random2 * random2, Magic));
+    random = frac(random * random * (2.0f * Magic));
+    return random;
+}
+
+// xy should be an integer position
+// high frequency dither pattern appearing almost random without banding steps
+//note: from "NEXT GENERATION POST PROCESSING IN CALL OF DUTY: ADVANCED WARFARE"
+//      http://advances.realtimerendering.com/s2014/index.html
+// Epic extended by FrameId
+// ~7 ALU operations (2 frac, 3 mad, 2 *)
+// @return 0..1
+float InterleavedGradientNoise(float2 uv, float FrameId) {
+    // magic values are found by experimentation
+    uv += FrameId * (float2(47.0f, 17.0f) * 0.695f);
+    const float3 magic = float3(.06711056f, .00583715f, 52.9829189f);
+    return frac(magic.z * frac(dot(uv, magic.xy)));
+}
+
+float SimpleNoise(float2 uv) {
+    return frac(sin(dot(uv,float2(12.9898f, 78.233f))) * 43758.5453123f);
+}
+
+float GoldNoise(float3 pos, float seed) {
+    return frac(tan(distance(pos * (PHI + seed), float3(PHI, PI, EI))) * SQ2) * 2 - 1;
+}
+
+float GoldNoise(float2 pos, float seed) {
+    return frac(tan(distance(pos * (PHI + seed), float2(PHI, PI))) * SQ2) * 2 - 1;
+}
+
+float BlueNoise16(float2 uv) {
+    uv *= _BlueNoise16_TexelSize.xy;
+    return SAMPLE_TEXTURE2D_LOD(_BlueNoise16, sampler_linear_repeat, uv, 0).r;
+}
+
+float BlueNoise16(uint2 coord) {
+    return LOAD_TEXTURE2D(_BlueNoise16, coord & 0xF).r;
+}
+
+float BlueNoise64(float2 uv) {
+    uv *= _BlueNoise64_TexelSize.xy;
+    return SAMPLE_TEXTURE2D_LOD(_BlueNoise64, sampler_linear_repeat, uv, 0).r;
+}
+
+float BlueNoise64(float2 uv, float2 size) {
+    float2 scale = _BlueNoise64_TexelSize.zw / size;
+    uv *= scale;
+    uv *= _BlueNoise64_TexelSize.xy;
+    return SAMPLE_TEXTURE2D_LOD(_BlueNoise64, sampler_linear_repeat, uv, 0).r;
+}
+
+float BlueNoise64(uint2 coord) {
+    return LOAD_TEXTURE2D(_BlueNoise64, coord & 0x3F).r;
+}
+
+float BlueNoise256(float2 uv) {
+    uv *= _BlueNoise256_TexelSize.xy;
+    return SAMPLE_TEXTURE2D_LOD(_BlueNoise256, sampler_linear_repeat, uv, 0).r;
+}
+
+float BlueNoise256(float2 uv, float2 size) {
+    float2 scale = _BlueNoise256_TexelSize.zw / size;
+    uv *= scale;
+    uv *= _BlueNoise256_TexelSize.xy;
+    return SAMPLE_TEXTURE2D_LOD(_BlueNoise256, sampler_linear_repeat, uv, 0).r;
+}
+
+float BlueNoise256(uint2 coord) {
+    return LOAD_TEXTURE2D(_BlueNoise256, coord & 0xFF).r;
+}
+
+float BlueNoise512(float2 uv) {
+    uv *= _BlueNoise512_TexelSize.xy;
+    return SAMPLE_TEXTURE2D_LOD(_BlueNoise512, sampler_linear_repeat, uv, 0).r;
+}
+
+float BlueNoise512(uint2 coord) {
+    return LOAD_TEXTURE2D(_BlueNoise512, coord & 0x1FF).r;
+}
+
+float BlueNoise1024(float2 uv) {
+    uv *= _BlueNoise1024_TexelSize.xy;
+    return SAMPLE_TEXTURE2D_LOD(_BlueNoise1024, sampler_linear_repeat, uv, 0).r;
+}
+
+float BlueNoise1024(uint2 coord) {
+    return LOAD_TEXTURE2D(_BlueNoise1024, coord & 0x3FF).r;
 }
 
 /*
@@ -293,7 +422,7 @@ float4 TransformObjectToWorldTangent(float4 tangentOS) {
     return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
 }
 
-float3 RotateAroundYInDegrees (float3 vertex, float degrees) {
+float3 RotateAroundYInDegrees(float3 vertex, float degrees) {
     float alpha = degrees * PI / 180.0f;
     float sina, cosa;
     sincos(alpha, sina, cosa);
@@ -709,29 +838,41 @@ float2 ParallexMapping(float2 uv, float3 viewDir, float scale) {
     return currUV;
 }
 
-float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale) {
+float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     viewDirTS = normalize(viewDirTS);
     viewDirTS.xy /= viewDirTS.z + POM_BIAS;
 
-    const int minLayers = 1.0f;
-    const int maxLayers = 24.0f;
-    int numLayers = lerp(maxLayers, minLayers, max(dot(float3(.0f, .0f, 1.0f), viewDirTS), .0f));
+    const float minLayers = 2;
+    float maxLayers = 10;
+    maxLayers = maxLayers * .5f + maxLayers * noise;
+    float numLayers = lerp(maxLayers, minLayers, max(dot(float3(.0f, .0f, 1.0f), viewDirTS), .0f));
     // numLayers = maxLayers;
 
-    const float stepSize = 1.0f / (float) numLayers;
+    const float stepSize = 1.0f / numLayers;
     const float2 uvDelta = viewDirTS.xy * (stepSize * scale);
 
     float2 offset = .0f;
     float stepHeight = 1.0f;
     float height = SampleHeightMap(uv);
+    float2 prevOffset = .0f;
+    float prevStepHeight = 1.0f;
+    float prevHeight = height;
 
-    for (int i = 1; i < maxLayers && i < numLayers && stepHeight > height; i++) {
-        // if (i < numLayers && stepHeight > height) break;
-        // if (i >= numLayers && stepHeight <= height) break;
+    for (float i = .0f; i < numLayers && stepHeight > height; i += 1.0f) {
+        prevOffset = offset;
+        prevHeight = stepHeight;
+        prevHeight = height;
+        
         offset -= uvDelta;
         stepHeight -= stepSize;
         height = SampleHeightMap(uv + offset);
     }
+
+    float prevDiff = prevStepHeight - prevHeight;
+    float diff = height - stepHeight;
+    float t = prevDiff / (prevDiff + diff);
+    offset = lerp(prevOffset, offset, t);
+    // offset = abs(scale) < FLT_EPS ? float2(.0f, .0f) : offset;
     
     return uv + offset;
 }

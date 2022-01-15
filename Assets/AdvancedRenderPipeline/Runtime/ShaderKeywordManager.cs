@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
 	public static class ShaderKeywordManager {
@@ -85,10 +84,21 @@ namespace AdvancedRenderPipeline.Runtime {
 		#region Temporal Related
 		
 		public static readonly int ENABLE_REPROJECTION = Shader.PropertyToID("_EnableReprojection");
+		public static readonly int FRAME_PARAMS = Shader.PropertyToID("_FrameParams");
 		public static readonly int JITTER_PARAMS = Shader.PropertyToID("_JitterParams");
 		public static readonly int TAA_PARAMS_0 = Shader.PropertyToID("_TaaParams_0");
 		public static readonly int TAA_PARAMS_1 = Shader.PropertyToID("_TaaParams_1");
 		public static readonly int TAA_PARAMS_2 = Shader.PropertyToID("_TaaParams_2");
+
+		#endregion
+
+		#region Noises
+
+		public static readonly int BLUE_NOISE_16 = Shader.PropertyToID("_BlueNoise16");
+		public static readonly int BLUE_NOISE_64 = Shader.PropertyToID("_BlueNoise64");
+		public static readonly int BLUE_NOISE_256 = Shader.PropertyToID("_BlueNoise256");
+		public static readonly int BLUE_NOISE_512 = Shader.PropertyToID("_BlueNoise512");
+		public static readonly int BLUE_NOISE_1024 = Shader.PropertyToID("_BlueNoise1024");
 
 		#endregion
 

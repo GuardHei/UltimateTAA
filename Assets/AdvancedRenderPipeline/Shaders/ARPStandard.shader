@@ -43,8 +43,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             
             HLSLPROGRAM
 
-            #pragma multi_compile_instancing
             #pragma shader_feature_local _PARALLAX_MAP
+            #pragma multi_compile_instancing
             #pragma vertex StandardVertex
             #pragma fragment StandardFragment
 
@@ -128,16 +128,24 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 GBufferOutput output;
 
+                float2 screenUV = input.posCS.xy * _ScreenSize.zw;
+                
+                float noise = InterleavedGradientNoise(input.posCS.xy, _FrameParams.z);
+                // noise = SimpleNoise(screenUV + _FrameParams.z);
+                // noise = PseudoRandom(input.posCS.xy + _FrameParams.z);
+                // noise = saturate(noise) < .5f ? .0f : 1.0f;
+                // noise = 1.0f;
+
                 float3 V = input.viewDirWS;
                 float3 L = _MainLight.direction.xyz;
 
                 float2 uv = input.baseUV;
-                // #if defined(_PARALLAX_MAP)
+                #if defined(_PARALLAX_MAP)
                 // uv = ParallexMapping(uv, V, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
                 // output.forward = float4(1.0f, .0f, .0f, 1.0f);
                 // return output;
-                uv = ApplyParallax(uv, input.viewDirTS, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
-                // #endif
+                uv = ApplyParallax(uv, input.viewDirTS, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale), noise);
+                #endif
 
                 float3 normalWS = normalize(input.normalWS);
                 float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
@@ -206,6 +214,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut) * min(occlusion, iblOcclusion);
                 
                 output.forward = float4(directLighting + indirectDiffuse + emissive, 1.0f);
+                // output.forward = float4(screenUV, .0f, 1.0f);
                 // output.forward = float4(indirectDiffuse, iblOcclusion);
                 // output.forward = float4(energyCompensation - 1.0f, 1.0f);
                 output.gbuffer1 = EncodeNormalComplex(N);

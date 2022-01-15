@@ -20,11 +20,8 @@ namespace AdvancedRenderPipeline.Editor.ShaderGUIs {
             
             var mat = materialEditor.target as Material;
             if (!mat) return;
-            MaterialProperty map = FindProperty("_HeightMap", properties);
-            Texture tex = map.textureValue;
-            var enabled = mat.IsKeywordEnabled("_PARALLAX_MAP");
-            if (tex == null && enabled) mat.DisableKeyword("_PARALLAX_MAP");
-            else if (tex != null && !enabled) mat.EnableKeyword("_PARALLAX_MAP");
+            if (mat.HasProperty("_HeightMap")) CoreUtils.SetKeyword(mat, "_PARALLAX_MAP", mat.GetTexture("_HeightMap"));
+
             EditorGUILayout.HelpBox("POM Enabled: " + mat.IsKeywordEnabled("_PARALLAX_MAP"), MessageType.Info);
         }
     }

@@ -154,11 +154,12 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 maxColor = max(maxColor, n6);
                 maxColor = max(maxColor, n7);
                 maxColor = max(maxColor, n8);
-                */
+                
 
-                // prev.rgb = YCoCgToRGB(clamp(RGBToYCoCg(prev.rgb), minColor, maxColor));
+                prev.rgb = YCoCgToRGB(clamp(RGBToYCoCg(prev.rgb), minColor, maxColor));
 
                 // prev.rgb = YCoCgToRGB(ClipAABB(minColor, maxColor, RGBToYCoCg(prev.rgb)));
+                */
 
                 float3 corners = YCoCgToRGB(n2) + YCoCgToRGB(n3) + YCoCgToRGB(n7) + YCoCgToRGB(n8);
                 corners = (corners - curr.rgb) * 2.0f * .166667f;

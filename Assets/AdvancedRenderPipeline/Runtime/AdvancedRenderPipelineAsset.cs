@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
 namespace AdvancedRenderPipeline.Runtime {
 	[CreateAssetMenu(fileName = "ARP Asset", menuName = "Advanced Render Pipeline/ARP Asset")]
@@ -43,6 +42,11 @@ namespace AdvancedRenderPipeline.Runtime {
 		public bool enableMVSRPBatching;
 		[Header("Utilities")]
 		public bool stopNaNPropagation;
+		public Texture2D blueNoise16;
+		public Texture2D blueNoise64;
+		public Texture2D blueNoise256;
+		public Texture2D blueNoise512;
+		public Texture2D blueNoise1024;
 		[Header("Builtin Shaders")]
 		public Shader blitShader;
 		public Shader integrateOpaqueLightingShader;

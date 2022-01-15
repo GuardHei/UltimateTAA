@@ -123,7 +123,7 @@ Shader "Advanced Render Pipeline/ARPStandardStatic" {
                 float2 uv = input.baseUV;
                 // #if defined(_PARALLAX_MAP)
                 // uv = ParallexMapping(uv, V, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
-                uv = ApplyParallax(uv, input.viewDirTS, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
+                uv = ApplyParallax(uv, input.viewDirTS, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale), 1.0f);
                 // #endif
 
                 float3 normalWS = normalize(input.normalWS);

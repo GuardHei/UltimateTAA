@@ -122,8 +122,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public override void Setup() {
+
+			var jitterNum = (int)settings.taaSettings.jitterNum;
+			var frameNumCycled = _frameNum % jitterNum;
 			
-			_currJitter = _jitterPatterns[_frameNum % (int) settings.taaSettings.jitterNum];
+			var frameParams = new Vector4(_frameNum, jitterNum,  frameNumCycled, frameNumCycled / (float) jitterNum);
+			_cmd.SetGlobalVector(ShaderKeywordManager.FRAME_PARAMS, frameParams);
+			
+			_currJitter = _jitterPatterns[frameNumCycled];
 			_currJitter *= settings.taaSettings.jitterSpread;
 			
 			var taaJitter = new Vector4(_currJitter.x, _currJitter.y, _currJitter.x / InternalRes.x, _currJitter.y / InternalRes.y);
@@ -205,6 +211,11 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			// _cmd.SetGlobalBuffer(ShaderKeywordManager.CAMERA_DATA, _cameraDataBuffer);
 
 			if (IsOnFirstFrame) {
+				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_16, settings.blueNoise16);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_64, settings.blueNoise64);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_256, settings.blueNoise256);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_512, settings.blueNoise512);
+				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_1024, settings.blueNoise1024);
 				_cmd.SetGlobalTexture(ShaderKeywordManager.PREINTEGRATED_DGF_LUT, settings.iblLut);
 				_cmd.SetGlobalTexture(ShaderKeywordManager.PREINTEGRATED_D_LUT, settings.diffuseIBLLut);
 				_cmd.SetGlobalTexture(ShaderKeywordManager.PREINTEGRATED_GF_LUT, settings.specularIBLLut);

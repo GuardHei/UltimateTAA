@@ -22,6 +22,11 @@ MonoBehaviour:
     enableMVAutoInstancing: 0
     enableMVSRPBatching: 0
     stopNaNPropagation: 1
+    blueNoise16: {fileID: 2800000, guid: 8c8f633af43744017ad26c1cfcc827ea, type: 3}
+    blueNoise64: {fileID: 2800000, guid: 4d07aea4dc1a34d36aebaec6cc23552f, type: 3}
+    blueNoise256: {fileID: 2800000, guid: 605b90237a3ae45c9b3de526260dfe2c, type: 3}
+    blueNoise512: {fileID: 2800000, guid: 5cff4a0bd3cb54e5186220c8f2f4155a, type: 3}
+    blueNoise1024: {fileID: 2800000, guid: 7867d122ef712447f8d91306fa42bed7, type: 3}
     blitShader: {fileID: 4800000, guid: 770f6fb14c9b4bab86e1be1af449fb0a, type: 3}
     integrateOpaqueLightingShader: {fileID: 4800000, guid: f29b3703c3454c149cc0c39561a8ff6c, type: 3}
     cameraMotionShader: {fileID: 4800000, guid: 0bc3da1da68d4e84affef526b5434fb2, type: 3}
@@ -38,7 +43,7 @@ MonoBehaviour:
     globalEnvMapRotation: 47
     skyboxMipLevel: 0
     taaSettings:
-      enabled: 1
+      enabled: 0
       jitterNum: 8
       jitterSpread: 0.75
       minHistoryWeight: 0.6
@@ -50,7 +55,7 @@ MonoBehaviour:
       minDepthRejection: 1
       depthRejectionScale: 0
       minSharpness: 0
-      maxSharpness: 0.25
+      maxSharpness: 0
     colorSettings:
       postExposure: 0.55
       contrast: 0
