@@ -47,7 +47,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cull: 2
-    - _HeightScale: 0
+    - _HeightScale: 0.02
     - _MetallicScale: 1
     - _NormalScale: 1
     - _SmoothnessScale: 1

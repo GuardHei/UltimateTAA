@@ -842,23 +842,23 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     viewDirTS = normalize(viewDirTS);
     viewDirTS.xy /= viewDirTS.z + POM_BIAS;
 
-    const float minLayers = 2;
-    float maxLayers = 10;
+    const float minLayers = 4;
+    float maxLayers = 16;
     maxLayers = maxLayers * .5f + maxLayers * noise;
-    float numLayers = lerp(maxLayers, minLayers, max(dot(float3(.0f, .0f, 1.0f), viewDirTS), .0f));
-    // numLayers = maxLayers;
+    float adaptive = abs(dot(viewDirTS, float3(.0f, .0f, 1.0f)));
+    float numLayers = lerp(minLayers, maxLayers, adaptive);
 
     const float stepSize = 1.0f / numLayers;
     const float2 uvDelta = viewDirTS.xy * (stepSize * scale);
 
     float2 offset = .0f;
     float stepHeight = 1.0f;
-    float height = SampleHeightMap(uv);
-    float2 prevOffset = .0f;
-    float prevStepHeight = 1.0f;
+    float height = SampleHeightMap(uv + offset);
+    float2 prevOffset = offset;
+    float prevStepHeight = stepHeight;
     float prevHeight = height;
 
-    for (float i = .0f; i < numLayers && stepHeight > height; i += 1.0f) {
+    for (float i = .0f; stepHeight > height && i < numLayers; i += 1.0f) {
         prevOffset = offset;
         prevHeight = stepHeight;
         prevHeight = height;
@@ -872,7 +872,6 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     float diff = height - stepHeight;
     float t = prevDiff / (prevDiff + diff);
     offset = lerp(prevOffset, offset, t);
-    // offset = abs(scale) < FLT_EPS ? float2(.0f, .0f) : offset;
     
     return uv + offset;
 }

@@ -33,6 +33,8 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         
         Pass {
             
+            Name "StandardForward"
+            
             Tags {
                 "LightMode" = "OpaqueForward"
             }
@@ -128,8 +130,6 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 
                 GBufferOutput output;
 
-                float2 screenUV = input.posCS.xy * _ScreenSize.zw;
-                
                 float noise = InterleavedGradientNoise(input.posCS.xy, _FrameParams.z);
                 // noise = SimpleNoise(screenUV + _FrameParams.z);
                 // noise = PseudoRandom(input.posCS.xy + _FrameParams.z);
@@ -141,9 +141,6 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
                 float2 uv = input.baseUV;
                 #if defined(_PARALLAX_MAP)
-                // uv = ParallexMapping(uv, V, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale));
-                // output.forward = float4(1.0f, .0f, .0f, 1.0f);
-                // return output;
                 uv = ApplyParallax(uv, input.viewDirTS, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale), noise);
                 #endif
 

@@ -1,0 +1,488 @@
+--------------------
+Texture properties for EyeMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.0
+const_single1: 0.0
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.5
+translucence_sharpness_strength: 0.5
+translucence_factor: 3.0
+translucence_silhouette_stress: 0.7
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.75
+cloth_nov_peak_pow0: 2.0
+cloth_nov_peak_intensity0: 0.5
+cloth_nov_tone_pow0: 1.0
+cloth_nov_slope0: 1.0
+cloth_nov_emission_scale0: 0.0
+cloth_nov_noise_mask_scale0: 0.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 1.0
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 1.0, 1.0, 1.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform0_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform1_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 1.0, 1.0, 1.0, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+--------------------
+Texture properties for EyeBallMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.0
+const_single1: 0.0
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.0
+translucence_sharpness_strength: 1.17
+translucence_factor: 0.8
+translucence_silhouette_stress: 0.0
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.75
+cloth_nov_peak_pow0: 2.0
+cloth_nov_peak_intensity0: 0.5
+cloth_nov_tone_pow0: 1.0
+cloth_nov_slope0: 1.0
+cloth_nov_emission_scale0: 0.0
+cloth_nov_noise_mask_scale0: 0.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 2.0
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 1.0, 1.0, 1.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform0_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform1_mul_color: 0.14, 0.14, 0.14, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 0.35, 0.35, 0.35, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+--------------------
+Texture properties for EyePupilLeftMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.0
+const_single1: 0.0
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.0
+translucence_sharpness_strength: 1.17
+translucence_factor: 0.8
+translucence_silhouette_stress: 0.0
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.75
+cloth_nov_peak_pow0: 2.0
+cloth_nov_peak_intensity0: 0.5
+cloth_nov_tone_pow0: 1.0
+cloth_nov_slope0: 1.0
+cloth_nov_emission_scale0: 0.0
+cloth_nov_noise_mask_scale0: 0.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 0.0
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 0.42, 1.0, 1.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 0.85, 1.0, 1.48, 1.0
+uniform0_mul_color: 2.0, 2.0, 2.0, 1.0
+uniform1_mul_color: 1.8, 1.8, 1.8, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 1.0, 1.0, 1.0, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+--------------------
+Texture properties for EyePupilRightMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.0
+const_single1: 0.0
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.0
+translucence_sharpness_strength: 1.17
+translucence_factor: 0.8
+translucence_silhouette_stress: 0.0
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.75
+cloth_nov_peak_pow0: 2.0
+cloth_nov_peak_intensity0: 0.5
+cloth_nov_tone_pow0: 1.0
+cloth_nov_slope0: 1.0
+cloth_nov_emission_scale0: 0.0
+cloth_nov_noise_mask_scale0: 0.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 0.0
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 0.42, 1.0, 1.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 0.85, 1.0, 1.48, 1.0
+uniform0_mul_color: 2.0, 2.0, 2.0, 1.0
+uniform1_mul_color: 1.8, 1.8, 1.8, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 1.0, 1.0, 1.0, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+--------------------
+Texture properties for FaceMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.0
+const_single1: 0.0
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.5
+translucence_sharpness_strength: 0.5
+translucence_factor: 3.0
+translucence_silhouette_stress: 0.7
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.75
+cloth_nov_peak_pow0: 2.0
+cloth_nov_peak_intensity0: 0.5
+cloth_nov_tone_pow0: 1.0
+cloth_nov_slope0: 1.0
+cloth_nov_emission_scale0: 0.0
+cloth_nov_noise_mask_scale0: 0.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 0.3
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 1.0, 1.0, 1.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 1.06, 0.85, 0.7, 1.0
+uniform0_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform1_mul_color: 2.0, 0.85, 0.56, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 1.0, 1.0, 1.0, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+--------------------
+Texture properties for HairMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.7
+const_single1: 0.0
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.0
+translucence_sharpness_strength: 1.17
+translucence_factor: 0.8
+translucence_silhouette_stress: 0.0
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.22
+cloth_nov_peak_pow0: 2.07
+cloth_nov_peak_intensity0: 0.09
+cloth_nov_tone_pow0: 3.2
+cloth_nov_slope0: 1.0
+cloth_nov_emission_scale0: 2.6
+cloth_nov_noise_mask_scale0: 5.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 0.0
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 1.0, 0.0, 0.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 0.9, 0.9, 0.9, 1.0
+uniform0_mul_color: 1.05, 1.05, 1.05, 1.0
+uniform1_mul_color: 0.4, 0.07, 0.0, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 1.26, 0.05, 0.0, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+--------------------
+Texture properties for HairFaceMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.0
+const_single1: 0.5
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.0
+translucence_sharpness_strength: 1.17
+translucence_factor: 0.8
+translucence_silhouette_stress: 0.0
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.11
+cloth_nov_peak_pow0: 3.66
+cloth_nov_peak_intensity0: 0.13
+cloth_nov_tone_pow0: 1.8
+cloth_nov_slope0: 0.79
+cloth_nov_emission_scale0: 2.7
+cloth_nov_noise_mask_scale0: 0.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 0.0
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 1.0, 1.0, 1.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 2.0, 1.74, 1.38, 1.0
+uniform0_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform1_mul_color: 1.0, 0.14, 0.07, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 0.97, 0.2, 0.03, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+--------------------
+Texture properties for HandMT:
+--------------------
+const_single3: 0.0
+sphere_rate_color2: 1.0
+sphere_rate_color3: 1.0
+decal_range: 1e-005
+const_single0: 0.0
+const_single1: 0.0
+const_single2: 0.0
+gbuf_fetch_offset: 0.001
+translucence_sharpness: 2.0
+translucence_sharpness_strength: 1.17
+translucence_factor: 0.8
+translucence_silhouette_stress: 0.0
+indirect_depth_scale: 300.0
+cloth_nov_peak_pos0: 0.04
+cloth_nov_peak_pow0: 0.77
+cloth_nov_peak_intensity0: 0.0
+cloth_nov_tone_pow0: 1.7
+cloth_nov_slope0: 0.54
+cloth_nov_emission_scale0: 0.3
+cloth_nov_noise_mask_scale0: 0.0
+displacement_scale: 1.0
+displacement1_scale: 1.0
+force_roughness: 1.0
+stain_uv_scale: 0.018
+wrap_coef: 0.0
+refract_thickness: 0.0
+stain_rate: 1.0
+material_lod_roughness: 1.0
+alpha_test_value: 0.5
+material_lod_metalness: 0.0
+sphere_rate_color0: 1.0
+sphere_rate_color1: 1.0
+indirect0_scale: 1.0, 1.0
+indirect1_scale: 1.0, 1.0
+proc_texture_3d_scale: 0.01, 0.01, 0.01
+const_color1: 1.0, 1.0, 1.0, 1.0
+const_color2: 1.0, 1.0, 1.0, 1.0
+const_color3: 1.0, 1.0, 1.0, 1.0
+base_color_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform0_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform1_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform2_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform3_mul_color: 1.0, 1.0, 1.0, 1.0
+uniform4_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_2d_mul_color: 1.0, 1.0, 1.0, 1.0
+proc_texture_3d_mul_color: 1.0, 1.0, 1.0, 1.0
+displacement1_color: 1.0, 1.0, 1.0, 1.0
+const_color0: 1.0, 1.0, 1.0, 1.0
+ripple_emission_color: 1.0, 1.0, 1.0, 1.0
+hack_color: 1.0, 1.0, 1.0, 1.0
+stain_color: 1.0, 1.0, 1.0, 1.0
+displacement_color: 1.0, 1.0, 1.0, 1.0
+flow0_param: 1.0, 1.0, 1.0, 1.0
+mirror_view_proj: 1.0, 0.0, 0.0, 0.0 | 0.0, 0.0, 1.0, 0.0 | 0.0, 0.0, 0.0, 0.0 | 0.0, 1.0, 0.0, 0.0
+tex_mtx0: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx1: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx2: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya
+tex_mtx3: Scale X = 1.0, Y = 1.0 | Rotate = 0.0 | Translation X = 0.0, Y = 0.0 | Axis: Maya

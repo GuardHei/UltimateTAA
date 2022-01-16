@@ -25,6 +25,9 @@ Shader "Advanced Render Pipeline/ARPStandardStatic" {
         
         UsePass "Hidden/ARPShadow/OpaqueShadowCaster"
         
+        UsePass "Advanced Render Pipeline/ARPStandard/StandardForward"
+        
+        /*
         Pass {
             
             Tags {
@@ -197,6 +200,7 @@ Shader "Advanced Render Pipeline/ARPStandardStatic" {
 
             ENDHLSL
         }
+        */
     }
     
     CustomEditor "AdvancedRenderPipeline.Editor.ShaderGUIs.StandardStaticShaderGUI"

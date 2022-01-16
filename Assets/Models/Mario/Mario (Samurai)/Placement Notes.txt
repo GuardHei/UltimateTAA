@@ -1,0 +1,7 @@
+(Scale) [Rotation] <Transform>
+----------------------------------------------------------------------------------------------------
+CAPPY PLACEMENT (Relative to local position of "Cap" bone, or "JointRoot" for Cap-Throw models):
+
+Samurai Helmet: (1, 1, 1) [-19, 0, 0] <0, 8, 34>
+Samurai Helmet (Cap Throw): (1.5, 1.5, 1.5) [-15, 0, 0] <0, 15, 49>
+----------------------------------------------------------------------------------------------------
