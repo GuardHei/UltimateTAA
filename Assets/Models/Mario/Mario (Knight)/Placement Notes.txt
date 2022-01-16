@@ -1,0 +1,7 @@
+(Scale) [Rotation] <Transform>
+----------------------------------------------------------------------------------------------------
+CAPPY PLACEMENT (Relative to local position of "Cap" bone, or "JointRoot" for Cap-Throw models):
+
+Knight Helmet: (1, 1, 1) [-38, 0, 0] <0, -1.5, 35>
+Knight Helmet (Cap Throw): (1.5, 1.5, 1.5) [-42, 0, 0] <0, -8, 57>
+----------------------------------------------------------------------------------------------------
