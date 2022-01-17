@@ -1,0 +1,190 @@
+#ifndef ARP_SURFACE_INCLUDED
+#define ARP_SURFACE_INCLUDED
+
+#include "ARPCommon.hlsl"
+
+struct ARPSurfVertexInput {
+    float3 posOS : POSITION;
+    float3 normalOS : NORMAL;
+    float4 tangentOS : TANGENT;
+    float2 baseUV : TEXCOORD0;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+};
+
+struct ARPSurfVertexOutput {
+    float4 posCS : SV_POSITION;
+    float3 posWS : VAR_POSITION;
+    float3 normalWS : VAR_NORMAL;
+    float4 tangentWS : VAR_TANGENT;
+    float3 viewDirWS : TEXCOORD1;
+    #if defined(_PARALLAX_MAP)
+    float3 viewDirTS : TEXCOORD2;
+    #endif
+    float2 baseUV : VAR_BASE_UV;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+};
+
+struct ARPSurfGBufferOutput {
+    float4 forward : SV_TARGET0;
+    float2 gbuffer1 : SV_TARGET1;
+    float4 gbuffer2 : SV_TARGET2;
+    float gbuffer3 : SV_TARGET3;
+};
+
+struct ARPSurfMatInputData {
+    float3 albedoTint;
+    float3 emissiveTint;
+    float4 pack0; // x: metallic scale, y: linear smoothness scale, z: height scale, w: normal scale
+};
+
+struct ARPSurfMatOutputData {
+    float3 vertexN;
+    float3 N;
+    float3 V;
+    float3 R;
+    float2 uv;
+    float3 diffuse;
+    float3 f0;
+    float3 emissive;
+    float4 pack0; // x: metallic, y: linear roughness, z: occlusion, w: NdotV
+};
+
+struct ARPSurfLightInputData {
+    float3 color;
+    float3 L;
+    float3 H;
+    float3 pack0; // x: LdotH, y: NdotH, z: NdotL
+};
+
+struct ARPSurfLightingData {
+    float4 forwardLighting;
+    float iblOcclusion;
+};
+
+// need to manually setup instance id
+void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput input, float4 texST) {
+    float3 posWS = TransformObjectToWorld(input.posOS);
+    output.posWS = posWS;
+    output.posCS = TransformWorldToHClip(posWS);
+    output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+    output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
+
+    output.viewDirWS = normalize(_CameraPosWS.xyz - posWS);
+
+    #if defined(_PARALLAX_MAP)
+    float3x3 objectToTangent = float3x3(
+        input.tangentOS.xyz,
+        cross(input.normalOS, input.tangentOS.xyz) * input.tangentOS.w,
+        input.normalOS);
+
+    float3 viewDirOS = mul(GetWorldToObjectMatrix(), float4(_CameraPosWS.xyz, 1.0f)).xyz - input.posOS.xyz;
+    output.viewDirTS = mul(objectToTangent, viewDirOS);
+    #endif
+
+    output.baseUV = input.baseUV * texST.xy + texST.zw;
+}
+
+// need to manually setup instance id
+void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput input, ARPSurfMatInputData matInput) {
+    float2 uv = input.baseUV;
+    
+    #if defined(_PARALLAX_MAP)
+    float noise = InterleavedGradientNoise(input.posCS.xy, _FrameParams.z);
+    uv = ApplyParallax(uv, input.viewDirTS, matInput.pack0.z, noise);
+    #endif
+    
+    float3 normalWS = normalize(input.normalWS);
+    float3 normalData = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv), matInput.pack0.w);
+                
+    float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS);
+
+    float3 V = input.viewDirWS;
+    float NdotV;
+    N = GetViewReflectedNormal(N, V, NdotV);
+    float3 R = reflect(-V, N);
+
+    float3 albedo = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, uv).rgb;
+    albedo *= matInput.albedoTint;
+
+    float occlusion = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, uv).r;
+    // albedo *= occlusion;
+    
+    float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, uv);
+    float linearSmoothness = metallicSmoothness.a;
+    linearSmoothness *= matInput.pack0.y;
+    float linearRoughness = LinearSmoothToLinearRoughness(linearSmoothness);
+    linearRoughness = ClampMinLinearRoughness(linearRoughness);
+
+    float metallic = metallicSmoothness.r;
+    metallic *= matInput.pack0.x;
+
+    float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
+    emissive += matInput.emissiveTint;
+    
+    float3 diffuse = (1.0 - metallic) * albedo;
+    float3 f0 = GetF0(albedo, metallic);
+    
+    output.vertexN = normalWS;
+    output.N = N;
+    output.V = V;
+    output.R = R;
+    output.uv = uv;
+    output.diffuse = diffuse;
+    output.f0 = f0;
+    output.emissive = emissive;
+    output.pack0 = float4(metallic, linearRoughness, occlusion, NdotV);
+}
+
+void ARPSurfLightSetup(out ARPSurfLightInputData output, ARPSurfMatOutputData input) {
+    float3 L = _MainLight.direction.xyz;
+    float3 H = normalize(input.V + L);
+    float LdotH = saturate(dot(L, H));
+    float NdotH = saturate(dot(input.N, H));
+    float NdotL = saturate(dot(input.N, L));
+
+    output.color = _MainLight.color.rgb;
+    output.L = L;
+    output.H = H;
+    output.pack0 = float3(LdotH, NdotH, NdotL);
+}
+
+void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, ARPSurfLightInputData light) {
+    float metallic = mat.pack0.x;
+    float linearRoughness = mat.pack0.y;
+    float roughness = LinearRoughnessToRoughness(linearRoughness);
+    float occlusion = mat.pack0.z;
+    float NdotV = mat.pack0.w;
+    float LdotH = light.pack0.x;
+    float NdotH = light.pack0.y;
+    float NdotL = light.pack0.z;
+    
+    float3 energyCompensation;
+    float lut = GetDFromLut(energyCompensation, mat.f0, roughness, NdotV);
+    // lut = GetDGFFromLut(energyCompensation, f0, roughness, NdotV).a;
+
+    // float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
+    float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, linearRoughness);
+    // float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, f0, energyCompensation);
+    float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, mat.f0);
+
+    float3 mainLighting = NdotL * _MainLight.color.rgb;
+
+    float3 diffuseLighting = mat.diffuse * fd * mainLighting;
+
+    float3 specularLighting = fr * mainLighting;
+
+    float3 directLighting = diffuseLighting + specularLighting;
+
+    float3 kS = F_SchlickRoughness(mat.f0, NdotV, linearRoughness);
+    float3 kD = 1.0f - kS;
+    kD *=  1.0f - metallic;
+
+    float iblOcclusion = ComputeHorizonSpecularOcclusion(mat.R, mat.vertexN);
+
+    float3 indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, lut) * occlusion;
+
+    output.forwardLighting = float4(directLighting + indirectDiffuse, 1.0f);
+    output.iblOcclusion = iblOcclusion;
+}
+
+#endif

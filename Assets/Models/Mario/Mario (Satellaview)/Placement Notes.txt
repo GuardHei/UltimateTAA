@@ -1,0 +1,7 @@
+(Scale) [Rotation] <Transform>
+----------------------------------------------------------------------------------------------------
+CAPPY PLACEMENT (Relative to local position of "Cap" bone, or "JointRoot" for Cap-Throw models):
+
+Satellaview Helmet: (1, 1, 1) [-39, 0, 0] <0, -3, 39>
+Satellaview Helmet (Cap Throw): (1.5, 1.5, 1.5) [-40, 0, 0] <0, 7, 55>
+----------------------------------------------------------------------------------------------------

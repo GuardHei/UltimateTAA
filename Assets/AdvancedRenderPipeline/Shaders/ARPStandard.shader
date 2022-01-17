@@ -15,8 +15,6 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         _MetallicScale("Metallic Scale", Range(0, 1)) = 0
         _SmoothnessScale("Smoothness Scale", Range(0, 1)) = 1
         _MetallicSmoothnessMap("Metallic (RGB) Smoothness (A)", 2D) = "white" { }
-        // _SpecularMap("Specular", 2D) = "black" { }
-        // _SmoothnessMap("Smoothness", 2D) = "white" { }
         _OcclusionMap("Occlusion", 2D) = "white" { }
         [HDR]
         _EmissiveTint("Emissive Tint", Color) = (0, 0, 0, 1)
@@ -50,173 +48,62 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             #pragma vertex StandardVertex
             #pragma fragment StandardFragment
 
-            #include "../ShaderLibrary/ARPCommon.hlsl"
-
-            struct VertexInput {
-                float3 posOS : POSITION;
-                float3 normalOS : NORMAL;
-                float4 tangentOS : TANGENT;
-                float2 baseUV : TEXCOORD0;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
-
-            struct VertexOutput {
-                float4 posCS : SV_POSITION;
-                float3 posWS : VAR_POSITION;
-                float3 normalWS : VAR_NORMAL;
-                float4 tangentWS : VAR_TANGENT;
-                float3 viewDirWS : TEXCOORD1;
-                // #if defined(_PARALLAX_MAP)
-                float3 viewDirTS : TEXCOORD2;
-                // #endif
-                float2 baseUV : VAR_BASE_UV;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
-
-            struct GBufferOutput {
-                float4 forward : SV_TARGET0;
-                float2 gbuffer1 : SV_TARGET1;
-                float4 gbuffer2 : SV_TARGET2;
-                float gbuffer3 : SV_TARGET3;
-            };
+            #include "../ShaderLibrary/ARPSurface.hlsl"
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
                 UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
-                // #if defined(_PARALLAX_MAP)
                 UNITY_DEFINE_INSTANCED_PROP(float, _HeightScale)
-                // #endif
                 UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)
                 UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveTint)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)
-                // UNITY_DEFINE_INSTANCED_PROP(float4, _NormalMap_ST)
-                // UNITY_DEFINE_INSTANCED_PROP(float4, _MetallicSmoothnessMap_ST)
-                // UNITY_DEFINE_INSTANCED_PROP(float4, _OcclusionMap_ST)
-                // UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveMap_ST)
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
-            VertexOutput StandardVertex(VertexInput input) {
-                VertexOutput output;
+            ARPSurfVertexOutput StandardVertex(ARPSurfVertexInput input) {
+                ARPSurfVertexOutput output;
+                
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
 
-                float3 posWS = TransformObjectToWorld(input.posOS);
-                output.posWS = posWS;
-                // output.posCS = TransformObjectToHClip(input.posOS);
-                output.posCS = TransformWorldToHClip(posWS);
-                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
-
-                output.viewDirWS = normalize(_CameraPosWS.xyz - posWS);
-
-                // #if defined(_PARALLAX_MAP)
-                float3x3 objectToTangent = float3x3(
-                    input.tangentOS.xyz,
-                    cross(input.normalOS, input.tangentOS.xyz) * input.tangentOS.w,
-                    input.normalOS);
-
-                float3 viewDirOS = mul(GetWorldToObjectMatrix(), float4(_CameraPosWS.xyz, 1.0f)).xyz - input.posOS.xyz;
-                output.viewDirTS = mul(objectToTangent, viewDirOS);
-                // #endif
-                
                 float4 albedoST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoMap_ST);
-                output.baseUV = input.baseUV * albedoST.xy + albedoST.zw;
+                
+                ARPSurfVertexSetup(output, input, albedoST);
+
                 return output;
             }
 
-            GBufferOutput StandardFragment(VertexOutput input) {
+            ARPSurfGBufferOutput StandardFragment(ARPSurfVertexOutput input) {
                 UNITY_SETUP_INSTANCE_ID(input);
-                
-                GBufferOutput output;
+                ARPSurfGBufferOutput output;
 
-                float noise = InterleavedGradientNoise(input.posCS.xy, _FrameParams.z);
-                // noise = SimpleNoise(screenUV + _FrameParams.z);
-                // noise = PseudoRandom(input.posCS.xy + _FrameParams.z);
-                // noise = saturate(noise) < .5f ? .0f : 1.0f;
-                // noise = 1.0f;
+                ARPSurfMatInputData matInput;
 
-                float3 V = input.viewDirWS;
-                float3 L = _MainLight.direction.xyz;
-
-                float2 uv = input.baseUV;
-                #if defined(_PARALLAX_MAP)
-                uv = ApplyParallax(uv, input.viewDirTS, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale), noise);
-                #endif
-
-                float3 normalWS = normalize(input.normalWS);
+                float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;
+                float3 emissiveTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;
+                float metallicScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
+                float linearSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale);
+                float heightScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale);
                 float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
-                float3 normalData = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv), normalScale);
-                
-                float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS);
 
-                float NdotV;
-                N = GetViewReflectedNormal(N, V, NdotV);
-                float3 H = normalize(V + L);
-                float LdotH = saturate(dot(L, H));
-                float NdotH = saturate(dot(N, H));
-                float NdotL = saturate(dot(N, L));
+                matInput.albedoTint = albedoTint;
+                matInput.emissiveTint = emissiveTint;
+                matInput.pack0 = float4(metallicScale, linearSmoothnessScale, heightScale, normalScale);
 
-                float3 albedo = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, uv).rgb;
-                albedo *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;
+                ARPSurfMatOutputData matData;
+                ARPSurfMaterialSetup(matData, input, matInput);
 
-                float occlusion = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, uv).r;
-                // albedo *= occlusion;
+                ARPSurfLightInputData lightData;
+                ARPSurfLightSetup(lightData, matData);
 
-                float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, uv);
-                
-                float linearSmoothness = metallicSmoothness.a;
-                // float linearSmoothness = 1.0f - metallicSmoothness.g;
-                linearSmoothness *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale);
-                float linearRoughness = LinearSmoothToLinearRoughness(linearSmoothness);
-                linearRoughness = ClampMinLinearRoughness(linearRoughness);
-                float roughness = LinearRoughnessToRoughness(linearRoughness);
-                // roughness = ClampMinRoughness(roughness);
+                ARPSurfLightingData lightingData;
+                ARPSurfLighting(lightingData, matData, lightData);
 
-                float metallic = metallicSmoothness.r;
-                // float metallic = metallicSmoothness.b;
-                metallic *= UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
+                output.forward = lightingData.forwardLighting;
+                output.gbuffer1 = EncodeNormalComplex(matData.N);
+                output.gbuffer2 = float4(matData.f0, matData.pack0.y);
+                output.gbuffer3 = lightingData.iblOcclusion;
 
-                float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
-                emissive += UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;
-
-                float3 diffuse = (1.0 - metallic) * albedo;
-                float3 f0 = GetF0(albedo, metallic);
-                
-                float3 energyCompensation;
-                float lut = GetDFromLut(energyCompensation, f0, roughness, NdotV);
-                // lut = GetDGFFromLut(energyCompensation, f0, roughness, NdotV).a;
-
-                // float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
-                float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, linearRoughness);
-                // float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, f0, energyCompensation);
-                float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, f0);
-
-                float3 mainLighting = NdotL * _MainLight.color.rgb;
-
-                diffuse *= fd * mainLighting;
-
-                float3 specular = fr * mainLighting;
-
-                float3 directLighting = diffuse + specular;
-
-                float3 kS = F_SchlickRoughness(f0, NdotV, linearRoughness);
-                float3 kD = 1.0f - kS;
-                kD *=  1.0f - metallic;
-                
-                float3 R = reflect(-V, N);
-
-                float iblOcclusion = ComputeHorizonSpecularOcclusion(R, normalWS);
-
-                float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut) * min(occlusion, iblOcclusion);
-                
-                output.forward = float4(directLighting + indirectDiffuse + emissive, 1.0f);
-                // output.forward = float4(screenUV, .0f, 1.0f);
-                // output.forward = float4(indirectDiffuse, iblOcclusion);
-                // output.forward = float4(energyCompensation - 1.0f, 1.0f);
-                output.gbuffer1 = EncodeNormalComplex(N);
-                output.gbuffer2 = float4(f0, linearRoughness);
-                output.gbuffer3 = iblOcclusion;
                 return output;
             }
 

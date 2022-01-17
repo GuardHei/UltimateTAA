@@ -748,10 +748,10 @@ float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal) {
     return horizon * horizon;
 }
 
-float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 albedo, float d) {
+float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 diffuse, float d) {
     // float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, DIFF_IBL_MAX_MIP).rgb;
     float3 indirectDiffuse = SampleGlobalEnvMapDiffuse(N);
-    indirectDiffuse *= albedo * kD * d;
+    indirectDiffuse *= diffuse * kD * d;
     return indirectDiffuse;
 }
 
@@ -843,10 +843,11 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     viewDirTS.xy /= viewDirTS.z + POM_BIAS;
 
     const float minLayers = 4;
-    float maxLayers = 16;
+    float maxLayers = 10;
     maxLayers = maxLayers * .5f + maxLayers * noise;
     float adaptive = abs(dot(viewDirTS, float3(.0f, .0f, 1.0f)));
     float numLayers = lerp(minLayers, maxLayers, adaptive);
+    // numLayers = 32;
 
     const float stepSize = 1.0f / numLayers;
     const float2 uvDelta = viewDirTS.xy * (stepSize * scale);
