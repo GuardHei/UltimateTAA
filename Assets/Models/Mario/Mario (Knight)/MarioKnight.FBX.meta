@@ -73,7 +73,7 @@ ModelImporter:
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
-    importConstraints: 1
+    importConstraints: 0
     animationCompression: 3
     animationRotationError: 0.5
     animationPositionError: 0.5
@@ -126,7 +126,7 @@ ModelImporter:
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
   referencedClips: []
-  importAnimation: 1
+  importAnimation: 0
   humanDescription:
     serializedVersion: 3
     human:
@@ -210,7 +210,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ShoulderR
+    - boneName: ShoulderL
       humanName: LeftShoulder
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -218,7 +218,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ShoulderL
+    - boneName: ShoulderR
       humanName: RightShoulder
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -226,7 +226,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ArmR1
+    - boneName: ArmL1
       humanName: LeftUpperArm
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -234,7 +234,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ArmL1
+    - boneName: ArmR1
       humanName: RightUpperArm
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -242,7 +242,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ArmR2
+    - boneName: ArmL2
       humanName: LeftLowerArm
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -250,7 +250,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ArmL2
+    - boneName: ArmR2
       humanName: RightLowerArm
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -258,7 +258,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: HandR
+    - boneName: HandL
       humanName: LeftHand
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -266,7 +266,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: HandL
+    - boneName: HandR
       humanName: RightHand
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -290,7 +290,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: CheekL02
+    - boneName: MouthCornerL
       humanName: LeftEye
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -298,7 +298,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: CheekBlowUpR
+    - boneName: MouthCornerR
       humanName: RightEye
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -314,7 +314,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Thumb1R
+    - boneName: Thumb1L
       humanName: Left Thumb Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -322,7 +322,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Thumb2R
+    - boneName: Thumb2L
       humanName: Left Thumb Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -330,7 +330,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: IndexFinger1R
+    - boneName: IndexFinger1L
       humanName: Left Index Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -338,7 +338,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: IndexFinger2R
+    - boneName: IndexFinger2L
       humanName: Left Index Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -346,7 +346,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: IndexFinger3R
+    - boneName: IndexFinger3L
       humanName: Left Index Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -354,7 +354,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: MiddleFinger1R
+    - boneName: MiddleFinger1L
       humanName: Left Middle Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -362,7 +362,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: MiddleFinger2R
+    - boneName: MiddleFinger2L
       humanName: Left Middle Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -370,7 +370,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: MiddleFinger3R
+    - boneName: MiddleFinger3L
       humanName: Left Middle Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -378,7 +378,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ThirdFinger1R
+    - boneName: ThirdFinger1L
       humanName: Left Ring Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -386,7 +386,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ThirdFinger2R
+    - boneName: ThirdFinger2L
       humanName: Left Ring Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -394,7 +394,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ThirdFinger3R
+    - boneName: ThirdFinger3L
       humanName: Left Ring Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -402,7 +402,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: LittleFinger1R
+    - boneName: LittleFinger1L
       humanName: Left Little Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -410,7 +410,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: LittleFinger2R
+    - boneName: LittleFinger2L
       humanName: Left Little Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -418,7 +418,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: LittleFinger3R
+    - boneName: LittleFinger3L
       humanName: Left Little Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -426,7 +426,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Thumb1L
+    - boneName: Thumb1R
       humanName: Right Thumb Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -434,7 +434,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Thumb2L
+    - boneName: Thumb2R
       humanName: Right Thumb Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -442,7 +442,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: IndexFinger1L
+    - boneName: IndexFinger1R
       humanName: Right Index Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -450,7 +450,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: IndexFinger2L
+    - boneName: IndexFinger2R
       humanName: Right Index Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -458,7 +458,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: IndexFinger3L
+    - boneName: IndexFinger3R
       humanName: Right Index Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -466,7 +466,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: MiddleFinger1L
+    - boneName: MiddleFinger1R
       humanName: Right Middle Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -474,7 +474,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: MiddleFinger2L
+    - boneName: MiddleFinger2R
       humanName: Right Middle Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -482,7 +482,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: MiddleFinger3L
+    - boneName: MiddleFinger3R
       humanName: Right Middle Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -490,7 +490,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ThirdFinger1L
+    - boneName: ThirdFinger1R
       humanName: Right Ring Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -498,7 +498,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ThirdFinger2L
+    - boneName: ThirdFinger2R
       humanName: Right Ring Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -506,7 +506,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: ThirdFinger3L
+    - boneName: ThirdFinger3R
       humanName: Right Ring Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -514,7 +514,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: LittleFinger1L
+    - boneName: LittleFinger1R
       humanName: Right Little Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -522,7 +522,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: LittleFinger2L
+    - boneName: LittleFinger2R
       humanName: Right Little Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -530,7 +530,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: LittleFinger3L
+    - boneName: LittleFinger3R
       humanName: Right Little Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -539,118 +539,128 @@ ModelImporter:
         length: 0
         modified: 0
     skeleton:
-    - name: MarioKnight(Clone)
+    - name: MarioSamurai(Clone)
       parentName: 
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Eyeball__EyePupilLeftMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: Eyeball__EyePupilRightMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: EyelidCloseLeft__EyeMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: EyelidCloseRight__EyeMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: EyelidLeft__EyeMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: EyelidRight__EyeMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: Eyeball__EyeMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: face__FaceMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: mario_brow_l__HairMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: mario_brow_r__HairMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: mario_mustache__HairMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: mario_tongue__FaceMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: mario_tooth_bottom__FaceMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: mario_tooth_up__FaceMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
-    - name: MarioArmorWesternHandL__BodyMT
-      parentName: MarioKnight(Clone)
+    - name: MarioHandL__HandMT
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
-    - name: MarioArmorWesternHandR__BodyMT
-      parentName: MarioKnight(Clone)
+    - name: MarioHandR__HandMT
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: Mario__BodyMT
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
-    - name: MarioArmorWesternUnder__BodyMT
-      parentName: MarioKnight(Clone)
+    - name: MarioArmorUnder__ArmorUnderMT
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: Cap__CapMT
-      parentName: MarioKnight(Clone)
-      position: {x: -0, y: 0.11158214, z: -0.527304}
+      parentName: MarioSamurai(Clone)
+      position: {x: -0, y: 0.111582205, z: -0.527304}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Cap__CoinMT
+      parentName: MarioSamurai(Clone)
+      position: {x: -0, y: 0.111582205, z: -0.527304}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Strap__CapMT
+      parentName: MarioSamurai(Clone)
+      position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: CapHair__HairMT
-      parentName: MarioKnight(Clone)
-      position: {x: -0, y: 0.11158214, z: -0.527304}
+      parentName: MarioSamurai(Clone)
+      position: {x: -0, y: 0.111582205, z: -0.527304}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: Hair__HairMT
-      parentName: MarioKnight(Clone)
-      position: {x: -0, y: 0.11158214, z: -0.527304}
+      parentName: MarioSamurai(Clone)
+      position: {x: -0, y: 0.111582205, z: -0.527304}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: nw4f_root
-      parentName: MarioKnight(Clone)
+      parentName: MarioSamurai(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 1.110223e-16, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
@@ -661,8 +671,8 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: JointRoot
       parentName: AllRoot
-      position: {x: 0, y: 1.2891175, z: -0.101361014}
-      rotation: {x: -0, y: -1, z: 2.220446e-16, w: -0.000000051416297}
+      position: {x: 0, y: 1.2891173, z: -0.101361014}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Hip
       parentName: JointRoot
@@ -682,7 +692,7 @@ ModelImporter:
     - name: FootL
       parentName: LegL2
       position: {x: -0.41808388, y: 0.000000048446655, z: 0}
-      rotation: {x: -0.8371, y: -0.5332916, z: -0.06550627, w: 0.102823615}
+      rotation: {x: -0.00000004824661, y: 0.000000056011647, z: -0.53729975, w: 0.8433914}
       scale: {x: 0.99999994, y: 0.9999999, z: 0.99999994}
     - name: ToeL
       parentName: FootL
@@ -702,33 +712,33 @@ ModelImporter:
     - name: FootR
       parentName: LegR2
       position: {x: -0.41808397, y: -0.000000048446655, z: 0}
-      rotation: {x: 0.8371001, y: 0.5332912, z: -0.06550948, w: 0.10282265}
+      rotation: {x: -0.00000007233062, y: 0.000000044313442, z: -0.53729963, w: 0.8433914}
       scale: {x: 1.0000004, y: 1.0000004, z: 1}
     - name: ToeR
       parentName: FootR
       position: {x: -0.3091179, y: -0.000000024223327, z: 0.000000048446655}
       rotation: {x: 0.000000027753483, y: -0.000000029108028, z: -0.21643956, w: 0.976296}
       scale: {x: 0.99999964, y: 0.99999976, z: 1}
-    - name: LegLB
+    - name: LegB
       parentName: Hip
-      position: {x: 0.08237792, y: -0.27146938, z: -0.44686472}
-      rotation: {x: 0.972136, y: 0.0000000116414505, z: 0.000000012521089, w: -0.23441753}
-      scale: {x: 1, y: 1.0000004, z: 1.0000004}
-    - name: LegLF
+      position: {x: -0.00000009689331, y: -0.3932474, z: -0.0000000023925415}
+      rotation: {x: 0.7071068, y: -0.000000034408938, z: 0.000000008067172, w: 0.7071068}
+      scale: {x: 0.9999999, y: 0.9999997, z: 1.0000001}
+    - name: LegF
       parentName: Hip
-      position: {x: 0.016613327, y: 0.5520535, z: -0.40964228}
-      rotation: {x: -0.34363246, y: 0.00000004547967, z: 0.000000016641692, w: 0.9391042}
-      scale: {x: 1, y: 0.99999994, z: 1}
-    - name: LegRB
+      position: {x: -0.00000009689331, y: 0.6593766, z: -0.0000000023925877}
+      rotation: {x: -0.7071068, y: 0.000000036219927, z: -0.000000021731987, w: 0.7071067}
+      scale: {x: 1.0000001, y: 0.9999997, z: 0.9999996}
+    - name: LegL
       parentName: Hip
-      position: {x: 0.082378015, y: -0.27146938, z: 0.44686472}
-      rotation: {x: 0.972136, y: -0.0000000071145876, z: 0.000000013612708, w: 0.23441748}
-      scale: {x: 1.0000001, y: 1.0000001, z: 0.9999999}
-    - name: LegRF
+      position: {x: -0.00000009689331, y: 0.099017195, z: -0.60137033}
+      rotation: {x: 1, y: 0.00000007450582, z: 0.000000044703487, w: 0.000000059604695}
+      scale: {x: 1, y: 1, z: 1}
+    - name: LegR
       parentName: Hip
-      position: {x: 0.016613327, y: 0.5520535, z: 0.40964228}
-      rotation: {x: 0.3436323, y: 0.000000041043037, z: -0.0000000070845623, w: 0.9391043}
-      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000002}
+      position: {x: -0.00000009689331, y: 0.09901718, z: 0.60137033}
+      rotation: {x: -0.000000007450596, y: -0.00000003736932, z: 0.000000029383965, w: 1}
+      scale: {x: 1, y: 1.0000002, z: 0.9999999}
     - name: Spine1
       parentName: JointRoot
       position: {x: -0, y: 0.0508, z: 0}
@@ -959,6 +969,21 @@ ModelImporter:
       position: {x: -0.11150599, y: -0.52730405, z: 0}
       rotation: {x: 0.7071068, y: -4.3297806e-17, z: -0.7071068, w: -4.3297806e-17}
       scale: {x: 1, y: 1, z: 1}
+    - name: Strap
+      parentName: Cap
+      position: {x: -0, y: 0, z: 0.00007620659}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: CapRoot
+      parentName: Strap
+      position: {x: -0, y: 0.186346, z: -0.012203434}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: CapJaw
+      parentName: CapRoot
+      position: {x: -0, y: -0.63745004, z: -0.04857877}
+      rotation: {x: 0.7053843, y: 0.049325794, z: -0.7053843, w: -0.049324434}
+      scale: {x: 0.9999998, y: 0.99999976, z: 0.99999994}
     - name: ShoulderL
       parentName: Spine2
       position: {x: -0.25614774, y: 0.017529745, z: 0.079338685}
@@ -987,12 +1012,12 @@ ModelImporter:
     - name: HandL
       parentName: ArmL2
       position: {x: -0.39649412, y: -0.00000019378662, z: 0.000000042390823}
-      rotation: {x: -0.000000012818536, y: -0.00000031130747, z: 0.116264835, w: 0.99321824}
+      rotation: {x: -0.000000042620865, y: -0.0000003411098, z: 0.116264865, w: 0.99321824}
       scale: {x: 1, y: 1, z: 1}
     - name: IndexFinger1L
       parentName: HandL
       position: {x: -0.4116361, y: 0.13104607, z: 0.22784258}
-      rotation: {x: -0.000000027714597, y: 0.056340955, z: -0.12214035, w: 0.99091244}
+      rotation: {x: 0.000000022063276, y: 0.05634101, z: -0.12214041, w: 0.99091244}
       scale: {x: 0.9999997, y: 1, z: 0.9999997}
     - name: IndexFinger2L
       parentName: IndexFinger1L
@@ -1007,7 +1032,7 @@ ModelImporter:
     - name: LittleFinger1L
       parentName: HandL
       position: {x: -0.42514652, y: 0.13209136, z: -0.22273771}
-      rotation: {x: -0.00000006170787, y: 0.05634105, z: -0.122140735, w: 0.9909124}
+      rotation: {x: -0.0000000054107403, y: 0.05634052, z: -0.12213961, w: 0.99091256}
       scale: {x: 0.9999997, y: 1, z: 0.9999997}
     - name: LittleFinger2L
       parentName: LittleFinger1L
@@ -1022,7 +1047,7 @@ ModelImporter:
     - name: MiddleFinger1L
       parentName: HandL
       position: {x: -0.42242402, y: 0.17268655, z: 0.079656854}
-      rotation: {x: -0.000000012813436, y: 0.05634095, z: -0.1221405, w: 0.99091244}
+      rotation: {x: 0.0000000052994693, y: 0.056341, z: -0.12214053, w: 0.99091244}
       scale: {x: 0.9999997, y: 1, z: 0.9999997}
     - name: MiddleFinger2L
       parentName: MiddleFinger1L
@@ -1037,7 +1062,7 @@ ModelImporter:
     - name: ThirdFinger1L
       parentName: HandL
       position: {x: -0.42373052, y: 0.1593207, z: -0.08841681}
-      rotation: {x: -0.000000041218776, y: 0.05634097, z: -0.12214047, w: 0.99091244}
+      rotation: {x: -0.000000061755756, y: 0.056341067, z: -0.122140974, w: 0.9909124}
       scale: {x: 0.9999997, y: 1, z: 0.9999997}
     - name: ThirdFinger2L
       parentName: ThirdFinger1L
@@ -1052,7 +1077,7 @@ ModelImporter:
     - name: Thumb1L
       parentName: HandL
       position: {x: -0.29486883, y: -0.11519743, z: 0.31186128}
-      rotation: {x: 0.6439187, y: -0.28744778, z: 0.059880186, w: 0.70651037}
+      rotation: {x: 0.6251622, y: 0.23625912, z: -0.34993693, w: 0.6564283}
       scale: {x: 0.99999976, y: 1.0000005, z: 1.0000007}
     - name: Thumb2L
       parentName: Thumb1L
@@ -1092,7 +1117,7 @@ ModelImporter:
     - name: IndexFinger1R
       parentName: HandR
       position: {x: -0.4116361, y: 0.13104607, z: -0.22784236}
-      rotation: {x: -0.000000072454746, y: -0.0563406, z: -0.12214034, w: 0.99091244}
+      rotation: {x: -0.00000008456194, y: -0.056340706, z: -0.12214038, w: 0.9909125}
       scale: {x: 0.9999996, y: 1, z: 0.9999996}
     - name: IndexFinger2R
       parentName: IndexFinger1R
@@ -1122,7 +1147,7 @@ ModelImporter:
     - name: MiddleFinger1R
       parentName: HandR
       position: {x: -0.42242402, y: 0.17268655, z: -0.07965668}
-      rotation: {x: 0.000000033716013, y: -0.056340463, z: -0.12214032, w: 0.9909125}
+      rotation: {x: 0.000000015555225, y: -0.05634049, z: -0.12214035, w: 0.9909125}
       scale: {x: 0.9999996, y: 1, z: 0.9999996}
     - name: MiddleFinger2R
       parentName: MiddleFinger1R
@@ -1137,7 +1162,7 @@ ModelImporter:
     - name: ThirdFinger1R
       parentName: HandR
       position: {x: -0.42373034, y: 0.1593207, z: 0.08841697}
-      rotation: {x: -0.00000003659883, y: -0.05634068, z: -0.12214037, w: 0.99091244}
+      rotation: {x: -0.00000009713479, y: -0.056340683, z: -0.12214031, w: 0.99091244}
       scale: {x: 0.9999996, y: 1, z: 0.9999996}
     - name: ThirdFinger2R
       parentName: ThirdFinger1R
@@ -1152,7 +1177,7 @@ ModelImporter:
     - name: Thumb1R
       parentName: HandR
       position: {x: -0.29486874, y: -0.11519743, z: -0.31186116}
-      rotation: {x: -0.6439182, y: 0.28744876, z: 0.05988093, w: 0.70651037}
+      rotation: {x: -0.62516224, y: -0.23625864, z: -0.34993604, w: 0.65642875}
       scale: {x: 0.9999999, y: 0.99999994, z: 1.0000004}
     - name: Thumb2R
       parentName: Thumb1R
@@ -1171,11 +1196,11 @@ ModelImporter:
     hasTranslationDoF: 0
     hasExtraRoot: 1
     skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: 2ad8f5bcdb23640aaac5cd50810a1c64, type: 3}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 3
   humanoidOversampling: 1
-  avatarSetup: 1
+  avatarSetup: 2
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   additionalBone: 0
   userData: 

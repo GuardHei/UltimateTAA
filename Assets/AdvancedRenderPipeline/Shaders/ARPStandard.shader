@@ -11,13 +11,17 @@ Shader "Advanced Render Pipeline/ARPStandard" {
         [NoScaleOffset]
         _NormalMap("Normal", 2D) = "bump" { }
         _HeightScale("Height Scale", Range(0, .3)) = 0
+        [NoScaleOffset]
         _HeightMap("Height", 2D) = "white" { }
         _MetallicScale("Metallic Scale", Range(0, 1)) = 0
         _SmoothnessScale("Smoothness Scale", Range(0, 1)) = 1
+        [NoScaleOffset]
         _MetallicSmoothnessMap("Metallic (RGB) Smoothness (A)", 2D) = "white" { }
+        [NoScaleOffset]
         _OcclusionMap("Occlusion", 2D) = "white" { }
         [HDR]
         _EmissiveTint("Emissive Tint", Color) = (0, 0, 0, 1)
+        [NoScaleOffset]
         _EmissiveMap("Emissive", 2D) = "black" { }
     }
     
@@ -51,13 +55,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
             #include "../ShaderLibrary/ARPSurface.hlsl"
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-                UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
-                UNITY_DEFINE_INSTANCED_PROP(float, _HeightScale)
-                UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)
-                UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale)
-                UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)
-                UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveTint)
-                UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)
+                ARP_SURF_PER_MATERIAL_DATA
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
             ARPSurfVertexOutput StandardVertex(ARPSurfVertexInput input) {
@@ -79,16 +77,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
                 ARPSurfMatInputData matInput;
 
-                float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;
-                float3 emissiveTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;
-                float metallicScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);
-                float linearSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale);
-                float heightScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale);
-                float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
-
-                matInput.albedoTint = albedoTint;
-                matInput.emissiveTint = emissiveTint;
-                matInput.pack0 = float4(metallicScale, linearSmoothnessScale, heightScale, normalScale);
+                ARP_SURF_MATERIAL_INPUT_SETUP(matInput);
 
                 ARPSurfMatOutputData matData;
                 ARPSurfMaterialSetup(matData, input, matInput);
@@ -99,7 +88,9 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 ARPSurfLightingData lightingData;
                 ARPSurfLighting(lightingData, matData, lightData);
 
-                output.forward = lightingData.forwardLighting;
+                float3 finalLighting = lightingData.directDiffuse + lightingData.directSpecular + lightingData.indirectDiffuse + lightingData.emissive;
+
+                output.forward = float4(finalLighting, 1.0f);
                 output.gbuffer1 = EncodeNormalComplex(matData.N);
                 output.gbuffer2 = float4(matData.f0, matData.pack0.y);
                 output.gbuffer3 = lightingData.iblOcclusion;

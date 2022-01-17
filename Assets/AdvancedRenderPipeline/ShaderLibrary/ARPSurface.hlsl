@@ -3,6 +3,26 @@
 
 #include "ARPCommon.hlsl"
 
+#define ARP_SURF_PER_MATERIAL_DATA                   \
+UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)     \
+UNITY_DEFINE_INSTANCED_PROP(float, _HeightScale)     \
+UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)   \
+UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale) \
+UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)     \
+UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveTint)   \
+UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)   \
+
+#define ARP_SURF_MATERIAL_INPUT_SETUP(matInput)                                                \
+float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;            \
+float3 emissiveTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;        \
+float metallicScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);           \
+float linearSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale); \
+float heightScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale);               \
+float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);               \
+matInput.albedoTint = albedoTint;                                                              \
+matInput.emissiveTint = emissiveTint;                                                          \
+matInput.pack0 = float4(metallicScale, linearSmoothnessScale, heightScale, normalScale);       \
+
 struct ARPSurfVertexInput {
     float3 posOS : POSITION;
     float3 normalOS : NORMAL;
@@ -19,6 +39,7 @@ struct ARPSurfVertexOutput {
     float3 viewDirWS : TEXCOORD1;
     #if defined(_PARALLAX_MAP)
     float3 viewDirTS : TEXCOORD2;
+    float3 lightDirTS : TEXCOORD3;
     #endif
     float2 baseUV : VAR_BASE_UV;
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -57,7 +78,10 @@ struct ARPSurfLightInputData {
 };
 
 struct ARPSurfLightingData {
-    float4 forwardLighting;
+    float3 directDiffuse;
+    float3 directSpecular;
+    float3 indirectDiffuse;
+    float3 emissive;
     float iblOcclusion;
 };
 
@@ -79,6 +103,14 @@ void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput inp
 
     float3 viewDirOS = mul(GetWorldToObjectMatrix(), float4(_CameraPosWS.xyz, 1.0f)).xyz - input.posOS.xyz;
     output.viewDirTS = mul(objectToTangent, viewDirOS);
+
+    float3 lightDirWS = _MainLight.direction.xyz;
+    float3 bitangentWS = cross(output.normalWS, output.tangentWS.xyz) * input.tangentOS.w;
+    float3 lightDirTS = float3(
+        dot(lightDirWS, output.tangentWS),
+        dot(lightDirWS, bitangentWS),
+        dot(lightDirWS, output.normalWS));
+    output.lightDirTS = lightDirTS;
     #endif
 
     output.baseUV = input.baseUV * texST.xy + texST.zw;
@@ -121,7 +153,7 @@ void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput i
     float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
     emissive += matInput.emissiveTint;
     
-    float3 diffuse = (1.0 - metallic) * albedo;
+    float3 diffuse = (1.0f - metallic) * albedo;
     float3 f0 = GetF0(albedo, metallic);
     
     output.vertexN = normalWS;
@@ -183,7 +215,10 @@ void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, A
 
     float3 indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, lut) * occlusion;
 
-    output.forwardLighting = float4(directLighting + indirectDiffuse, 1.0f);
+    output.directDiffuse = diffuseLighting;
+    output.directSpecular = specularLighting;
+    output.indirectDiffuse = indirectDiffuse;
+    output.emissive = mat.emissive;
     output.iblOcclusion = iblOcclusion;
 }
 

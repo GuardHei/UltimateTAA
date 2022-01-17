@@ -16,8 +16,8 @@
 #define CLOSER_DEPTH(d1, d2) d1 < d2
 #endif
 
-#define SPEC_IBL_MAX_MIP 6u
-#define DIFF_IBL_MAX_MIP 11u
+#define SPEC_IBL_MAX_MIP (6u)
+#define DIFF_IBL_MAX_MIP (11u)
 
 #if SHADER_API_D3D11
 #define STENCIL_CHANNEL g
@@ -25,8 +25,8 @@
 #define STENCIL_CHANNEL r
 #endif
 
-// #define POM_BIAS .42f
-#define POM_BIAS .3f
+// #define POM_BIAS (.42f)
+#define POM_BIAS (.3f)
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl"
@@ -842,8 +842,8 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     viewDirTS = normalize(viewDirTS);
     viewDirTS.xy /= viewDirTS.z + POM_BIAS;
 
-    const float minLayers = 4;
-    float maxLayers = 10;
+    const float minLayers = 4.0f;
+    float maxLayers = 10.0f;
     maxLayers = maxLayers * .5f + maxLayers * noise;
     float adaptive = abs(dot(viewDirTS, float3(.0f, .0f, 1.0f)));
     float numLayers = lerp(minLayers, maxLayers, adaptive);
@@ -875,6 +875,17 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     offset = lerp(prevOffset, offset, t);
     
     return uv + offset;
+}
+
+float ApplyParallaxShadow(float2 uv, float3 lightDirTS, float shadowStrength, float noise) {
+    lightDirTS = normalize(lightDirTS);
+    lightDirTS.xy /= lightDirTS.z + POM_BIAS;
+
+    const float minLayers = 4.0f;
+    float maxLayers = 10.0f;
+    maxLayers = maxLayers * .5f + maxLayers * noise;
+    float adaptive = abs(dot(lightDirTS, float3(.0f, .0f, 1.0f)));
+    float numLayers = lerp(minLayers, maxLayers, adaptive);
 }
 
 #endif

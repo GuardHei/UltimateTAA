@@ -1217,10 +1217,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8159764887099154032, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -6673708799189428787, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -3229216359212120018, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c764d736536dd4722891680c22fadb88, type: 2}
     - target: {fileID: 78797024373424734, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -1229,6 +1237,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MarioSatellaview
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 5feb8732c9cc047b0a20245980cfc39e, type: 2}
     - target: {fileID: 6252674580701218046, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -1276,6 +1288,31 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &907046260 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2ad8f5bcdb23640aaac5cd50810a1c64, type: 3}
+  m_PrefabInstance: {fileID: 2045266107}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &907046263
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 907046260}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
+  m_Controller: {fileID: 9100000, guid: d44105373fe004b61b3b26fe04eddf68, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &918733871
 GameObject:
   m_ObjectHideFlags: 0
@@ -2037,13 +2074,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: MarioKnight
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 411a5e61c72304e8cba065983737370e, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 411a5e61c72304e8cba065983737370e, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 98cae557178e143a7b3eb5593d7d88f4, type: 2}
     - target: {fileID: 7217873473257294074, guid: 411a5e61c72304e8cba065983737370e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8753165758552112976, guid: 411a5e61c72304e8cba065983737370e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 411a5e61c72304e8cba065983737370e, type: 3}
@@ -2227,6 +2272,31 @@ Transform:
   m_Father: {fileID: 1959925061}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1428570182 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 411a5e61c72304e8cba065983737370e, type: 3}
+  m_PrefabInstance: {fileID: 1045014919}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1428570185
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1428570182}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
+  m_Controller: {fileID: 9100000, guid: 98cae557178e143a7b3eb5593d7d88f4, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &1471641683
 GameObject:
   m_ObjectHideFlags: 0
@@ -3964,6 +4034,14 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: c5fec0f65b468455896263bfc750969f, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 2ad8f5bcdb23640aaac5cd50810a1c64, type: 3}
+      propertyPath: m_Avatar
+      value: 
+      objectReference: {fileID: 9000000, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
+    - target: {fileID: 5866666021909216657, guid: 2ad8f5bcdb23640aaac5cd50810a1c64, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: d44105373fe004b61b3b26fe04eddf68, type: 2}
     - target: {fileID: 7217873473257294074, guid: 2ad8f5bcdb23640aaac5cd50810a1c64, type: 3}
       propertyPath: m_IsActive
       value: 0
