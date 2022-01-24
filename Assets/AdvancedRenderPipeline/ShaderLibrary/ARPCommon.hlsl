@@ -504,7 +504,8 @@ float ClampMinRoughness(float roughness) {
 // maxMipLevel: start from 0
 float LinearRoughnessToMipmapLevel(float linearRoughness, uint maxMipLevel) {
     // return linearRoughness * maxMipLevel;
-    linearRoughness = linearRoughness * (1.7f - .7f * linearRoughness);
+    linearRoughness = linearRoughness * (2.0f - linearRoughness);
+    // linearRoughness = linearRoughness * (1.7f - .7f * linearRoughness);
     return linearRoughness * maxMipLevel;
 }
 
@@ -529,13 +530,17 @@ float3 F_Schlick(in float3 f0, in float u) {
 float3 F_SchlickRoughness(float3 f0, float u, float linearRoughness) {
     float r = 1.0f - linearRoughness;
     // r = 1.0f;
-    return f0 + (max(float3(r, r, r), f0) - f0) * pow5(1.0f - u);
+    return f0 + (max(float3(r, r, r), f0) - f0) * pow5(saturate(1.0f - u));
 }
 
 float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
     const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
     return .5f / max(lambdaV + lambdaL, .00001f);
+}
+
+float V_Kelemen(float LdotH) {
+    return .25f / max(pow2(LdotH), .00001f);
 }
 
 // Requires caller to "div PI"
@@ -763,18 +768,9 @@ float3 EvaluateSpecularIBL(float3 kS, float3 R, float linearRoughness, float3 GF
     return indirectSpecular;
 }
 
-float3 EvaluateIBL(float3 N, float3 R, float NdotV, float linearRoughness, float3 albedo, float3 f0, float4 lut, float3 energyCompensation) {
-    float3 kS = F_SchlickRoughness(f0, NdotV, linearRoughness);
-    float3 kD = 1.0f - kS;
-    
-    float3 indirectDiffuse = EvaluateDiffuseIBL(kD, N, albedo, lut.a);
-    float3 indirectSpecular = EvaluateSpecularIBL(kS, R, linearRoughness, lut.rgb, energyCompensation);
-    
-    return indirectDiffuse + indirectSpecular;
-}
-
 float3 CompensateDirectBRDF(float2 envGF, inout float3 energyCompensation, float3 specularColor) {
-    float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGF.ggg, envGF.rrr, specularColor);
+    // float3 reflectionGF = lerp(saturate(50.0f * specularColor.g) * envGF.ggg, envGF.rrr, specularColor);
+    float3 reflectionGF = lerp(envGF.ggg, envGF.rrr, specularColor);
     energyCompensation = 1.0f + specularColor * (1.0f / envGF.r - 1.0f);
     
     return reflectionGF;
@@ -809,35 +805,6 @@ float SampleHeightMap(float2 uv) {
     return SAMPLE_TEXTURE2D_LOD(_HeightMap, sampler_HeightMap, uv, 0).r;
 }
 
-float2 ParallexMapping(float2 uv, float3 viewDir, float scale) {
-    const float minLayers = 2.0f;
-    const float maxLayers = 16.0f;
-    float numLayers = lerp(maxLayers, minLayers, max(dot(float3(.0f, .0f, 1.0f), viewDir), .0f));
-    float layerDepth = 1.0f / numLayers;
-    float currDepth = .0f;
-    float2 step = viewDir.xy * scale;
-    float2 offset = step / numLayers;
-
-    float2 currUV = uv;
-    float height = SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, uv).r;
-    float count = .0f;
-    while (currDepth < height && count < numLayers) {
-        currUV -= offset;
-        height = SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, uv).r;
-        currDepth += layerDepth;
-        count += 1.0f;
-    }
-
-    float2 prevUV = currUV + offset;
-    float depthAfter = height - currDepth;
-    float depthBefore = SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, prevUV).r - currDepth + layerDepth;
-
-    float weight = depthAfter / (depthAfter - depthBefore);
-    currUV = lerp(currUV, prevUV, weight);
-    
-    return currUV;
-}
-
 float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     viewDirTS = normalize(viewDirTS);
     viewDirTS.xy /= viewDirTS.z + POM_BIAS;
@@ -845,7 +812,8 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     const float minLayers = 4.0f;
     float maxLayers = 10.0f;
     maxLayers = maxLayers * .5f + maxLayers * noise;
-    float adaptive = abs(dot(viewDirTS, float3(.0f, .0f, 1.0f)));
+    // float adaptive = abs(dot(viewDirTS, float3(.0f, .0f, 1.0f)));
+    float adaptive = abs(viewDirTS.z);
     float numLayers = lerp(minLayers, maxLayers, adaptive);
     // numLayers = 32;
 
@@ -854,7 +822,7 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
 
     float2 offset = .0f;
     float stepHeight = 1.0f;
-    float height = SampleHeightMap(uv + offset);
+    float height = SampleHeightMap(uv);
     float2 prevOffset = offset;
     float prevStepHeight = stepHeight;
     float prevHeight = height;
@@ -877,15 +845,35 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     return uv + offset;
 }
 
-float ApplyParallaxShadow(float2 uv, float3 lightDirTS, float shadowStrength, float noise) {
+float ApplyParallaxShadow(float2 uv, float3 lightDirTS, float scale, float shadowStrength, float noise) {
+    if (lightDirTS.z <= .0f) return .0f; // early out
+    
     lightDirTS = normalize(lightDirTS);
-    lightDirTS.xy /= lightDirTS.z + POM_BIAS;
+    lightDirTS.xy /= lightDirTS.z;
 
     const float minLayers = 4.0f;
-    float maxLayers = 10.0f;
+    float maxLayers = 32.0f;
     maxLayers = maxLayers * .5f + maxLayers * noise;
     float adaptive = abs(dot(lightDirTS, float3(.0f, .0f, 1.0f)));
     float numLayers = lerp(minLayers, maxLayers, adaptive);
+    numLayers = maxLayers;
+
+    const float stepSize = 1.0f / numLayers;
+    const float2 uvDelta = lightDirTS.xy * (stepSize * scale);
+
+    float2 offset = .0f;
+    float height = SampleHeightMap(uv);
+    float stepHeight = height;
+
+    for (float i = .0f; stepHeight < height && stepHeight < 1.0f && i < numLayers; i += 1.0f) {
+        offset += uvDelta;
+        height = SampleHeightMap(uv + offset);
+        stepHeight -= stepSize;
+    }
+
+    float shadow = lerp(1.0f, .0f, shadowStrength);
+
+    return stepHeight < height ? shadow : 1.0f;
 }
 
 #endif

@@ -20,8 +20,8 @@ float linearSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smo
 float heightScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale);               \
 float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);               \
 matInput.albedoTint = albedoTint;                                                              \
-matInput.emissiveTint = emissiveTint;                                                          \
 matInput.pack0 = float4(metallicScale, linearSmoothnessScale, heightScale, normalScale);       \
+matInput.pack1 = float4(emissiveTint, 1.0f);                                                   \
 
 struct ARPSurfVertexInput {
     float3 posOS : POSITION;
@@ -39,7 +39,6 @@ struct ARPSurfVertexOutput {
     float3 viewDirWS : TEXCOORD1;
     #if defined(_PARALLAX_MAP)
     float3 viewDirTS : TEXCOORD2;
-    float3 lightDirTS : TEXCOORD3;
     #endif
     float2 baseUV : VAR_BASE_UV;
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -54,8 +53,8 @@ struct ARPSurfGBufferOutput {
 
 struct ARPSurfMatInputData {
     float3 albedoTint;
-    float3 emissiveTint;
     float4 pack0; // x: metallic scale, y: linear smoothness scale, z: height scale, w: normal scale
+    float4 pack1; // rgb: emissive tint, a: material shadow strength
 };
 
 struct ARPSurfMatOutputData {
@@ -66,8 +65,8 @@ struct ARPSurfMatOutputData {
     float2 uv;
     float3 diffuse;
     float3 f0;
-    float3 emissive;
     float4 pack0; // x: metallic, y: linear roughness, z: occlusion, w: NdotV
+    float4 pack1; // rgb: emissive, a: material shadow
 };
 
 struct ARPSurfLightInputData {
@@ -103,14 +102,6 @@ void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput inp
 
     float3 viewDirOS = mul(GetWorldToObjectMatrix(), float4(_CameraPosWS.xyz, 1.0f)).xyz - input.posOS.xyz;
     output.viewDirTS = mul(objectToTangent, viewDirOS);
-
-    float3 lightDirWS = _MainLight.direction.xyz;
-    float3 bitangentWS = cross(output.normalWS, output.tangentWS.xyz) * input.tangentOS.w;
-    float3 lightDirTS = float3(
-        dot(lightDirWS, output.tangentWS),
-        dot(lightDirWS, bitangentWS),
-        dot(lightDirWS, output.normalWS));
-    output.lightDirTS = lightDirTS;
     #endif
 
     output.baseUV = input.baseUV * texST.xy + texST.zw;
@@ -119,6 +110,8 @@ void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput inp
 // need to manually setup instance id
 void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput input, ARPSurfMatInputData matInput) {
     float2 uv = input.baseUV;
+    
+    float matShadow = 1.0f;
     
     #if defined(_PARALLAX_MAP)
     float noise = InterleavedGradientNoise(input.posCS.xy, _FrameParams.z);
@@ -151,7 +144,7 @@ void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput i
     metallic *= matInput.pack0.x;
 
     float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
-    emissive += matInput.emissiveTint;
+    emissive += matInput.pack1.rgb;
     
     float3 diffuse = (1.0f - metallic) * albedo;
     float3 f0 = GetF0(albedo, metallic);
@@ -163,8 +156,8 @@ void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput i
     output.uv = uv;
     output.diffuse = diffuse;
     output.f0 = f0;
-    output.emissive = emissive;
     output.pack0 = float4(metallic, linearRoughness, occlusion, NdotV);
+    output.pack1 = float4(emissive, matShadow);
 }
 
 void ARPSurfLightSetup(out ARPSurfLightInputData output, ARPSurfMatOutputData input) {
@@ -186,26 +179,27 @@ void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, A
     float roughness = LinearRoughnessToRoughness(linearRoughness);
     float occlusion = mat.pack0.z;
     float NdotV = mat.pack0.w;
+    float matShadow = mat.pack1.a;
     float LdotH = light.pack0.x;
     float NdotH = light.pack0.y;
     float NdotL = light.pack0.z;
     
     float3 energyCompensation;
-    float lut = GetDFromLut(energyCompensation, mat.f0, roughness, NdotV);
-    // lut = GetDGFFromLut(energyCompensation, f0, roughness, NdotV).a;
+    // float lut = GetDFromLut(energyCompensation, mat.f0, roughness, NdotV);
+    float4 lut = GetDGFFromLut(energyCompensation, mat.f0, roughness, NdotV);
+    float3 envGF = lut.rgb;
+    float envD = lut.a;
 
     // float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
     float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, linearRoughness);
-    // float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, f0, energyCompensation);
-    float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, mat.f0);
+    float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, mat.f0, energyCompensation);
+    // float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, mat.f0);
 
-    float3 mainLighting = NdotL * _MainLight.color.rgb;
+    float3 mainLighting = NdotL * _MainLight.color.rgb * matShadow;
 
     float3 diffuseLighting = mat.diffuse * fd * mainLighting;
 
     float3 specularLighting = fr * mainLighting;
-
-    float3 directLighting = diffuseLighting + specularLighting;
 
     float3 kS = F_SchlickRoughness(mat.f0, NdotV, linearRoughness);
     float3 kD = 1.0f - kS;
@@ -213,12 +207,13 @@ void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, A
 
     float iblOcclusion = ComputeHorizonSpecularOcclusion(mat.R, mat.vertexN);
 
-    float3 indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, lut) * occlusion;
+    float3 indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
+    
 
     output.directDiffuse = diffuseLighting;
     output.directSpecular = specularLighting;
     output.indirectDiffuse = indirectDiffuse;
-    output.emissive = mat.emissive;
+    output.emissive = mat.pack1.rgb;
     output.iblOcclusion = iblOcclusion;
 }
 

@@ -105,7 +105,7 @@ Shader "Custom/MarioShader" {
 
                 matData.diffuse += (1.0f - matData.pack0.r) * iridescence;
                 matData.f0 += GetF0(iridescence, matData.pack0.r);
-                matData.emissive *= matData.diffuse;
+                matData.pack1.rgb *= matData.diffuse;
 
                 ARPSurfLightInputData lightData;
                 ARPSurfLightSetup(lightData, matData);

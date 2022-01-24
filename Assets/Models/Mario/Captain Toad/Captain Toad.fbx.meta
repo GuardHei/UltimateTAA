@@ -1,0 +1,395 @@
+fileFormatVersion: 2
+guid: e7f293a443a4d434a82ce8aa8e2c1881
+ModelImporter:
+  serializedVersion: 22101
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AccessoryMT
+    second: {fileID: 2100000, guid: e8e4144dcaaaf484ea67600224323032, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BodyMT
+    second: {fileID: 2100000, guid: 12713d668bdfc406bbd249e6b1c5263c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: EyeMT
+    second: {fileID: 2100000, guid: fe32f9de1198c4ad2a41eaf461f56e89, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: FaceMT
+    second: {fileID: 2100000, guid: 3f19c7bb8f3b94dd99153a1fe01c1735, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: GlassMT
+    second: {fileID: 2100000, guid: a57036ce2cf5341dca3b4d6bd25f4914, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HeadMT
+    second: {fileID: 2100000, guid: 3fe7693366911451fa37ecde3f51dfd4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: RuckMT
+    second: {fileID: 2100000, guid: 457c91739140f4d7b843694364350b53, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 2
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 0
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 0
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton:
+    - name: Captain Toad(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Accessory__AccessoryMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Accessory__GlassMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HeadModel__HeadMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Ruck__RuckMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: KinopioBrigade__BodyMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: EyeBall__EyeMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Eyelid00__EyeMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Eyelid01__EyeMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Eyelid02__EyeMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face01__FaceMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face02__FaceMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face03__FaceMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face04__FaceMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face05__FaceMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face06__FaceMT
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: nw4f_root
+      parentName: Captain Toad(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: AllRoot
+      parentName: nw4f_root
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: JointRoot
+      parentName: AllRoot
+      position: {x: 0, y: 0.0049776104, z: -0.00079811824}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Hip
+      parentName: JointRoot
+      position: {x: -0, y: -0.00040081862, z: 0}
+      rotation: {x: 0.49999997, y: 0.5000001, z: 0.50000006, w: 0.49999985}
+      scale: {x: 1, y: 1, z: 1}
+    - name: LegL1
+      parentName: Hip
+      position: {x: -0.0007000004, y: 0.0014769026, z: -0.0022819992}
+      rotation: {x: -0.000000014901161, y: 0.000000014901147, z: -0.000000012107201, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: LegL2
+      parentName: LegL1
+      position: {x: -0.0020300813, y: -5.7220456e-10, z: -5.7220456e-10}
+      rotation: {x: -0.0017136972, y: 0.0057852087, z: 0.2351852, w: 0.9719319}
+      scale: {x: 1, y: 1, z: 1}
+    - name: FootL
+      parentName: LegL2
+      position: {x: -0.0015750523, y: -8.583068e-10, z: -1.9073486e-10}
+      rotation: {x: 0.0045536687, y: -0.003958299, z: -0.7205719, w: 0.69335407}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ToeL
+      parentName: FootL
+      position: {x: -0.0024340004, y: 9.536743e-10, z: 0}
+      rotation: {x: -0.000000025896647, y: -0.000000028771709, z: -0.21643971, w: 0.976296}
+      scale: {x: 1, y: 1, z: 1}
+    - name: LegR1
+      parentName: Hip
+      position: {x: -0.0007, y: 0.0014769026, z: 0.0022820004}
+      rotation: {x: -0.000000014901198, y: -0.0000020414593, z: -0.000000019557515, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: LegR2
+      parentName: LegR1
+      position: {x: -0.0020300823, y: 4.7683715e-11, z: -0.000000011634826}
+      rotation: {x: 0.001713577, y: -0.0057848557, z: 0.23518531, w: 0.9719319}
+      scale: {x: 1, y: 1, z: 1}
+    - name: FootR
+      parentName: LegR2
+      position: {x: -0.0015750519, y: -2.8610228e-10, z: 0}
+      rotation: {x: -0.0045534056, y: 0.0039581615, z: -0.72057194, w: 0.693354}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ToeR
+      parentName: FootR
+      position: {x: -0.0024340004, y: -1.9073486e-10, z: 0}
+      rotation: {x: 0.000000010228139, y: -0.00000003504895, z: -0.21643953, w: 0.976296}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Spine1
+      parentName: JointRoot
+      position: {x: -0, y: 0.0004, z: 0}
+      rotation: {x: 0.5, y: -0.5, z: -0.5, w: 0.5}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Spine2
+      parentName: Spine1
+      position: {x: -0.0011727936, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Head
+      parentName: Spine2
+      position: {x: -0.0032300001, y: 0.000000118255606, z: 0}
+      rotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Ruck1
+      parentName: Spine2
+      position: {x: 0.00006720352, y: -0.002121604, z: 0}
+      rotation: {x: -0.00000017881393, y: 1, z: 0.000000059604645, w: -1.4599734e-23}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ShoulderL
+      parentName: Spine2
+      position: {x: -0.0016706367, y: 0.00013802947, z: 0.0006247143}
+      rotation: {x: -0.50000006, y: 0.49999997, z: 0.49999997, w: 0.50000006}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ArmL1
+      parentName: ShoulderL
+      position: {x: -0.00226, y: 0, z: 1.4305114e-10}
+      rotation: {x: 0, y: -8.4703295e-22, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ArmL2
+      parentName: ArmL1
+      position: {x: -0.0018799994, y: 0.0000000022888182, z: 1.4305114e-10}
+      rotation: {x: 0, y: -8.4703295e-22, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HandL
+      parentName: ArmL2
+      position: {x: -0.0019599986, y: -0.0000000015258789, z: 0}
+      rotation: {x: 0, y: -8.4703295e-22, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ShoulderR
+      parentName: Spine2
+      position: {x: -0.0016706367, y: 0.00013802947, z: -0.0006247143}
+      rotation: {x: -0.5, y: -0.5, z: -0.5, w: 0.5}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ArmR1
+      parentName: ShoulderR
+      position: {x: -0.00226, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: -0.000000026698247, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ArmR2
+      parentName: ArmR1
+      position: {x: -0.0018799999, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HandR
+      parentName: ArmR2
+      position: {x: -0.0019600003, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: KinopioBrigade
+      parentName: nw4f_root
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: EyeBall
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Eyelid00
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Eyelid01
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Eyelid02
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face01
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0.011559892, z: -0.00080316624}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face02
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0.011559892, z: -0.00080316624}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face03
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0.011559892, z: -0.00080316624}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face04
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0.011559892, z: -0.00080316624}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face05
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0.011559892, z: -0.00080316624}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Face06
+      parentName: KinopioBrigade
+      position: {x: -0, y: 0.011559892, z: -0.00080316624}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 0.02
+    rootMotionBoneName: nw4f_root
+    hasTranslationDoF: 0
+    hasExtraRoot: 1
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 1
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -57,11 +57,12 @@ Shader "Hidden/ARPIndirectSpecular" {
                 float linearRoughness = packed.a;
                 float roughness = LinearRoughnessToRoughness(linearRoughness);
                 float3 kS = F_SchlickRoughness(f0, NdotV, linearRoughness);
+                // kS = 1.0f;
 
                 float3 energyCompensation;
-                float3 lut = GetGFFromLut(energyCompensation, f0, roughness, NdotV);
+                float3 lut = GetGFFromLut(energyCompensation, kS, roughness, NdotV);
 
-                float3 specularIBL = EvaluateSpecularIBL(kS, R, linearRoughness, lut, energyCompensation) * iblOcclusion;
+                float3 specularIBL = EvaluateSpecularIBL(1.0f, R, linearRoughness, lut, energyCompensation) * iblOcclusion;
                 
                 return specularIBL;
             }
