@@ -579,21 +579,20 @@ float CalculateFd(float NdotV, float NdotL, float LdotH, float linearRoughness) 
     return d / PI;
 }
 
-float CalculateFdMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float linearRoughness) {
-    float d = DisneyDiffuseMultiScatter(NdotV, NdotL, NdotH, LdotH, linearRoughness);
+float CalculateFdMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2) {
+    float d = DisneyDiffuseMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2);
     return d / PI;
 }
 
-float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float3 f0) {
-    float alphaG2 = RoughnessToAlphaG2(roughness);
+float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0) {
     float3 F = F_Schlick(f0, LdotH);
     float V = V_SmithGGX(NdotV, NdotL, alphaG2);
     float D = D_GGX(NdotH, alphaG2);
     return D * V * F / PI;
 }
 
-float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float3 f0, float3 energyCompensation) {
-    return CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, f0) * energyCompensation;
+float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
+    return CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, f0) * energyCompensation;
 }
 
 //////////////////////////////////////////
@@ -760,11 +759,11 @@ float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 diffuse, float d) {
     return indirectDiffuse;
 }
 
-float3 EvaluateSpecularIBL(float3 kS, float3 R, float linearRoughness, float3 GF, float3 energyCompensation) {
+float3 EvaluateSpecularIBL(float3 R, float linearRoughness, float3 GF, float3 energyCompensation) {
     // GFD = 1.0f;
     // float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, SPEC_IBL_MAX_MIP)).rgb;
     float3 indirectSpecular = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, SPEC_IBL_MAX_MIP));
-    indirectSpecular *= GF * kS * energyCompensation;
+    indirectSpecular *= GF * energyCompensation;
     return indirectSpecular;
 }
 

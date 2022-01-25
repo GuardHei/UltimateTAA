@@ -177,6 +177,7 @@ void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, A
     float metallic = mat.pack0.x;
     float linearRoughness = mat.pack0.y;
     float roughness = LinearRoughnessToRoughness(linearRoughness);
+    float alphaG2 = RoughnessToAlphaG2(roughness);
     float occlusion = mat.pack0.z;
     float NdotV = mat.pack0.w;
     float matShadow = mat.pack1.a;
@@ -190,10 +191,10 @@ void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, A
     float3 envGF = lut.rgb;
     float envD = lut.a;
 
-    // float fd = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
-    float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, linearRoughness);
-    float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, roughness, mat.f0, energyCompensation);
-    // float3 fr = CalculateFr(NdotV, NdotL, NdotH, LdotH, roughness, mat.f0);
+    float fd_s = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
+    float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2);
+    float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
+    // float3 fr_s = CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0);
 
     float3 mainLighting = NdotL * _MainLight.color.rgb * matShadow;
 
