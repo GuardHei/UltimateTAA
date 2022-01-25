@@ -37,10 +37,10 @@ MonoBehaviour:
     iblLut: {fileID: 2800000, guid: de9d90a61eb0848dd8a35f98d367430f, type: 3}
     diffuseIBLLut: {fileID: 2800000, guid: 3b1341f5a97fb4ea7be016e40935dbc2, type: 3}
     specularIBLLut: {fileID: 2800000, guid: d2b1aa1c8d67742d896366ec636fd0c5, type: 3}
-    globalEnvMapDiffuse: {fileID: 8900000, guid: 84b3dff92780c4f268fd83301e4df94b, type: 3}
-    globalEnvMapSpecular: {fileID: 8900000, guid: 0928040aeff1f43a498d7b718314a68e, type: 3}
+    globalEnvMapDiffuse: {fileID: 8900000, guid: b447b2c67a02b4b69a90f731be5d5211, type: 3}
+    globalEnvMapSpecular: {fileID: 8900000, guid: 0c10ff43b8aed4c91ab9339e3d740b52, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
-    globalEnvMapRotation: 102
+    globalEnvMapRotation: 75
     skyboxMipLevel: 0
     taaSettings:
       enabled: 1
