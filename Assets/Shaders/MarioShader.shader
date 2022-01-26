@@ -94,10 +94,10 @@ Shader "Custom/MarioShader" {
 
                 ARP_SURF_MATERIAL_INPUT_SETUP(matInput);
 
-                ARPSurfMatOutputData matData;
+                ARPSurfMatOutputData matData = (ARPSurfMatOutputData) 0;
                 ARPSurfMaterialSetup(matData, input, matInput);
 
-                float2 uvIridescence = normalize(mul(GetWorldToViewMatrix(), matData.N)).xy * .5f + .5f;
+                float2 uvIridescence = normalize(mul(GetWorldToViewMatrix(), float4(matData.N, .0f))).xy * .5f + .5f;
                 float3 iridescence = SAMPLE_TEXTURE2D(_IridescenceMap, sampler_IridescenceMap, uvIridescence).rgb;
                 float iridescenceMask = SAMPLE_TEXTURE2D(_IridescenceMask, sampler_IridescenceMask, matData.uv).r;
                 float iridescenceScale = iridescenceMask * UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _IridescenceScale);

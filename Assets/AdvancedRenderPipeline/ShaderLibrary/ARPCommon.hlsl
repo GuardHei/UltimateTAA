@@ -180,6 +180,10 @@ TEXTURE2D(_EmissiveMap);
 SAMPLER(sampler_EmissiveMap);
 TEXTURE2D(_HeightMap);
 SAMPLER(sampler_HeightMap);
+TEXTURE2D(_ClearCoatMap);
+SAMPLER(sampler_ClearCoatMap);
+TEXTURE2D(_AnisotropyMap);
+TEXTURE2D(sampler_AnisotropyMap);
 
 TEXTURE2D(_PreintegratedDGFLut);
 SAMPLER(sampler_PreintegratedDGFLut);
@@ -469,7 +473,7 @@ float4 FastTonemapInvertSafe(float4 c) {
 // PBR Utility Functions                //
 //////////////////////////////////////////
 
-float LinearSmoothToLinearRoughness(float linearSmooth) {
+float LinearSmoothnessToLinearRoughness(float linearSmooth) {
     return 1.0f - linearSmooth;
 }
 
@@ -519,6 +523,11 @@ float3 GetF0(float3 reflectance) {
     return .16 * (reflectance * reflectance);
 }
 
+void GetAnisotropyTB(float anisotropy, float roughness, out float2 atb) {
+    atb.x = max(roughness * (1.0f + anisotropy), .001f);
+    atb.y = max(roughness * (1.0f - anisotropy), .001f);
+}
+
 float3 F_Schlick(in float3 f0, in float f90, in float u) {
     return f0 + (f90 - f0) * pow5(1.0f - u);
 }
@@ -535,12 +544,18 @@ float3 F_SchlickRoughness(float3 f0, float u, float linearRoughness) {
 
 float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
     const float lambdaV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
-    const float lambdaL = NdotV * sqrt ((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
+    const float lambdaL = NdotV * sqrt((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
     return .5f / max(lambdaV + lambdaL, .00001f);
 }
 
 float V_Kelemen(float LdotH) {
     return .25f / max(pow2(LdotH), .00001f);
+}
+
+float V_SmithGGX_Anisotropic(float2 atb, float TdotV, float BdotV, float TdotL, float BdotL, float NdotV, float NdotL) {
+    const float lambdaV = NdotL * length(float3(atb.x * TdotV, atb.y * BdotV, NdotV));
+    const float lambdaL = NdotV * length(float3(atb.x * TdotL, atb.y * BdotL, NdotL));
+    return .5f / max(lambdaV + lambdaL, .00001f);
 }
 
 // Requires caller to "div PI"
@@ -551,6 +566,17 @@ float D_GGX(float NdotH, float alphaG2) {
     float f_sqr = f * f;
     f_sqr = f_sqr == .0f ? .0001f : f_sqr;
     return alphaG2 / f_sqr;
+}
+
+// Requires caller to "div PI"
+float D_GGX_Anisotropic(float NdotH, float3 H, float3 T, float3 B, float2 atb) {
+    float TdotH = dot(T, H);
+    float BdotH = dot(B, H);
+    float a2 = atb.x * atb.y;
+    float3 V = float3(atb.y * TdotH, atb.x * BdotH, a2 * NdotH);
+    float v2 = dot(V, V);
+    float w2 = a2 / v2;
+    return a2 * w2 * w2;
 }
 
 float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float linearRoughness) {

@@ -326,23 +326,23 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void DrawSpecularLightingPass() {
-			ComputeSpecularIBLPass();
 			ComputeScreenSpaceReflectionPass();
-			IntegrateSpecularLightingPass();
+			ComputeSpecularIBLPass();
+			// IntegrateSpecularLightingPass();
+		}
+		
+		public void ComputeScreenSpaceReflectionPass() {
+			_cmd.FullScreenPass(_screenSpaceReflection, MaterialManager.IndirectSpecularMat, MaterialManager.SCREEN_SPACE_REFLECTION_PASS);
+			ExecuteCommand();
 		}
 
 		public void ComputeSpecularIBLPass() {
 			_cmd.SetGlobalTexture(ShaderKeywordManager.DEPTH_TEXTURE, _depthTex);
-			// _cmd.SetGlobalTexture(ShaderKeywordManager.RAW_COLOR_TEXTURE, _rawColorTex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_1_TEXTURE, _gbuffer1Tex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_2_TEXTURE, _gbuffer2Tex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_3_TEXTURE, _gbuffer3Tex);
-			_cmd.FullScreenPass(_screenSpaceCubemap, MaterialManager.IndirectSpecularMat, MaterialManager.CUBEMAP_REFLECTION_PASS);
-			ExecuteCommand();
-		}
-
-		public void ComputeScreenSpaceReflectionPass() {
-			_cmd.FullScreenPass(_screenSpaceReflection, MaterialManager.IndirectSpecularMat, MaterialManager.SCREEN_SPACE_REFLECTION_PASS);
+			_cmd.SetGlobalTexture(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, _screenSpaceReflection);
+			_cmd.FullScreenPass(_indirectSpecular, MaterialManager.IndirectSpecularMat, MaterialManager.CUBEMAP_REFLECTION_PASS);
 			ExecuteCommand();
 		}
 

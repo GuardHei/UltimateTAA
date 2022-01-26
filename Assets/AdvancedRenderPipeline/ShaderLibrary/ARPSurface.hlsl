@@ -3,25 +3,45 @@
 
 #include "ARPCommon.hlsl"
 
-#define ARP_SURF_PER_MATERIAL_DATA                   \
-UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)     \
-UNITY_DEFINE_INSTANCED_PROP(float, _HeightScale)     \
-UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)   \
-UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale) \
-UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)     \
-UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveTint)   \
-UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)   \
+#define ARP_SURF_PER_MATERIAL_DATA                            \
+UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)              \
+UNITY_DEFINE_INSTANCED_PROP(float, _HeightScale)              \
+UNITY_DEFINE_INSTANCED_PROP(float, _MetallicScale)            \
+UNITY_DEFINE_INSTANCED_PROP(float, _SmoothnessScale)          \
+UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoTint)              \
+UNITY_DEFINE_INSTANCED_PROP(float4, _EmissiveTint)            \
+UNITY_DEFINE_INSTANCED_PROP(float4, _AlbedoMap_ST)            \
 
-#define ARP_SURF_MATERIAL_INPUT_SETUP(matInput)                                                \
-float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;            \
-float3 emissiveTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;        \
-float metallicScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);           \
-float linearSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale); \
-float heightScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale);               \
-float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);               \
-matInput.albedoTint = albedoTint;                                                              \
-matInput.pack0 = float4(metallicScale, linearSmoothnessScale, heightScale, normalScale);       \
-matInput.pack1 = float4(emissiveTint, 1.0f);                                                   \
+#define ARP_CLEAR_COAT_PER_MATERIAL_DATA                      \
+UNITY_DEFINE_INSTANCED_PROP(float, _ClearCoatScale)           \
+UNITY_DEFINE_INSTANCED_PROP(float, _ClearCoatSmoothnessScale) \
+
+#define ARP_ANISOTROPY_PER_MATERIAL_DATA                      \
+UNITY_DEFINE_INSTANCED_PROP(float, _AnisotropyScale)          \
+
+#define ARP_SURF_MATERIAL_INPUT_SETUP(matInput)                                          \
+float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;      \
+float3 emissiveTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;  \
+float metallicScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MetallicScale);     \
+float smoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SmoothnessScale); \
+float heightScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _HeightScale);         \
+float normalScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);         \
+float clearCoatScale = .0f;                                                              \
+float clearCoatSmoothnessScale = .0f;                                                    \
+float anisotropyScale = .0f;                                                             \
+matInput.albedoTint = albedoTint;                                                        \
+matInput.pack0 = float4(metallicScale, smoothnessScale, heightScale, normalScale);       \
+matInput.pack1 = float4(emissiveTint, 1.0f);                                             \
+matInput.pack2 = float4(clearCoatScale, clearCoatSmoothnessScale, anisotropyScale, .0f); \
+
+#define ARP_CLEAR_COAT_MATERIAL_INPUT_SETUP(matInput)                                                      \
+float clearCoatScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ClearCoatScale);                     \
+float clearCoatSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ClearCoatSmoothnessScale); \
+matInput.pack2.xy = float2(clearCoatScale, clearCoatSmoothnessScale);                                      \
+
+#define ARP_ANISOTROPY_MATERIAL_INPUT_SETUP(matInput)                                    \
+float anisotropyScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyScale); \
+matInput.pack2.z = anisotropyScale;                                                      \
 
 struct ARPSurfVertexInput {
     float3 posOS : POSITION;
@@ -55,6 +75,7 @@ struct ARPSurfMatInputData {
     float3 albedoTint;
     float4 pack0; // x: metallic scale, y: linear smoothness scale, z: height scale, w: normal scale
     float4 pack1; // rgb: emissive tint, a: material shadow strength
+    float4 pack2; // x: clear coat scale, y: linear clear coat smoothness scale, z: anisotropy
 };
 
 struct ARPSurfMatOutputData {
@@ -67,6 +88,7 @@ struct ARPSurfMatOutputData {
     float3 f0;
     float4 pack0; // x: metallic, y: linear roughness, z: occlusion, w: NdotV
     float4 pack1; // rgb: emissive, a: material shadow
+    float4 pack2; // x: clear coat strength, y: linear clear coat roughness, z: anisotropy
 };
 
 struct ARPSurfLightInputData {
@@ -108,7 +130,7 @@ void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput inp
 }
 
 // need to manually setup instance id
-void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput input, ARPSurfMatInputData matInput) {
+void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput input, ARPSurfMatInputData matInput) {
     float2 uv = input.baseUV;
     
     float matShadow = 1.0f;
@@ -137,7 +159,7 @@ void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput i
     float4 metallicSmoothness = SAMPLE_TEXTURE2D(_MetallicSmoothnessMap, sampler_MetallicSmoothnessMap, uv);
     float linearSmoothness = metallicSmoothness.a;
     linearSmoothness *= matInput.pack0.y;
-    float linearRoughness = LinearSmoothToLinearRoughness(linearSmoothness);
+    float linearRoughness = LinearSmoothnessToLinearRoughness(linearSmoothness);
     linearRoughness = ClampMinLinearRoughness(linearRoughness);
 
     float metallic = metallicSmoothness.r;
@@ -148,6 +170,22 @@ void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput i
     
     float3 diffuse = (1.0f - metallic) * albedo;
     float3 f0 = GetF0(albedo, metallic);
+
+    float clearCoat = .0f;
+    float linearClearCoatRoughness = .0f;
+    float anisotropy = .0f;
+
+    #if defined(_CLEAR_COAT_MAP)
+    float2 clearCoatParams = SAMPLE_TEXTURE2D(_ClearCoatMap, sampler_ClearCoatMap, uv).rg;
+    clearCoat = clearCoatParams.r * matInput.pack2.r;
+    linearClearCoatRoughness = LinearSmoothnessToLinearRoughness(clearCoatParams.g * matInput.pack2.g);
+    linearClearCoatRoughness = ClampMinLinearRoughness(linearClearCoatRoughness);
+    #endif
+
+    #if defined(_ANISOTROPY_MAP)
+    anisotropy = SAMPLE_TEXTURE2D(_AnisotropyMap, sampler_AnisotropyMap, uv).r;
+    anisotropy *= matInput.pack2.b;
+    #endif
     
     output.vertexN = normalWS;
     output.N = N;
@@ -158,9 +196,10 @@ void ARPSurfMaterialSetup(out ARPSurfMatOutputData output, ARPSurfVertexOutput i
     output.f0 = f0;
     output.pack0 = float4(metallic, linearRoughness, occlusion, NdotV);
     output.pack1 = float4(emissive, matShadow);
+    output.pack2 = float4(clearCoat, linearClearCoatRoughness, anisotropy, .0f);
 }
 
-void ARPSurfLightSetup(out ARPSurfLightInputData output, ARPSurfMatOutputData input) {
+void ARPSurfLightSetup(inout ARPSurfLightInputData output, ARPSurfMatOutputData input) {
     float3 L = _MainLight.direction.xyz;
     float3 H = normalize(input.V + L);
     float LdotH = saturate(dot(L, H));
@@ -173,7 +212,7 @@ void ARPSurfLightSetup(out ARPSurfLightInputData output, ARPSurfMatOutputData in
     output.pack0 = float3(LdotH, NdotH, NdotL);
 }
 
-void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, ARPSurfLightInputData light) {
+void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat, ARPSurfLightInputData light) {
     float metallic = mat.pack0.x;
     float linearRoughness = mat.pack0.y;
     float roughness = LinearRoughnessToRoughness(linearRoughness);
@@ -191,7 +230,7 @@ void ARPSurfLighting(out ARPSurfLightingData output, ARPSurfMatOutputData mat, A
     float3 envGF = lut.rgb;
     float envD = lut.a;
 
-    float fd_s = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
+    // float fd_s = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
     float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2);
     float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
     // float3 fr_s = CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0);

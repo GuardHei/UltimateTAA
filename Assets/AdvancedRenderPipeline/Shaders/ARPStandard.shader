@@ -79,7 +79,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
                 ARP_SURF_MATERIAL_INPUT_SETUP(matInput);
 
-                ARPSurfMatOutputData matData;
+                ARPSurfMatOutputData matData = (ARPSurfMatOutputData) 0;
                 ARPSurfMaterialSetup(matData, input, matInput);
 
                 ARPSurfLightInputData lightData;
