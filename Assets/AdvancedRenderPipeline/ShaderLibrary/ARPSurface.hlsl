@@ -34,14 +34,14 @@ matInput.pack0 = float4(metallicScale, smoothnessScale, heightScale, normalScale
 matInput.pack1 = float4(emissiveTint, 1.0f);                                             \
 matInput.pack2 = float4(clearCoatScale, clearCoatSmoothnessScale, anisotropyScale, .0f); \
 
-#define ARP_CLEAR_COAT_MATERIAL_INPUT_SETUP(matInput)                                                      \
-float clearCoatScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ClearCoatScale);                     \
-float clearCoatSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ClearCoatSmoothnessScale); \
-matInput.pack2.xy = float2(clearCoatScale, clearCoatSmoothnessScale);                                      \
+#define ARP_CLEAR_COAT_MATERIAL_INPUT_SETUP(matInput)                                                \
+clearCoatScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ClearCoatScale);                     \
+clearCoatSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ClearCoatSmoothnessScale); \
+matInput.pack2.xy = float2(clearCoatScale, clearCoatSmoothnessScale);                                \
 
-#define ARP_ANISOTROPY_MATERIAL_INPUT_SETUP(matInput)                                    \
-float anisotropyScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyScale); \
-matInput.pack2.z = anisotropyScale;                                                      \
+#define ARP_ANISOTROPY_MATERIAL_INPUT_SETUP(matInput)                              \
+anisotropyScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyScale); \
+matInput.pack2.z = anisotropyScale;                                                \
 
 struct ARPSurfVertexInput {
     float3 posOS : POSITION;
@@ -162,14 +162,14 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float linearSmoothness = metallicSmoothness.a;
     linearSmoothness *= matInput.pack0.y;
     float linearRoughness = LinearSmoothnessToLinearRoughness(linearSmoothness);
-    linearRoughness = ClampMinLinearRoughness(linearRoughness);
+    // linearRoughness = ClampMinLinearRoughness(linearRoughness); // Move down
 
     float metallic = metallicSmoothness.r;
     metallic *= matInput.pack0.x;
 
     float3 emissive = SAMPLE_TEXTURE2D(_EmissiveMap, sampler_EmissiveMap, uv).rgb;
     emissive += matInput.pack1.rgb;
-    
+
     float3 diffuse = (1.0f - metallic) * albedo;
     float3 f0 = GetF0(albedo, metallic);
 
@@ -182,12 +182,18 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     clearCoat = clearCoatParams.r * matInput.pack2.r;
     linearClearCoatRoughness = LinearSmoothnessToLinearRoughness(clearCoatParams.g * matInput.pack2.g);
     linearClearCoatRoughness = ClampMinLinearRoughness(linearClearCoatRoughness);
+
+    linearRoughness = lerp(linearRoughness, max(linearRoughness, linearClearCoatRoughness), clearCoat);
+
+    f0 = lerp(f0, F0ClearCoatToSurface(f0), clearCoat);
     #endif
 
     #if defined(_ANISOTROPY)
     anisotropy = SAMPLE_TEXTURE2D(_AnisotropyMap, sampler_AnisotropyMap, uv).r;
     anisotropy *= matInput.pack2.b;
     #endif
+
+    linearRoughness = ClampMinLinearRoughness(linearRoughness);
     
     output.vertexN = normalWS;
     output.N = N;
@@ -223,6 +229,11 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     float alphaG2 = RoughnessToAlphaG2(roughness);
     float occlusion = mat.pack0.z;
     float3 emissive = mat.pack1.rgb;
+    float clearCoat = mat.pack2.r;
+    float linearClearCoatRoughness = mat.pack2.g;
+    float clearCoatRoughness = LinearRoughnessToRoughness(linearClearCoatRoughness);
+    float clearCoatAlphaG2 = RoughnessToAlphaG2(clearCoatRoughness);
+    float anisotropy = mat.pack2.b;
     float NdotV = mat.pack0.w;
     float LdotH = light.pack0.x;
     float NdotH = light.pack0.y;
@@ -237,14 +248,53 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
     
     float iblOcclusion = ComputeHorizonSpecularOcclusion(mat.R, mat.vertexN);
-
+    
     float3 kS = F_SchlickRoughness(mat.f0, NdotV, linearRoughness);
     float3 kD = 1.0f - kS;
     kD *=  1.0f - metallic;
-
+    // float negE = 1.0f - envGF;
+    
     float3 indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
     
-    float4 forwardLighting = float4((fd + fr) * light.lighting + emissive + indirectDiffuse, 1.0f);
+    float4 forwardLighting = float4(.0f, .0f, .0f, 1.0f);
+    
+    // forwardLighting.rgb = (fd + fr) * light.lighting;
+    forwardLighting.rgb = fd;
+
+    #if defined(_CLEAR_COAT)
+
+    float clearCoatNdotV = ClampNdotV(dot(mat.vertexN, mat.V));
+    float clearCoatNdotH = saturate(dot(mat.vertexN, light.H));
+    float clearCoatNdotL = saturate(dot(mat.vertexN, light.L));
+
+    float3 clearCoatR = reflect(-mat.V, mat.vertexN);
+    
+    float fc;
+    float frc = CalculateFrClearCoat(clearCoatNdotH, clearCoatNdotL, clearCoatAlphaG2, clearCoat, fc);
+    float baseLayerLoss = 1.0f - fc;
+    
+    forwardLighting.rgb += fr * baseLayerLoss;
+    forwardLighting.rgb *= baseLayerLoss * light.lighting;
+    forwardLighting.rgb += frc * clearCoatNdotL * light.color;
+
+    float fc_i = F_Schlick(.04f, clearCoatNdotV).r * clearCoat;
+    float baseLayerLoss_i = 1.0f - fc_i;
+
+    indirectDiffuse *= baseLayerLoss_i;
+    mat.f0 *= baseLayerLoss_i * baseLayerLoss_i;
+
+    float3 clearCoatSpecularIBL = SampleGlobalEnvMapSpecular(clearCoatR, LinearRoughnessToMipmapLevel(linearClearCoatRoughness, SPEC_IBL_MAX_MIP));
+
+    forwardLighting.rgb += clearCoatSpecularIBL * fc_i;
+    
+    #else // Normal direct lighting calculation
+    
+    forwardLighting.rgb += fr;
+    forwardLighting.rgb *= light.lighting;
+    
+    #endif
+
+    forwardLighting.rgb += emissive + indirectDiffuse;
     
     output.directDiffuseLobe = fd;
     output.directSpecularLobe = fr;

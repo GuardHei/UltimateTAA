@@ -520,7 +520,11 @@ float3 GetF0(float3 albedo, float metallic) {
 }
 
 float3 GetF0(float3 reflectance) {
-    return .16 * (reflectance * reflectance);
+    return .16f * (reflectance * reflectance);
+}
+
+float3 F0ClearCoatToSurface(float3 f0) {
+    return saturate(f0 * (f0 * (.941892f - .263008f * f0) + .346479f) - .0285998f);
 }
 
 void GetAnisotropyTB(float anisotropy, float roughness, out float2 atb) {
@@ -558,6 +562,10 @@ float V_SmithGGX_Anisotropic(float2 atb, float TdotV, float BdotV, float TdotL, 
     return .5f / max(lambdaV + lambdaL, .00001f);
 }
 
+float V_Neubelt(float NdotL, float NdotV) {
+    return saturate(1.0f / (4.0f * (NdotL + NdotV - NdotL * NdotV)));
+}
+
 // Requires caller to "div PI"
 float D_GGX(float NdotH, float alphaG2) {
     // Higher accuracy?
@@ -577,6 +585,15 @@ float D_GGX_Anisotropic(float NdotH, float3 H, float3 T, float3 B, float2 atb) {
     float v2 = dot(V, V);
     float w2 = a2 / v2;
     return a2 * w2 * w2;
+}
+
+// Requires caller to "div PI"
+// Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
+float D_Charlie(float NdotH, float roughness) {
+    float invAlpha  = 1.0f / roughness;
+    float cos2h = NdotH * NdotH;
+    float sin2h = max(1.0f - cos2h, .0078125f); // 2^(-14/2), so sin2h^2 > 0 in fp16
+    return (2.0f + invAlpha) * pow(sin2h, invAlpha * .5f) * .5f;
 }
 
 float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float linearRoughness) {
@@ -630,6 +647,14 @@ float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float alp
 
 float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
     return CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, f0) * energyCompensation;
+}
+
+float CalculateFrClearCoat(float NdotH, float LdotH, float clearCoatAlphaG2, float clearCoat, out float fc) {
+    float F = F_Schlick(.04f, LdotH).r * clearCoat;
+    fc = F;
+    float V = V_Kelemen(LdotH);
+    float D = D_GGX(NdotH, clearCoatAlphaG2);
+    return D * V * F / PI;
 }
 
 float3 CalculateFrMultiscatter_Anisotropic(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {

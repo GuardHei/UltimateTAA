@@ -104,10 +104,9 @@ namespace AdvancedRenderPipeline.Runtime {
 		#endregion
 
 		#region Passes
-
-		public static readonly int CUBEMAP_REFLECTION_PASS = IndirectSpecularMat.FindPass("CubemapReflection");
+		
 		public static readonly int SCREEN_SPACE_REFLECTION_PASS = IndirectSpecularMat.FindPass("ScreenSpaceReflection");
-		public static readonly int INTEGRATE_INDIRECT_SPECULAR_PASS = IndirectSpecularMat.FindPass("IntegrateIndirectSpecular");
+		public static readonly int CUBEMAP_REFLECTION_PASS = IndirectSpecularMat.FindPass("CubemapReflection");
 		public static readonly int INTEGRATE_OPAQUE_LIGHTING_PASS = IntegrateOpaqueLightingMat.FindPass("IntegrateOpaqueLighting");
 		public static readonly int CAMERA_MOTION_VECTORS_PASS = CameraMotionMat.FindPass("CameraMotionVectors");
 		public static readonly int STOP_NAN_PROPAGATION_PASS = TonemappingMat.FindPass("StopNaNPropagation");

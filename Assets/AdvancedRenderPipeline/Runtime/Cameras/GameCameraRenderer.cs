@@ -328,7 +328,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		public void DrawSpecularLightingPass() {
 			ComputeScreenSpaceReflectionPass();
 			ComputeSpecularIBLPass();
-			// IntegrateSpecularLightingPass();
 		}
 		
 		public void ComputeScreenSpaceReflectionPass() {
@@ -343,13 +342,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cmd.SetGlobalTexture(ShaderKeywordManager.GBUFFER_3_TEXTURE, _gbuffer3Tex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, _screenSpaceReflection);
 			_cmd.FullScreenPass(_indirectSpecular, MaterialManager.IndirectSpecularMat, MaterialManager.CUBEMAP_REFLECTION_PASS);
-			ExecuteCommand();
-		}
-
-		public void IntegrateSpecularLightingPass() {
-			_cmd.SetGlobalTexture(ShaderKeywordManager.SCREEN_SPACE_CUBEMAP, _screenSpaceCubemap);
-			_cmd.SetGlobalTexture(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, _screenSpaceReflection);
-			_cmd.FullScreenPass(_indirectSpecular, MaterialManager.IndirectSpecularMat, MaterialManager.INTEGRATE_INDIRECT_SPECULAR_PASS);
 			ExecuteCommand();
 		}
 

@@ -8,6 +8,42 @@ Shader "Hidden/ARPIndirectSpecular" {
         
         Pass {
             
+            Name "ScreenSpaceReflection"
+            
+            Cull Off
+            ZWrite Off
+            ZTest Always
+            
+            HLSLPROGRAM
+
+            #pragma vertex Vert
+            #pragma fragment Fragment
+
+            #include "ARPCommon.hlsl"
+
+            struct VertexOutput {
+                float4 posCS : SV_POSITION;
+                float2 screenUV : VAR_SCREEN_UV;
+                float3 ray : TEXCOORD0;
+            };
+
+            VertexOutput Vert(uint vertexID : SV_VertexID) {
+                VertexOutput output;
+                output.posCS = VertexIDToPosCS(vertexID);
+                output.screenUV = VertexIDToScreenUV(vertexID);
+                output.ray = VertexIDToFrustumCorners(vertexID).xyz;
+                return output;
+            }
+
+            float4 Fragment(VertexOutput input) : SV_TARGET {
+                return float4(.0f, .0f, .0f, .0f);
+            }
+            
+            ENDHLSL
+        }
+        
+        Pass {
+            
             Name "CubemapReflection"
             
             Cull Off
@@ -61,87 +97,12 @@ Shader "Hidden/ARPIndirectSpecular" {
                 float3 energyCompensation;
                 float3 lut = GetGFFromLut(energyCompensation, f0, roughness, NdotV);
 
+                // iblOcclusion = 1.0f;
+
                 float3 specularIBL = EvaluateSpecularIBL(R, linearRoughness, lut, energyCompensation) * iblOcclusion;
-                
+
+                // return iblOcclusion;
                 return specularIBL;
-            }
-            
-            ENDHLSL
-        }
-        
-        Pass {
-            
-            Name "ScreenSpaceReflection"
-            
-            Cull Off
-            ZWrite Off
-            ZTest Always
-            
-            HLSLPROGRAM
-
-            #pragma vertex Vert
-            #pragma fragment Fragment
-
-            #include "ARPCommon.hlsl"
-
-            struct VertexOutput {
-                float4 posCS : SV_POSITION;
-                float2 screenUV : VAR_SCREEN_UV;
-                float3 ray : TEXCOORD0;
-            };
-
-            VertexOutput Vert(uint vertexID : SV_VertexID) {
-                VertexOutput output;
-                output.posCS = VertexIDToPosCS(vertexID);
-                output.screenUV = VertexIDToScreenUV(vertexID);
-                output.ray = VertexIDToFrustumCorners(vertexID).xyz;
-                return output;
-            }
-
-            float4 Fragment(VertexOutput input) : SV_TARGET {
-                return float4(.0f, .0f, .0f, .0f);
-            }
-            
-            ENDHLSL
-        }
-        
-        Pass {
-            
-            Name "IntegrateIndirectSpecular"
-            
-            Cull Off
-            ZWrite Off
-            ZTest Always
-            
-            HLSLPROGRAM
-
-            #pragma vertex Vert
-            #pragma fragment Fragment
-
-            #include "ARPCommon.hlsl"
-
-            struct VertexOutput {
-                float4 posCS : SV_POSITION;
-                float2 screenUV : VAR_SCREEN_UV;
-            };
-
-            VertexOutput Vert(uint vertexID : SV_VertexID) {
-                VertexOutput output;
-                output.posCS = VertexIDToPosCS(vertexID);
-                output.screenUV = VertexIDToScreenUV(vertexID);
-                return output;
-            }
-
-            float3 Fragment(VertexOutput input) : SV_TARGET {
-                float2 uv = input.screenUV;
-                if (_ProjectionParams.x < 0.0) uv.y = 1 - uv.y;
-                
-                float3 ibl = SAMPLE_TEXTURE2D(_ScreenSpaceCubemap, sampler_point_clamp, uv).rgb;
-                float4 ssr = SAMPLE_TEXTURE2D(_ScreenSpaceReflection, sampler_point_clamp, uv);
-
-                float3 indirectSpecular = lerp(ibl, ssr.rgb, ssr.a);
-                
-                return indirectSpecular;
             }
             
             ENDHLSL

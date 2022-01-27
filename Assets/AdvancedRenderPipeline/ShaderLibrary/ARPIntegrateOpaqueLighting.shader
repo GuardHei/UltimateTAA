@@ -43,9 +43,8 @@ Shader "Hidden/ARPIntegrateOpaqueLighting" {
 
                 float3 forwardLighting = SAMPLE_TEXTURE2D(_RawColorTex, sampler_point_clamp, uv).rgb;
                 float3 indirectSpecular = SAMPLE_TEXTURE2D(_IndirectSpecular, sampler_point_clamp, uv).rgb;
-                float indirectOcclusion = 1.0f;
 
-                finalLighting.rgb = (forwardLighting + indirectSpecular) * indirectOcclusion;
+                finalLighting.rgb = forwardLighting + indirectSpecular;
                 finalLighting.a = 1.0f;
                 
                 return finalLighting;
