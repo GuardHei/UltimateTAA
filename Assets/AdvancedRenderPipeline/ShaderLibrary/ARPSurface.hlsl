@@ -259,7 +259,7 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     float4 forwardLighting = float4(.0f, .0f, .0f, 1.0f);
     
     // forwardLighting.rgb = (fd + fr) * light.lighting;
-    forwardLighting.rgb = fd;
+    forwardLighting.rgb = fd + fr;
 
     #if defined(_CLEAR_COAT)
 
@@ -273,15 +273,15 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     float frc = CalculateFrClearCoat(clearCoatNdotH, clearCoatNdotL, clearCoatAlphaG2, clearCoat, fc);
     float baseLayerLoss = 1.0f - fc;
     
-    forwardLighting.rgb += fr * baseLayerLoss;
-    forwardLighting.rgb *= baseLayerLoss * light.lighting;
+    forwardLighting.rgb *= baseLayerLoss;
+    forwardLighting.rgb *= light.lighting;
     forwardLighting.rgb += frc * clearCoatNdotL * light.color;
 
     float fc_i = F_Schlick(.04f, clearCoatNdotV).r * clearCoat;
     float baseLayerLoss_i = 1.0f - fc_i;
 
     indirectDiffuse *= baseLayerLoss_i;
-    mat.f0 *= baseLayerLoss_i * baseLayerLoss_i;
+    mat.f0 *= baseLayerLoss_i;
 
     float3 clearCoatSpecularIBL = SampleGlobalEnvMapSpecular(clearCoatR, LinearRoughnessToMipmapLevel(linearClearCoatRoughness, SPEC_IBL_MAX_MIP));
 
@@ -289,7 +289,6 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     
     #else // Normal direct lighting calculation
     
-    forwardLighting.rgb += fr;
     forwardLighting.rgb *= light.lighting;
     
     #endif

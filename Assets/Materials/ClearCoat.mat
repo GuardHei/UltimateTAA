@@ -54,9 +54,9 @@ Material:
     - _ClearCoatSmoothnessScale: 1
     - _Cull: 2
     - _HeightScale: 0
-    - _MetallicScale: 0
+    - _MetallicScale: 0.606
     - _NormalScale: 1
-    - _SmoothnessScale: 1
+    - _SmoothnessScale: 0.686
     - _StencilRef: 1
     m_Colors:
     - _AlbedoTint: {r: 0, g: 0.2824192, b: 1, a: 1}

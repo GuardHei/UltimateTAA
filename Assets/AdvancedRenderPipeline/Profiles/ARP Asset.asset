@@ -40,7 +40,7 @@ MonoBehaviour:
     globalEnvMapDiffuse: {fileID: 8900000, guid: ecad7319420654d6194bd1ecab7ae466, type: 3}
     globalEnvMapSpecular: {fileID: 8900000, guid: 4774adbdd17264952b6562a3707dc3c6, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
-    globalEnvMapRotation: 173
+    globalEnvMapRotation: 360
     skyboxMipLevel: 0
     taaSettings:
       enabled: 1
@@ -57,7 +57,7 @@ MonoBehaviour:
       minSharpness: 0
       maxSharpness: 0
     colorSettings:
-      postExposure: 0.55
+      postExposure: 0
       contrast: 0
       colorFilter: {r: 1, g: 1, b: 1, a: 0}
       hueShift: 0
