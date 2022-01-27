@@ -590,24 +590,35 @@ float DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float lin
     return lightScatter * viewScatter * energyFactor;
 }
 
-float DisneyDiffuseMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2) {
+float3 DisneyDiffuseRenormalized(float NdotV, float NdotL, float LdotH, float linearRoughness, float3 diffuse) {
+    float energyBias = lerp(.0f, .5f, linearRoughness);
+    float energyFactor = lerp(1.0f, 1.0f / 1.51f, linearRoughness);
+    float f90 = energyBias + 2.0f * LdotH * LdotH * linearRoughness;
+    const float3 f0 = float3(1.0f, 1.0f, 1.0f);
+    float lightScatter = F_Schlick(f0, f90, NdotL).r;
+    float viewScatter = F_Schlick(f0, f90, NdotV).r;
+
+    return lightScatter * viewScatter * energyFactor * diffuse;
+}
+
+float3 DisneyDiffuseMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 diffuse) {
     float g = saturate(.18455f * log(2.0f / alphaG2 - 1.0f));
     float f0 = LdotH + pow5(1.0f - LdotH);
     float f1 = (1.0f - .75f * pow5(1.0f - NdotL)) * (1.0f - .75f * pow5(1.0f - NdotV));
     float t = saturate(2.2f * g - .5f);
     float fd = f0 + (f1 - f0) * t;
     float fb = ((34.5f * g - 59.0f) * g + 24.5f) * LdotH * exp2(-max(73.2f * g - 21.2f, 8.9f) * sqrt(NdotH));
-    return max(fd + fb, .0f);
+    return max(fd + fb, .0f) * diffuse;
 }
 
-float CalculateFd(float NdotV, float NdotL, float LdotH, float linearRoughness) {
-    float d = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness);
-    return d / PI;
+float3 CalculateFd(float NdotV, float NdotL, float LdotH, float linearRoughness, float3 diffuse) {
+    float3 D = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness, diffuse);
+    return D / PI;
 }
 
-float CalculateFdMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2) {
-    float d = DisneyDiffuseMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2);
-    return d / PI;
+float3 CalculateFdMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 diffuse) {
+    float3 D = DisneyDiffuseMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, diffuse);
+    return D / PI;
 }
 
 float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0) {
@@ -618,6 +629,10 @@ float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float alp
 }
 
 float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
+    return CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, f0) * energyCompensation;
+}
+
+float3 CalculateFrMultiscatter_Anisotropic(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
     return CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, f0) * energyCompensation;
 }
 

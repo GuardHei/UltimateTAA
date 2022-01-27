@@ -93,16 +93,18 @@ struct ARPSurfMatOutputData {
 
 struct ARPSurfLightInputData {
     float3 color;
+    float3 lighting;
     float3 L;
     float3 H;
     float3 pack0; // x: LdotH, y: NdotH, z: NdotL
 };
 
 struct ARPSurfLightingData {
-    float3 directDiffuse;
-    float3 directSpecular;
+    float3 directDiffuseLobe;
+    float3 directSpecularLobe;
     float3 indirectDiffuse;
     float3 emissive;
+    float4 forwardLighting;
     float iblOcclusion;
 };
 
@@ -175,14 +177,14 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float linearClearCoatRoughness = .0f;
     float anisotropy = .0f;
 
-    #if defined(_CLEAR_COAT_MAP)
+    #if defined(_CLEAR_COAT)
     float2 clearCoatParams = SAMPLE_TEXTURE2D(_ClearCoatMap, sampler_ClearCoatMap, uv).rg;
     clearCoat = clearCoatParams.r * matInput.pack2.r;
     linearClearCoatRoughness = LinearSmoothnessToLinearRoughness(clearCoatParams.g * matInput.pack2.g);
     linearClearCoatRoughness = ClampMinLinearRoughness(linearClearCoatRoughness);
     #endif
 
-    #if defined(_ANISOTROPY_MAP)
+    #if defined(_ANISOTROPY)
     anisotropy = SAMPLE_TEXTURE2D(_AnisotropyMap, sampler_AnisotropyMap, uv).r;
     anisotropy *= matInput.pack2.b;
     #endif
@@ -205,8 +207,10 @@ void ARPSurfLightSetup(inout ARPSurfLightInputData output, ARPSurfMatOutputData 
     float LdotH = saturate(dot(L, H));
     float NdotH = saturate(dot(input.N, H));
     float NdotL = saturate(dot(input.N, L));
+    float3 lighting = NdotL * _MainLight.color.rgb * input.pack1.a;
 
     output.color = _MainLight.color.rgb;
+    output.lighting = lighting;
     output.L = L;
     output.H = H;
     output.pack0 = float3(LdotH, NdotH, NdotL);
@@ -218,42 +222,35 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     float roughness = LinearRoughnessToRoughness(linearRoughness);
     float alphaG2 = RoughnessToAlphaG2(roughness);
     float occlusion = mat.pack0.z;
+    float3 emissive = mat.pack1.rgb;
     float NdotV = mat.pack0.w;
-    float matShadow = mat.pack1.a;
     float LdotH = light.pack0.x;
     float NdotH = light.pack0.y;
     float NdotL = light.pack0.z;
     
     float3 energyCompensation;
-    // float lut = GetDFromLut(energyCompensation, mat.f0, roughness, NdotV);
     float4 lut = GetDGFFromLut(energyCompensation, mat.f0, roughness, NdotV);
     float3 envGF = lut.rgb;
     float envD = lut.a;
 
-    // float fd_s = CalculateFd(NdotV, NdotL, LdotH, linearRoughness);
-    float fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2);
+    float3 fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.diffuse);
     float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
-    // float3 fr_s = CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0);
-
-    float3 mainLighting = NdotL * _MainLight.color.rgb * matShadow;
-
-    float3 diffuseLighting = mat.diffuse * fd * mainLighting;
-
-    float3 specularLighting = fr * mainLighting;
+    
+    float iblOcclusion = ComputeHorizonSpecularOcclusion(mat.R, mat.vertexN);
 
     float3 kS = F_SchlickRoughness(mat.f0, NdotV, linearRoughness);
     float3 kD = 1.0f - kS;
     kD *=  1.0f - metallic;
 
-    float iblOcclusion = ComputeHorizonSpecularOcclusion(mat.R, mat.vertexN);
-
     float3 indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
     
-
-    output.directDiffuse = diffuseLighting;
-    output.directSpecular = specularLighting;
+    float4 forwardLighting = float4((fd + fr) * light.lighting + emissive + indirectDiffuse, 1.0f);
+    
+    output.directDiffuseLobe = fd;
+    output.directSpecularLobe = fr;
     output.indirectDiffuse = indirectDiffuse;
-    output.emissive = mat.pack1.rgb;
+    output.emissive = emissive;
+    output.forwardLighting = forwardLighting;
     output.iblOcclusion = iblOcclusion;
 }
 

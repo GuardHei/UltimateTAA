@@ -110,21 +110,19 @@ Shader "Custom/MarioShader" {
                 ARPSurfLightInputData lightData;
                 ARPSurfLightSetup(lightData, matData);
 
-                ARPSurfLightingData lightingData;
-                ARPSurfLighting(lightingData, matData, lightData);
-
                 float sssRange = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SSSRange);
                 float sssScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SSSScale);
 
-                float sss = saturate(1.0f - dot(matData.V, matData.N));
+                float sss = saturate(1.0f - matData.pack0.w);
                 sss = max(pow(sss, sssRange) * 1.5f, .0f);
                 sss *= sssScale;
                 
-                lightingData.emissive += sss;
+                matData.pack1.rgb += sss;
 
-                float3 finalLighting = lightingData.directDiffuse + lightingData.directSpecular + lightingData.indirectDiffuse + lightingData.emissive;
+                ARPSurfLightingData lightingData = (ARPSurfLightingData) 0;
+                ARPSurfLighting(lightingData, matData, lightData);
 
-                output.forward = float4(finalLighting, 1.0f);
+                output.forward = lightingData.forwardLighting;
                 // output.forward = float4(directDiffuse, 1.0f);
                 // output.forward = sss;
                 // output.forward = float4(matData.diffuse, 1.0f);
