@@ -553,6 +553,7 @@ float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
 }
 
 float V_Kelemen(float LdotH) {
+    // return .25f / pow2(LdotH);
     return .25f / max(pow2(LdotH), .00001f);
 }
 
@@ -574,6 +575,13 @@ float D_GGX(float NdotH, float alphaG2) {
     float f_sqr = f * f;
     f_sqr = f_sqr == .0f ? .0001f : f_sqr;
     return alphaG2 / f_sqr;
+}
+
+// Requires caller to "div PI"
+float D_GGX_Filament(float NdotH, float roughness) {
+    float a = NdotH * roughness;
+    float k = roughness / (1.0f - NdotH * NdotH + a * a);
+    return k * k;
 }
 
 // Requires caller to "div PI"
