@@ -28,6 +28,9 @@
 // #define POM_BIAS (.42f)
 #define POM_BIAS (.3f)
 
+#define MIN_LINEAR_ROUGHNESS (.045f)
+#define MIN_ROUGHNESS (.002025f)
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Sampling/Hammersley.hlsl"
@@ -434,8 +437,8 @@ float3 RotateAroundYInDegrees(float3 vertex, float degrees) {
     return float3(mul(m, vertex.xz), vertex.y).xzy;
 }
 
-float3 ApplyNormalMap(float3 data, float3 normalWS, float4 tangentWS) {
-    float3x3 tangentToWorld = CreateTangentToWorld(normalWS, tangentWS.xyz, tangentWS.w);
+float3 ApplyNormalMap(float3 data, float3 normalWS, float4 tangentWS, out float3x3 tangentToWorld) {
+    tangentToWorld = CreateTangentToWorld(normalWS, tangentWS.xyz, tangentWS.w);
     return TransformTangentToWorld(data, tangentToWorld);
 }
 
@@ -496,13 +499,13 @@ float ClampMinLinearRoughness(float linearRoughness) {
     // return max(linearRoughness, .04f);
     // return max(linearRoughness, 0.089f); // half precision float
     // return max(linearRoughness, REAL_EPS);
-    return max(linearRoughness, .045f); // Anti specular flickering
+    return max(linearRoughness, MIN_LINEAR_ROUGHNESS); // Anti specular flickering
 }
 
 float ClampMinRoughness(float roughness) {
     // return max(roughness, 0.089f); // half precision float
     // return max(roughness, REAL_EPS);
-    return max(roughness, .045f); // Anti specular flickering
+    return max(roughness, MIN_ROUGHNESS); // Anti specular flickering
 }
 
 // maxMipLevel: start from 0
@@ -528,8 +531,8 @@ float3 F0ClearCoatToSurface(float3 f0) {
 }
 
 void GetAnisotropyTB(float anisotropy, float roughness, out float2 atb) {
-    atb.x = max(roughness * (1.0f + anisotropy), .001f);
-    atb.y = max(roughness * (1.0f - anisotropy), .001f);
+    atb.x = ClampMinRoughness(roughness * (1.0f + anisotropy));
+    atb.y = ClampMinRoughness(roughness * (1.0f - anisotropy));
 }
 
 float3 F_Schlick(in float3 f0, in float f90, in float u) {
@@ -560,7 +563,8 @@ float V_Kelemen(float LdotH) {
 float V_SmithGGX_Anisotropic(float2 atb, float TdotV, float BdotV, float TdotL, float BdotL, float NdotV, float NdotL) {
     const float lambdaV = NdotL * length(float3(atb.x * TdotV, atb.y * BdotV, NdotV));
     const float lambdaL = NdotV * length(float3(atb.x * TdotL, atb.y * BdotL, NdotL));
-    return .5f / max(lambdaV + lambdaL, .00001f);
+    float v = .5f / max(lambdaV + lambdaL, .00001f);
+    return saturate(v);
 }
 
 float V_Neubelt(float NdotL, float NdotV) {
@@ -578,16 +582,7 @@ float D_GGX(float NdotH, float alphaG2) {
 }
 
 // Requires caller to "div PI"
-float D_GGX_Filament(float NdotH, float roughness) {
-    float a = NdotH * roughness;
-    float k = roughness / (1.0f - NdotH * NdotH + a * a);
-    return k * k;
-}
-
-// Requires caller to "div PI"
-float D_GGX_Anisotropic(float NdotH, float3 H, float3 T, float3 B, float2 atb) {
-    float TdotH = dot(T, H);
-    float BdotH = dot(B, H);
+float D_GGX_Anisotropic(float NdotH, float TdotH, float BdotH, float2 atb) {
     float a2 = atb.x * atb.y;
     float3 V = float3(atb.y * TdotH, atb.x * BdotH, a2 * NdotH);
     float v2 = dot(V, V);
@@ -647,10 +642,10 @@ float3 CalculateFdMultiScatter(float NdotV, float NdotL, float NdotH, float Ldot
 }
 
 float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0) {
-    float3 F = F_Schlick(f0, LdotH);
     float V = V_SmithGGX(NdotV, NdotL, alphaG2);
     float D = D_GGX(NdotH, alphaG2);
-    return D * V * F / PI;
+    float3 F = F_Schlick(f0, LdotH);
+    return D * V / PI * F;
 }
 
 float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
@@ -658,15 +653,22 @@ float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float Ldot
 }
 
 float CalculateFrClearCoat(float NdotH, float LdotH, float clearCoatAlphaG2, float clearCoat, out float fc) {
-    float F = F_Schlick(.04f, LdotH).r * clearCoat;
-    fc = F;
     float V = V_Kelemen(LdotH);
     float D = D_GGX(NdotH, clearCoatAlphaG2);
-    return D * V * F / PI;
+    float F = F_Schlick(.04f, LdotH).r * clearCoat;
+    fc = F;
+    return D * V / PI * F;
 }
 
-float3 CalculateFrMultiscatter_Anisotropic(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
-    return CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, f0) * energyCompensation;
+float3 CalculateFrAnisotropic(float NdotV, float NdotL, float NdotH, float LdotH, float TdotH, float BdotH, float2 atb, float TdotV, float BdotV, float TdotL, float BdotL, float3 f0) {
+    float V = V_SmithGGX_Anisotropic(atb, TdotV, BdotV, TdotL, BdotL, NdotV, NdotL);
+    float D = D_GGX_Anisotropic(NdotH, TdotH, BdotH, atb);
+    float3 F = F_Schlick(f0, LdotH);
+    return D * V / PI * F;
+}
+
+float3 CalculateFrAnisotropicMultiscatter(float NdotV, float NdotL, float NdotH, float LdotH, float TdotH, float BdotH, float2 atb, float TdotV, float BdotV, float TdotL, float BdotL, float3 f0, float3 energyCompensation) {
+    return CalculateFrAnisotropic(NdotV, NdotL, NdotH, LdotH, TdotH, BdotH, atb, TdotV, BdotV, TdotL, BdotL, f0) * energyCompensation;
 }
 
 //////////////////////////////////////////
@@ -883,7 +885,7 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     viewDirTS.xy /= viewDirTS.z + POM_BIAS;
 
     const float minLayers = 4.0f;
-    float maxLayers = 10.0f;
+    float maxLayers = 20.0f;
     maxLayers = maxLayers * .5f + maxLayers * noise;
     // float adaptive = abs(dot(viewDirTS, float3(.0f, .0f, 1.0f)));
     float adaptive = abs(viewDirTS.z);

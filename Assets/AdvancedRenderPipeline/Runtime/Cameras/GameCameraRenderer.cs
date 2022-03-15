@@ -577,13 +577,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public override void Dispose() {
-			base.Dispose();
 			if (_historyBuffers != null) {
 				_historyBuffers.ReleaseAll();
 				_historyBuffers.Dispose();
 			}
 			
 			ReleaseComputeBuffers();
+			
+			base.Dispose();
 		}
 	}
 }

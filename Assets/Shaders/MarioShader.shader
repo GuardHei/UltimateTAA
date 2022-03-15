@@ -103,9 +103,9 @@ Shader "Custom/MarioShader" {
                 float iridescenceScale = iridescenceMask * UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _IridescenceScale);
                 iridescence *= iridescenceScale;
 
-                matData.diffuse += (1.0f - matData.pack0.r) * iridescence;
-                matData.f0 += GetF0(iridescence, matData.pack0.r);
-                matData.pack1.rgb *= matData.diffuse;
+                matData.diffuse += (1.0f - matData.metallic) * iridescence;
+                matData.f0 += GetF0(iridescence, matData.metallic);
+                matData.emissive *= matData.diffuse;
 
                 ARPSurfLightInputData lightData;
                 ARPSurfLightSetup(lightData, matData);
@@ -113,11 +113,11 @@ Shader "Custom/MarioShader" {
                 float sssRange = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SSSRange);
                 float sssScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SSSScale);
 
-                float sss = saturate(1.0f - matData.pack0.w);
+                float sss = saturate(1.0f - matData.NdotV);
                 sss = max(pow(sss, sssRange) * 1.5f, .0f);
                 sss *= sssScale;
                 
-                matData.pack1.rgb += sss;
+                matData.emissive += sss;
 
                 ARPSurfLightingData lightingData = (ARPSurfLightingData) 0;
                 ARPSurfLighting(lightingData, matData, lightData);
@@ -129,7 +129,7 @@ Shader "Custom/MarioShader" {
                 // output.forward = float4(uvIridescence, .0f, 1.0f);
                 // output.forward = iridescenceMask;
                 output.gbuffer1 = EncodeNormalComplex(matData.N);
-                output.gbuffer2 = float4(matData.f0, matData.pack0.y);
+                output.gbuffer2 = float4(matData.f0, matData.linearRoughness);
                 output.gbuffer3 = lightingData.iblOcclusion;
 
                 return output;

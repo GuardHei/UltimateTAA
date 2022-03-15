@@ -1,4 +1,4 @@
-Shader "Advanced Render Pipeline/ARPClearCoat" {
+Shader "Advanced Render Pipeline/ARPAnisotropy" {
     
     Properties {
         [Enum(Dynamic, 1, Alpha, 2, Custom, 3)]
@@ -23,10 +23,10 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
         _EmissiveTint("Emissive Tint", Color) = (0, 0, 0, 1)
         [NoScaleOffset]
         _EmissiveMap("Emissive", 2D) = "black" { }
-        _ClearCoatScale("Clear Coat Scale", Range(0, 1)) = 1
-        _ClearCoatSmoothnessScale("Clear Coat Smoothness Scale", Range(0, 1)) = 1
+        _AnisotropyScale("Anisotropy Scale", Range(-1, 1)) = 0
+        _AnisotropyDirection("Anisotropy Direction", Vector) = (1.0, .0, .0, .0)
         [NoScaleOffset]
-        _ClearCoatMap("Clear Coat Strength (R) Clear Coat Smoothness (G)", 2D) = "white" { }
+        _AnisotropyMap("Tangent Direction (RGB) Anisotropy Strength (A)", 2D) = "white" { }
     }
     
     SubShader {
@@ -39,7 +39,7 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
         
         Pass {
             
-            Name "ClearCoatForward"
+            Name "AnisotropyForward"
             
             Tags {
                 "LightMode" = "OpaqueForward"
@@ -51,10 +51,10 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
             
             HLSLPROGRAM
 
-            #define _CLEAR_COAT
+            #define _ANISOTROPY
 
             #pragma shader_feature_local _PARALLAX_MAP
-            // #pragma shader_feature_local _CLEAR_COAT
+            // #pragma shader_feature_local _ANISOTROPY
             #pragma multi_compile_instancing
             #pragma vertex StandardVertex
             #pragma fragment StandardFragment
@@ -63,7 +63,7 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
                 ARP_SURF_PER_MATERIAL_DATA
-                ARP_CLEAR_COAT_PER_MATERIAL_DATA
+                ARP_ANISOTROPY_PER_MATERIAL_DATA
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
             ARPSurfVertexOutput StandardVertex(ARPSurfVertexInput input) {
@@ -86,7 +86,7 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
                 ARPSurfMatInputData matInput;
 
                 ARP_SURF_MATERIAL_INPUT_SETUP(matInput);
-                ARP_CLEAR_COAT_MATERIAL_INPUT_SETUP(matInput);
+                ARP_ANISOTROPY_MATERIAL_INPUT_SETUP(matInput);
 
                 ARPSurfMatOutputData matData = (ARPSurfMatOutputData) 0;
                 ARPSurfMaterialSetup(matData, input, matInput);

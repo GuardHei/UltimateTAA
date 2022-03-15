@@ -11,7 +11,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: 491e48a154f741c5a1b4a0c206fc93d4, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -51,14 +51,14 @@ Material:
     m_Ints: []
     m_Floats:
     - _ClearCoatScale: 1
-    - _ClearCoatSmoothnessScale: 0.214
+    - _ClearCoatSmoothnessScale: 1
     - _Cull: 2
     - _HeightScale: 0
-    - _MetallicScale: 0.877
+    - _MetallicScale: 0
     - _NormalScale: 1
-    - _SmoothnessScale: 0.529
+    - _SmoothnessScale: 0.498
     - _StencilRef: 1
     m_Colors:
-    - _AlbedoTint: {r: 1, g: 0.46949822, b: 0, a: 1}
+    - _AlbedoTint: {r: 1, g: 0.038367465, b: 0, a: 1}
     - _EmissiveTint: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

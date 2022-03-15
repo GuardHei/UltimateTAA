@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.4006806, g: 0.3476647, b: 0.3335383, a: 1}
+  m_IndirectSpecularColor: {r: 0.21582027, g: 0.21582027, b: 0.21582027, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1605,6 +1605,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MarioSatellaview
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 3bf9277e7a08840f1ab7fbc96a09e602, type: 3}
       propertyPath: m_Controller
       value: 
@@ -1726,6 +1730,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: e7f293a443a4d434a82ce8aa8e2c1881, type: 3}
       propertyPath: m_Name
       value: Captain Toad
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: e7f293a443a4d434a82ce8aa8e2c1881, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2215222116177051534, guid: e7f293a443a4d434a82ce8aa8e2c1881, type: 3}
       propertyPath: m_IsActive
@@ -1953,7 +1961,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 11439282, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
       propertyPath: m_ScreenMatchMode
@@ -2534,6 +2542,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 411a5e61c72304e8cba065983737370e, type: 3}
       propertyPath: m_Name
       value: MarioKnight
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 411a5e61c72304e8cba065983737370e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 411a5e61c72304e8cba065983737370e, type: 3}
       propertyPath: m_Enabled
@@ -3210,6 +3222,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Blathers
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: bf278600ca7c542e6802bfe6cb05443c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bf278600ca7c542e6802bfe6cb05443c, type: 3}
 --- !u!1 &1598153614
@@ -3695,7 +3711,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1727222746
 Transform:
   m_ObjectHideFlags: 0

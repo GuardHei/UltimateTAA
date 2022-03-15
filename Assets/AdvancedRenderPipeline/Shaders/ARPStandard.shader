@@ -90,7 +90,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
 
                 output.forward = lightingData.forwardLighting;
                 output.gbuffer1 = EncodeNormalComplex(matData.N);
-                output.gbuffer2 = float4(matData.f0, matData.pack0.y);
+                output.gbuffer2 = float4(matData.f0, matData.linearRoughness);
                 output.gbuffer3 = lightingData.iblOcclusion;
 
                 return output;

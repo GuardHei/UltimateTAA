@@ -375,7 +375,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
                 case CameraType.Preview: return AdvancedCameraType.Preview;
 #endif
                 case CameraType.VR: return AdvancedCameraType.VR;
-                case CameraType.Reflection: return AdvancedCameraType.Reflection;
+                case CameraType.Reflection: return AdvancedCameraType.Game;
                 default: throw new InvalidOperationException("Does not support camera type: " + cameraType);
             }
         }
