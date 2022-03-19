@@ -71,7 +71,7 @@
 
     Draw depth and stencil of all the rest objects.
 
- ### Dynamic Velocity Pass (WIP)
+ ### Dynamic Velocity Pass
 
     Draw the velocity of the dynamic objects, toggle stencil[2] to 1.
 
