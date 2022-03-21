@@ -3,20 +3,25 @@
 ## Roadmap
 
 1. Setup basic lighting loop (only one directional light) - Fin.
-2. Implement basic TAA - Fin.
-3. Implement basic motion vector pass - Fin.
-4. Implement more advanced TAA - Fin.
-5. Implement more advanced materials - Fin.
-6. Implement precomputed radiance transfer GI with realtime relighting - WIP.
+2. Implement basic post processing pipeline - Fin.
+3. Implement basic TAA - Fin.
+4. Implement basic motion vector pass - Fin.
+5. Implement more advanced TAA - Fin.
+6. Implement more advanced materials - Fin.
+7. Implement precomputed radiance transfer GI with realtime relighting - WIP.
 
 ## Preview
 ![Damaged Helmet](https://s2.loli.net/2022/01/25/Vo3DmB1CNzSR4Yd.png)
 
 ![PBR Spheres](https://s2.loli.net/2022/01/25/UMAF5EV8Tzys2jk.png)
 
-![More PBR Materials with Parallax Occlusion Mapping](https://s2.loli.net/2022/01/25/EfDWN8nrlavX5Rc.png)
+![More PBR Materials - 0](https://s2.loli.net/2022/01/25/EfDWN8nrlavX5Rc.png)
 
-![More PBR Materials with different Environments](https://s2.loli.net/2022/03/21/F2UDa1fZuAm8xnv.png)
+![More PBR Materials - 1](https://s2.loli.net/2022/03/21/F2UDa1fZuAm8xnv.png)
+
+![Temporal Dithered Parralax Occlusion Mapping - 0](https://s2.loli.net/2022/03/21/zikSqJVCgGAtrus.png)
+
+![Temporal Dithered Parralax Occlusion Mapping - 1](https://s2.loli.net/2022/03/21/rTpoxZqD5PFH4XI.png)
 
  # Advanced Render Pipeline
 

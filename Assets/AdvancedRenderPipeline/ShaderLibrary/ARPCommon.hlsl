@@ -884,7 +884,9 @@ float2 ApplyParallax(float2 uv, float3 viewDirTS, float scale, float noise) {
     viewDirTS = normalize(viewDirTS);
     viewDirTS.xy /= viewDirTS.z + POM_BIAS;
 
-    const float minLayers = 4.0f;
+    noise *= .5f;
+
+    float minLayers = 4.0f;
     float maxLayers = 20.0f;
     maxLayers = maxLayers * .5f + maxLayers * noise;
     // float adaptive = abs(dot(viewDirTS, float3(.0f, .0f, 1.0f)));

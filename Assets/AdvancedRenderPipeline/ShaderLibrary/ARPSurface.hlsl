@@ -187,7 +187,7 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float matShadow = 1.0f;
     
     #if defined(_PARALLAX_MAP)
-    float noise = InterleavedGradientNoise(input.posCS.xy - float2(.5, .5), _FrameParams.z) * 0.5;
+    float noise = InterleavedGradientNoise(input.posCS.xy - float2(.5, .5), _FrameParams.z);
     uv = ApplyParallax(uv, input.viewDirTS, matInput.heightScale, noise);
     #endif
     
