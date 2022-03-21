@@ -18,7 +18,7 @@ UNITY_DEFINE_INSTANCED_PROP(float, _ClearCoatSmoothnessScale) \
 
 #define ARP_ANISOTROPY_PER_MATERIAL_DATA                      \
 UNITY_DEFINE_INSTANCED_PROP(float, _AnisotropyScale)          \
-UNITY_DEFINE_INSTANCED_PROP(float3, _AnisotropyDirection)     \
+UNITY_DEFINE_INSTANCED_PROP(float3, _TangentInfluence)        \
 
 #define ARP_SURF_MATERIAL_INPUT_SETUP(matInput)                                          \
 float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;      \
@@ -42,7 +42,7 @@ matInput.linearClearCoatSmoothnessScale = clearCoatSmoothnessScale;             
 
 #define ARP_ANISOTROPY_MATERIAL_INPUT_SETUP(matInput)                                          \
 float anisotropyScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyScale);       \
-float3 tangentInfluence = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyDirection); \
+float3 tangentInfluence = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _TangentInfluence); \
 matInput.anisotropyScale = anisotropyScale;                                                    \
 matInput.tangentInfluence = tangentInfluence;                                                  \
 
@@ -250,6 +250,7 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float3 bentNormal = normalize(lerp(N, anisotropicNormal, anisotropicFactor));
     
     R = reflect(-V, bentNormal);
+    R = bentNormal;
 
     output.anisotropy = anisotropy;
     output.anisotropicT = anisotropicT;
@@ -385,6 +386,13 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     #else // Normal direct lighting calculation
     
     forwardLighting.rgb *= light.lighting;
+
+    #if defined(_ANISOTROPY)
+    /*
+    float3 anisotropySpecularIBL = EvaluateSpecularIBL(mat.R, linearRoughness, envGF, energyCompensation) * iblOcclusion;
+    forwardLighting.rgb += anisotropySpecularIBL;
+    */
+    #endif
     
     #endif
 

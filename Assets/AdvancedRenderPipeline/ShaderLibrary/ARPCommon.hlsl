@@ -186,7 +186,7 @@ SAMPLER(sampler_HeightMap);
 TEXTURE2D(_ClearCoatMap);
 SAMPLER(sampler_ClearCoatMap);
 TEXTURE2D(_AnisotropyMap);
-TEXTURE2D(sampler_AnisotropyMap);
+SAMPLER(sampler_AnisotropyMap);
 
 TEXTURE2D(_PreintegratedDGFLut);
 SAMPLER(sampler_PreintegratedDGFLut);

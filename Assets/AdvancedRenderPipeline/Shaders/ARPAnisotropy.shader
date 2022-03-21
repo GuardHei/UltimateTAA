@@ -24,7 +24,7 @@ Shader "Advanced Render Pipeline/ARPAnisotropy" {
         [NoScaleOffset]
         _EmissiveMap("Emissive", 2D) = "black" { }
         _AnisotropyScale("Anisotropy Scale", Range(-1, 1)) = 0
-        _AnisotropyDirection("Anisotropy Direction", Vector) = (1.0, .0, .0, .0)
+        _TangentInfluence("Tangent Influence", Vector) = (1.0, 1.0, 1.0, .0)
         [NoScaleOffset]
         _AnisotropyMap("Tangent Direction (RGB) Anisotropy Strength (A)", 2D) = "white" { }
     }
@@ -98,7 +98,7 @@ Shader "Advanced Render Pipeline/ARPAnisotropy" {
                 ARPSurfLighting(lightingData, matData, lightData);
 
                 output.forward = lightingData.forwardLighting;
-                output.gbuffer1 = EncodeNormalComplex(matData.N);
+                output.gbuffer1 = EncodeNormalComplex(matData.R);
                 output.gbuffer2 = float4(matData.f0, matData.linearRoughness);
                 output.gbuffer3 = lightingData.iblOcclusion;
 
