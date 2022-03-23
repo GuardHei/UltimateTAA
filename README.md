@@ -29,7 +29,11 @@
 
 |![Without Clear Coat](https://s2.loli.net/2022/03/23/MybepV257dfnHkU.png)|![With Clear Coat](https://s2.loli.net/2022/03/23/e3Il7Vtc4XCERSH.png)|
 |:--:|:--:|
-|*Without Clear Coat*|*With Clear Coat*|
+|*Clear Coat = 0 (Metallic = 1, Smoothness = .5)*|*Clear Coat = 1 (Metallic = 1, Smoothness = .5)*|
+
+|![Without Anisotropy](https://s2.loli.net/2022/03/23/sQjldm6bgTtcLIv.png)|![With Anisotropy](https://s2.loli.net/2022/03/23/pVTKQrqxPHjRwOm.png)|
+|:--:|:--:|
+|*Anisotropy = 0*|*Anisotropy = 1*|
 
  # Advanced Render Pipeline
 
@@ -68,13 +72,14 @@
 
  ## Thin - GBuffer
 
- | GBuffer   | Format            | Channel R  | Channel G  | Channel B       | Channel A                    |
- | :-------- | :---------------- | :--------  | :--------  | :-------------- | :--------------------------- |
- | GBuffer 0 | RGBA16_SFloat     | Forward R  | Forward G  | Forward B       | SSS Param / TAA Anti-flicker |
- | GBuffer 1 | A2R10G10B10_UNorm | Normal X   | Normal Y   | IBL Occlusion   | Material Shadow              | 
- | GBuffer 2 | RGBA8_UNorm       | Specular R | Specular G | Specular B      | Linear Roughness             |
- | Velocity  | RG16_SNorm        | Velocity X | Velocity Y | N/A             | N/A                          |
- | Depth     | D24S8             | Depth      | N/A        | N/A             | Stencil                      |
+ | GBuffer   | Format            | Channel R       | Channel G  | Channel B       | Channel A                    |
+ | :-------- | :---------------- | :-------------- | :--------  | :-------------- | :--------------------------- |
+ | GBuffer 0 | RGBA16_SFloat     | Forward R       | Forward G  | Forward B       | SSS Param / TAA Anti-flicker |
+ | GBuffer 1 | R16G16_UNorm      | Normal X        | Normal Y   | N/A             | N/A                          | 
+ | GBuffer 2 | RGBA8_UNorm       | Specular R      | Specular G | Specular B      | Linear Roughness             |
+ | GBuffer 3 | R8_UNorm          | IBL Occlusion   | N/A        | N/A             | N/A                          | 
+ | Velocity  | RG16_SNorm        | Velocity X      | Velocity Y | N/A             | N/A                          |
+ | Depth     | D24S8             | Depth           | N/A        | N/A             | Stencil                      |
 
  ## Render Pass Overview
 
@@ -104,7 +109,7 @@
 
  ### Forward Opaque Lighting Pass
 
-    Shade forward opaque materials. Output lighting (direct lighting + indirect diffuse + emissive) result and SSS Param to RawColorTex. Output world space normal (Oct Quad Encoded), IBL occlusion, and material shadow to GBuffer 1. Output specular color and linear roughness to GBuffer 2.
+    Shade forward opaque materials. Output lighting (direct lighting + indirect diffuse + emissive) result and SSS Param to RawColorTex. Output world space normal (Oct Quad Encoded) to GBuffer 1. Output specular color and linear roughness to GBuffer 2. Output IBL occlusion to GBuffer 3.
 
  ### Specular Image Based Lighting Pass
 

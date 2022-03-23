@@ -185,9 +185,6 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float3 N = ApplyNormalMap(normalData, normalWS, T, tangentToWorld);
 
     float3 V = input.viewDirWS;
-    float NdotV;
-    N = GetViewReflectedNormal(N, V, NdotV);
-    float3 R;
 
     float3 albedo = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, uv).rgb;
     albedo *= matInput.albedoTint;
@@ -210,6 +207,9 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float3 diffuse = (1.0f - metallic) * albedo;
     float3 f0 = GetF0(albedo, metallic);
 
+    float NdotV;
+    float3 R;
+
     #if defined(_CLEAR_COAT)
     float clearCoat = matInput.clearCoatScale;
     float2 clearCoatParams = SAMPLE_TEXTURE2D(_ClearCoatMap, sampler_ClearCoatMap, uv).rg;
@@ -227,27 +227,34 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float anisotropy = matInput.anisotropyScale;
     float4 anisotropyParams = SAMPLE_TEXTURE2D(_AnisotropyMap, sampler_AnisotropyMap, uv);
     anisotropy *= anisotropyParams.a;
+    // anisotropy *= anisotropyParams.a * 2.0f - 1.0f;
 
     float3 B = normalize(input.bitangentWS);
 
     float3 tangentData = UnpackNormalScale(SAMPLE_TEXTURE2D(_TangentMap, sampler_TangentMap, uv), matInput.normalScale);
-    float3 anisotropyRotation = anisotropyParams.rgb;
-    T.xyz = normalize(tangentData.x * T.xyz + tangentData.y * B * anisotropy + tangentData.z * N * anisotropy);
-    B = cross(N, T.xyz);
+    // float3 anisotropyRotation = anisotropyParams.r;
+    T.xyz = normalize(tangentData.x * T.xyz + tangentData.y * B * anisotropy + tangentData.z * N);
 
+    B = cross(N, T.xyz);
+    
     float3 anisotropyDirection = (anisotropy >= .0f) ? B : T.xyz;
     float3 anisotropicT = cross(anisotropyDirection, V); 
     float3 anisotropicN = cross(anisotropicT, anisotropyDirection);
     // float3 anisotropicN = cross(T.xyz, B);
     float anisotropyFactor = abs(anisotropy) * saturate(matInput.anisotropyLevel * linearRoughness);
-    N = normalize(lerp(N, anisotropicN, anisotropyFactor));
+    anisotropicN = normalize(lerp(N, anisotropicN, anisotropyFactor));
+    N = anisotropicN;
+
+    N = GetViewReflectedNormal(anisotropicN, V, NdotV);
+    R = reflect(-V, N);
 
     output.anisotropyScale = anisotropy;
     output.anisotropicT = T.xyz;
     output.anisotropicB = B;
-    #endif
-
+    #else
+    N = GetViewReflectedNormal(N, V, NdotV);
     R = reflect(-V, N);
+    #endif
 
     linearRoughness = ClampMinLinearRoughness(linearRoughness);
     
@@ -300,10 +307,11 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
 
     float3 fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.diffuse);
     
-    float3 fr;
-    
-    #if defined(_ANISOTROPY)
+    float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);;
 
+    /*
+    #if defined(_ANISOTROPY)
+    
     float anisotropy = mat.anisotropyScale;
     float3 anisotropicT = mat.anisotropicT;
     float3 anisotropicB = mat.anisotropicB;
@@ -318,13 +326,10 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     float BdotH = max(saturate(dot(anisotropicB, light.H)), .0001);
 
     fr = CalculateFrAnisotropicMultiscatter(NdotV, NdotL, NdotH, LdotH, TdotH, BdotH, atb, TdotV, BdotV, TdotL, BdotL, mat.f0, energyCompensation);
-    fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
-    
     #else
-
     fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
-    
     #endif
+    */
     
     float iblOcclusion = ComputeHorizonSpecularOcclusion(mat.R, mat.vertexN);
     

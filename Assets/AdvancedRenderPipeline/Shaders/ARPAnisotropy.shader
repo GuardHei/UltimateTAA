@@ -16,7 +16,7 @@ Shader "Advanced Render Pipeline/ARPAnisotropy" {
         _MetallicScale("Metallic Scale", Range(0, 1)) = 0
         _SmoothnessScale("Smoothness Scale", Range(0, 1)) = 1
         [NoScaleOffset]
-        _MetallicSmoothnessMap("Metallic (RGB) Smoothness (A)", 2D) = "white" { }
+        _MetallicSmoothnessMap("Metallic (R) Smoothness (A)", 2D) = "white" { }
         [NoScaleOffset]
         _OcclusionMap("Occlusion", 2D) = "white" { }
         [HDR]
@@ -28,7 +28,7 @@ Shader "Advanced Render Pipeline/ARPAnisotropy" {
         [NoScaleOffset]
         _TangentMap("Tangent", 2D) = "bump" { }
         [NoScaleOffset]
-        _AnisotropyMap("Anisotropy Rotation (RGB) Anisotropy Strength (A)", 2D) = "black" { }
+        _AnisotropyMap("Anisotropy Rotation (R) Anisotropy Strength (A)", 2D) = "black" { }
     }
     
     SubShader {
