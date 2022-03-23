@@ -18,7 +18,7 @@ UNITY_DEFINE_INSTANCED_PROP(float, _ClearCoatSmoothnessScale) \
 
 #define ARP_ANISOTROPY_PER_MATERIAL_DATA                      \
 UNITY_DEFINE_INSTANCED_PROP(float, _AnisotropyScale)          \
-UNITY_DEFINE_INSTANCED_PROP(float3, _TangentInfluence)        \
+UNITY_DEFINE_INSTANCED_PROP(float, _AnisotropyLevel)          \
 
 #define ARP_SURF_MATERIAL_INPUT_SETUP(matInput)                                          \
 float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;      \
@@ -40,11 +40,11 @@ float clearCoatSmoothnessScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _
 matInput.clearCoatScale = clearCoatScale;                                                                  \
 matInput.linearClearCoatSmoothnessScale = clearCoatSmoothnessScale;                                        \
 
-#define ARP_ANISOTROPY_MATERIAL_INPUT_SETUP(matInput)                                          \
-float anisotropyScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyScale);       \
-float3 tangentInfluence = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _TangentInfluence); \
-matInput.anisotropyScale = anisotropyScale;                                                    \
-matInput.tangentInfluence = tangentInfluence;                                                  \
+#define ARP_ANISOTROPY_MATERIAL_INPUT_SETUP(matInput)                                    \
+float anisotropyScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyScale); \
+float anisotropyLevel = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyLevel); \
+matInput.anisotropyScale = anisotropyScale;                                              \
+matInput.anisotropyLevel = anisotropyLevel;                                              \
 
 struct ARPSurfVertexInput {
     float3 posOS : POSITION;
@@ -59,9 +59,14 @@ struct ARPSurfVertexOutput {
     float3 posWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL;
     float4 tangentWS : VAR_TANGENT;
-    float3 viewDirWS : TEXCOORD1;
-    float3 viewDirTS : TEXCOORD2;
     float2 baseUV : VAR_BASE_UV;
+    float3 viewDirWS : TEXCOORD1;
+    #if defined(_PARALLAX_MAP)
+    float3 viewDirTS : TEXCOORD2;
+    #endif
+    #if defined(_ANISOTROPY)
+    float3 bitangentWS : TEXCOORD3;
+    #endif
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -70,14 +75,6 @@ struct ARPSurfGBufferOutput {
     float2 gbuffer1 : SV_TARGET1;
     float4 gbuffer2 : SV_TARGET2;
     float gbuffer3 : SV_TARGET3;
-};
-
-struct ARPSurfMatInputDataPacked {
-    float3 albedoTint;
-    float4 pack0; // x: metallic scale, y: linear smoothness scale, z: height scale, w: normal scale
-    float4 pack1; // rgb: emissive tint, a: material shadow strength
-    float4 pack2; // x: clear coat scale, y: linear clear coat smoothness scale
-    float4 pack3; // xyz: anisotropy direction, w: anisotropy
 };
 
 struct ARPSurfMatInputData {
@@ -94,23 +91,8 @@ struct ARPSurfMatInputData {
     #endif
     #if defined(_ANISOTROPY)
     float anisotropyScale;
-    float3 tangentInfluence;
+    float anisotropyLevel;
     #endif
-};
-
-struct ARPSurfMatOutputDataPacked {
-    float3 vertexN;
-    float3 N;
-    float3 V;
-    float3 R;
-    float2 uv;
-    float3 diffuse;
-    float3 f0;
-    float4 pack0; // x: metallic, y: linear roughness, z: occlusion, w: NdotV
-    float4 pack1; // rgb: emissive, a: material shadow
-    float4 pack2; // x: clear coat strength, y: linear clear coat roughness
-    float4 pack3; // xyz: anisotropic t, w: anisotropy
-    float4 pack4; // xyz: anisotropic b
 };
 
 struct ARPSurfMatOutputData {
@@ -132,7 +114,7 @@ struct ARPSurfMatOutputData {
     float linearClearCoatRoughness;
     #endif
     #if defined(_ANISOTROPY)
-    float anisotropy;
+    float anisotropyScale;
     float3 anisotropicT;
     float3 anisotropicB;
     #endif
@@ -163,6 +145,10 @@ void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput inp
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
 
+    #if defined(_ANISOTROPY)
+    output.bitangentWS = cross(output.normalWS, output.tangentWS.xyz) * input.tangentOS.w;
+    #endif
+
     output.viewDirWS = normalize(_CameraPosWS.xyz - posWS);
 
     #if defined(_PARALLAX_MAP)
@@ -174,7 +160,7 @@ void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput inp
     float3 viewDirOS = mul(GetWorldToObjectMatrix(), float4(_CameraPosWS.xyz, 1.0f)).xyz - input.posOS.xyz;
     output.viewDirTS = mul(objectToTangent, viewDirOS);
     #else
-    output.viewDirTS = float3(.0f, .0f, .0f);
+    // output.viewDirTS = float3(.0f, .0f, .0f);
     #endif
 
     output.baseUV = input.baseUV * texST.xy + texST.zw;
@@ -194,8 +180,9 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     float3 normalWS = normalize(input.normalWS);
     float3 normalData = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv), matInput.normalScale);
 
+    float4 T = float4(normalize(input.tangentWS.xyz), input.tangentWS.w);
     float3x3 tangentToWorld;
-    float3 N = ApplyNormalMap(normalData, normalWS, input.tangentWS, tangentToWorld);
+    float3 N = ApplyNormalMap(normalData, normalWS, T, tangentToWorld);
 
     float3 V = input.viewDirWS;
     float NdotV;
@@ -239,25 +226,28 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     #if defined(_ANISOTROPY)
     float anisotropy = matInput.anisotropyScale;
     float4 anisotropyParams = SAMPLE_TEXTURE2D(_AnisotropyMap, sampler_AnisotropyMap, uv);
-    anisotropy *= anisotropyParams.w;
-    float3 anisotropicT = TransformTangentToWorld(anisotropyParams.xyz * matInput.tangentInfluence, tangentToWorld);
-    float3 anisotropicB = normalize(cross(normalWS, anisotropicT));
+    anisotropy *= anisotropyParams.a;
 
-    float3 anisotropyDirection = anisotropy >= .0 ? anisotropicB : anisotropicT;
-    float3 anisotropicTangent = cross(anisotropyDirection, V);
-    float3 anisotropicNormal = cross(anisotropicTangent, anisotropyDirection);
-    float anisotropicFactor = abs(anisotropy) * saturate(5.0f * linearRoughness);
-    float3 bentNormal = normalize(lerp(N, anisotropicNormal, anisotropicFactor));
-    
-    R = reflect(-V, bentNormal);
-    R = bentNormal;
+    float3 B = normalize(input.bitangentWS);
 
-    output.anisotropy = anisotropy;
-    output.anisotropicT = anisotropicT;
-    output.anisotropicB = anisotropicB;
-    #else
-    R = reflect(-V, N);
+    float3 tangentData = UnpackNormalScale(SAMPLE_TEXTURE2D(_TangentMap, sampler_TangentMap, uv), matInput.normalScale);
+    float3 anisotropyRotation = anisotropyParams.rgb;
+    T.xyz = normalize(tangentData.x * T.xyz + tangentData.y * B * anisotropy + tangentData.z * N * anisotropy);
+    B = cross(N, T.xyz);
+
+    float3 anisotropyDirection = (anisotropy >= .0f) ? B : T.xyz;
+    float3 anisotropicT = cross(anisotropyDirection, V); 
+    float3 anisotropicN = cross(anisotropicT, anisotropyDirection);
+    // float3 anisotropicN = cross(T.xyz, B);
+    float anisotropyFactor = abs(anisotropy) * saturate(matInput.anisotropyLevel * linearRoughness);
+    N = normalize(lerp(N, anisotropicN, anisotropyFactor));
+
+    output.anisotropyScale = anisotropy;
+    output.anisotropicT = T.xyz;
+    output.anisotropicB = B;
     #endif
+
+    R = reflect(-V, N);
 
     linearRoughness = ClampMinLinearRoughness(linearRoughness);
     
@@ -291,7 +281,7 @@ void ARPSurfLightSetup(inout ARPSurfLightInputData output, ARPSurfMatOutputData 
     output.pack0 = float3(LdotH, NdotH, NdotL);
 }
 
-void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat, ARPSurfLightInputData light) {
+void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputData mat, ARPSurfLightInputData light) {
     float metallic = mat.metallic;
     float linearRoughness = mat.linearRoughness;
     float roughness = LinearRoughnessToRoughness(linearRoughness);
@@ -311,23 +301,24 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     float3 fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.diffuse);
     
     float3 fr;
-
+    
     #if defined(_ANISOTROPY)
 
-    float anisotropy = mat.anisotropy;
+    float anisotropy = mat.anisotropyScale;
     float3 anisotropicT = mat.anisotropicT;
     float3 anisotropicB = mat.anisotropicB;
 
     float2 atb;
     GetAnisotropyTB(anisotropy, roughness, atb);
-    float TdotV = dot(anisotropicT, mat.V);
-    float BdotV = dot(anisotropicB, mat.V);
-    float TdotL = dot(anisotropicT, light.L);
-    float BdotL = dot(anisotropicB, light.L);
-    float TdotH = dot(anisotropicT, light.H);
-    float BdotH = dot(anisotropicB, light.H);
+    float TdotV = max(saturate(dot(anisotropicT, mat.V)), .0001);
+    float BdotV = max(saturate(dot(anisotropicB, mat.V)), .0001);
+    float TdotL = max(saturate(dot(anisotropicT, light.L)), .0001);
+    float BdotL = max(saturate(dot(anisotropicB, light.L)), .0001);
+    float TdotH = max(saturate(dot(anisotropicT, light.H)), .0001);
+    float BdotH = max(saturate(dot(anisotropicB, light.H)), .0001);
 
     fr = CalculateFrAnisotropicMultiscatter(NdotV, NdotL, NdotH, LdotH, TdotH, BdotH, atb, TdotV, BdotV, TdotL, BdotL, mat.f0, energyCompensation);
+    fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
     
     #else
 
@@ -386,13 +377,6 @@ void ARPSurfLighting(inout ARPSurfLightingData output, ARPSurfMatOutputData mat,
     #else // Normal direct lighting calculation
     
     forwardLighting.rgb *= light.lighting;
-
-    #if defined(_ANISOTROPY)
-    /*
-    float3 anisotropySpecularIBL = EvaluateSpecularIBL(mat.R, linearRoughness, envGF, energyCompensation) * iblOcclusion;
-    forwardLighting.rgb += anisotropySpecularIBL;
-    */
-    #endif
     
     #endif
 

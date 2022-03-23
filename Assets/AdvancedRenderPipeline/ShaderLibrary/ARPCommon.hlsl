@@ -185,6 +185,8 @@ TEXTURE2D(_HeightMap);
 SAMPLER(sampler_HeightMap);
 TEXTURE2D(_ClearCoatMap);
 SAMPLER(sampler_ClearCoatMap);
+TEXTURE2D(_TangentMap);
+SAMPLER(sampler_TangentMap);
 TEXTURE2D(_AnisotropyMap);
 SAMPLER(sampler_AnisotropyMap);
 

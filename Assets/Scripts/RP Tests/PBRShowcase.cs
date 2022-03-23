@@ -1,10 +1,13 @@
 using System;
 using System.Diagnostics;
 using AdvancedRenderPipeline.Runtime;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace RP_Tests {
+	
+	[CanEditMultipleObjects]
 	[ExecuteInEditMode]
 	public class PBRShowcase : MonoBehaviour {
 
@@ -14,6 +17,7 @@ namespace RP_Tests {
 		public float interval = 1.2f;
 		public Vector3 offset;
 		public Vector3 scale = Vector3.one;
+		public Vector3 rotation = Vector3.zero;
 		public Mesh mesh;
 		public Material mat;
 
@@ -43,10 +47,12 @@ namespace RP_Tests {
 
 			int mid = num / 2;
 
+			var quat = Quaternion.Euler(rotation);
+
 			for (int i = 0; i < num; i++) {
 				var pos = transform.position + offset;
 				pos.x += (i - mid) * interval;
-				_matrices[i] = Matrix4x4.TRS(pos, Quaternion.identity, scale);
+				_matrices[i] = Matrix4x4.TRS(pos, quat, scale);
 				_colorValues[i] = color.linear;
 				_metallicValues[i] = changeMetallic ? ( customizedInput ? metallicValues[i] : Mathf.Lerp(defaultMetallic, endMetallic, i / (num - 1f)) ) : defaultMetallic;
 				_smoothnessValues[i] = changeSmoothness ? Mathf.Lerp(defaultSmoothness, endSmoothness, i / (num - 1f)) : defaultSmoothness;

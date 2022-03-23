@@ -24,9 +24,11 @@ Shader "Advanced Render Pipeline/ARPAnisotropy" {
         [NoScaleOffset]
         _EmissiveMap("Emissive", 2D) = "black" { }
         _AnisotropyScale("Anisotropy Scale", Range(-1, 1)) = 0
-        _TangentInfluence("Tangent Influence", Vector) = (1.0, 1.0, 1.0, .0)
+        _AnisotropyLevel("Anisotropy Level", Range(0, 5)) = 5
         [NoScaleOffset]
-        _AnisotropyMap("Tangent Direction (RGB) Anisotropy Strength (A)", 2D) = "white" { }
+        _TangentMap("Tangent", 2D) = "bump" { }
+        [NoScaleOffset]
+        _AnisotropyMap("Anisotropy Rotation (RGB) Anisotropy Strength (A)", 2D) = "black" { }
     }
     
     SubShader {
