@@ -20,6 +20,10 @@ UNITY_DEFINE_INSTANCED_PROP(float, _ClearCoatSmoothnessScale) \
 UNITY_DEFINE_INSTANCED_PROP(float, _AnisotropyScale)          \
 UNITY_DEFINE_INSTANCED_PROP(float, _AnisotropyLevel)          \
 
+#define ARP_FABRIC_PER_MATERIAL_DATA                           \
+UNITY_DEFINE_INSTANCED_PROP(float3, _SheenTint)               \
+UNITY_DEFINE_INSTANCED_PROP(float3, _SubsurfaceTint)          \
+
 #define ARP_SURF_MATERIAL_INPUT_SETUP(matInput)                                          \
 float3 albedoTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlbedoTint).rgb;      \
 float3 emissiveTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissiveTint).rgb;  \
@@ -45,6 +49,12 @@ float anisotropyScale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Anisotrop
 float anisotropyLevel = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AnisotropyLevel); \
 matInput.anisotropyScale = anisotropyScale;                                              \
 matInput.anisotropyLevel = anisotropyLevel;                                              \
+
+#define ARP_FABRIC_MATERIAL_INPUT_SETUP(matInput)                                        \
+float3 sheenTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SheenTint);      \
+float3 subsurfaceTint = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SubsurfaceTint); \
+matInput.sheenTint = sheenTint;                                                        \
+matInput.subsurfaceTint = subsurfaceTint;                                              \
 
 struct ARPSurfVertexInput {
     float3 posOS : POSITION;
@@ -93,6 +103,12 @@ struct ARPSurfMatInputData {
     float anisotropyScale;
     float anisotropyLevel;
     #endif
+    #if defined(_FABRIC)
+    float3 sheenTint;
+    #endif
+    #if defined(_HAS_SUBSURFACE_COLOR)
+    float3 subsurfaceTint;
+    #endif
 };
 
 struct ARPSurfMatOutputData {
@@ -118,10 +134,17 @@ struct ARPSurfMatOutputData {
     float3 anisotropicT;
     float3 anisotropicB;
     #endif
+    #if defined(_FABRIC)
+    float3 sheen;
+    #endif
+    #if defined(_HAS_SUBSURFACE_COLOR)
+    float3 subsurfaceColor;
+    #endif
 };
 
 struct ARPSurfLightInputData {
     float3 color;
+    float3 shadowedColor;
     float3 lighting;
     float3 L;
     float3 H;
@@ -159,8 +182,6 @@ void ARPSurfVertexSetup(inout ARPSurfVertexOutput output, ARPSurfVertexInput inp
 
     float3 viewDirOS = mul(GetWorldToObjectMatrix(), float4(_CameraPosWS.xyz, 1.0f)).xyz - input.posOS.xyz;
     output.viewDirTS = mul(objectToTangent, viewDirOS);
-    #else
-    // output.viewDirTS = float3(.0f, .0f, .0f);
     #endif
 
     output.baseUV = input.baseUV * texST.xy + texST.zw;
@@ -223,6 +244,18 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     output.linearClearCoatRoughness = linearClearCoatRoughness;
     #endif
 
+    #if defined(_FABRIC)
+    float3 sheen = SAMPLE_TEXTURE2D(_SheenMap, sampler_SheenMap, uv).rgb;
+    sheen *= matInput.sheenTint;
+    output.sheen = sheen;
+    #endif
+
+    #if defined(_HAS_SUBSURFACE_COLOR)
+    float3 subsurfaceColor = SAMPLE_TEXTURE2D(_SubsurfaceMap, sampler_SubsurfaceMap, uv).rgb;
+    subsurfaceColor *= matInput.subsurfaceTint;
+    output.subsurfaceColor = subsurfaceColor;
+    #endif
+
     #if defined(_ANISOTROPY)
     float anisotropy = matInput.anisotropyScale;
     float4 anisotropyParams = SAMPLE_TEXTURE2D(_AnisotropyMap, sampler_AnisotropyMap, uv);
@@ -274,14 +307,16 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
 }
 
 void ARPSurfLightSetup(inout ARPSurfLightInputData output, ARPSurfMatOutputData input) {
-    float3 L = _MainLight.direction.xyz;
-    float3 H = normalize(input.V + L);
-    float LdotH = saturate(dot(L, H));
-    float NdotH = saturate(dot(input.N, H));
-    float NdotL = saturate(dot(input.N, L));
-    float3 lighting = NdotL * _MainLight.color.rgb * input.materialShadow;
+    const float3 L = _MainLight.direction.xyz;
+    const float3 H = normalize(input.V + L);
+    const float LdotH = max(saturate(dot(L, H)), .0001f);
+    const float NdotH = max(saturate(dot(input.N, H)), .0001f);
+    const float NdotL = max(saturate(dot(input.N, L)), .0001f);
+    const float3 shadowedColor = _MainLight.color.rgb * input.materialShadow;
+    const float3 lighting = NdotL * shadowedColor;
 
     output.color = _MainLight.color.rgb;
+    output.shadowedColor = shadowedColor;
     output.lighting = lighting;
     output.L = L;
     output.H = H;
@@ -305,9 +340,18 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     float3 envGF = lut.rgb;
     float envD = lut.a;
 
-    float3 fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.diffuse);
-    
-    float3 fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);;
+    float3 fd;
+    float3 fr;
+
+    #if defined(_FABRIC)
+    // fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.diffuse);
+    fd = CalculateFdFabric(roughness, mat.diffuse);
+    // fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
+    fr = CalculateFrFabric(NdotV, NdotL, NdotH, LdotH, roughness, mat.sheen);
+    #else
+    fd = CalculateFdMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.diffuse);
+    fr = CalculateFrMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, mat.f0, energyCompensation);
+    #endif
 
     /*
     #if defined(_ANISOTROPY)
@@ -343,7 +387,7 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     float4 forwardLighting = float4(.0f, .0f, .0f, 1.0f);
     
     // forwardLighting.rgb = (fd + fr) * light.lighting;
-    forwardLighting.rgb = fd + fr;
+    // forwardLighting.rgb = fd + fr;
 
     #if defined(_CLEAR_COAT)
 
@@ -361,6 +405,8 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     float fc;
     float frc = CalculateFrClearCoat(clearCoatNdotH, LdotH, clearCoatAlphaG2, clearCoat, fc);
     float baseLayerLoss = 1.0f - fc;
+
+    forwardLighting.rgb = fd + fr;
     
     forwardLighting.rgb *= baseLayerLoss;
     forwardLighting.rgb *= light.lighting;
@@ -378,10 +424,15 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
 
     // indirectDiffuse = .0f;
     // forwardLighting.rgb = frc;
+
+    #elif defined(_HAS_SUBSURFACE_COLOR)
+
+    forwardLighting.rgb = fd * saturate((NdotL + .5f) / 2.25f) * saturate(mat.subsurfaceColor + float3(NdotL, NdotL, NdotL)) * light.shadowedColor;
+    forwardLighting.rgb += fr * light.lighting;
     
     #else // Normal direct lighting calculation
-    
-    forwardLighting.rgb *= light.lighting;
+
+    forwardLighting.rgb = (fd + fr) * light.lighting;
     
     #endif
 

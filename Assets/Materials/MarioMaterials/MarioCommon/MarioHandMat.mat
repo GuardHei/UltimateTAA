@@ -59,8 +59,8 @@ Material:
     - _IridescenceScale: 1
     - _MetallicScale: 0
     - _NormalScale: 1
-    - _SSSRange: 2.45
-    - _SSSScale: 1.61
+    - _SSSRange: 0.95
+    - _SSSScale: 2.53
     - _SmoothnessScale: 1
     - _StencilRef: 1
     m_Colors:

@@ -56,7 +56,6 @@ Shader "Advanced Render Pipeline/ARPAnisotropy" {
             #define _ANISOTROPY
 
             #pragma shader_feature_local _PARALLAX_MAP
-            // #pragma shader_feature_local _ANISOTROPY
             #pragma multi_compile_instancing
             #pragma vertex StandardVertex
             #pragma fragment StandardFragment

@@ -1,4 +1,4 @@
-Shader "Advanced Render Pipeline/ARPClearCoat" {
+Shader "Advanced Render Pipeline/ARPFabric" {
     
     Properties {
         [Enum(Dynamic, 1, Alpha, 2, Custom, 3)]
@@ -16,17 +16,19 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
         _MetallicScale("Metallic Scale", Range(0, 1)) = 0
         _SmoothnessScale("Smoothness Scale", Range(0, 1)) = 1
         [NoScaleOffset]
-        _MetallicSmoothnessMap("Metallic (RGB) Smoothness (A)", 2D) = "white" { }
+        _MetallicSmoothnessMap("Metallic (R) Smoothness (A)", 2D) = "white" { }
         [NoScaleOffset]
         _OcclusionMap("Occlusion", 2D) = "white" { }
         [HDR]
         _EmissiveTint("Emissive Tint", Color) = (0, 0, 0, 1)
         [NoScaleOffset]
         _EmissiveMap("Emissive", 2D) = "black" { }
-        _ClearCoatScale("Clear Coat Scale", Range(0, 1)) = 1
-        _ClearCoatSmoothnessScale("Clear Coat Smoothness Scale", Range(0, 1)) = 1
+        _SheenTint("Sheen Tint", Color) = (0, 0, 0, 1)
         [NoScaleOffset]
-        _ClearCoatMap("Clear Coat Strength (R) Clear Coat Smoothness (G)", 2D) = "white" { }
+        _SheenMap("Sheen", 2D) = "white" { }
+        _SubsurfaceTint("Subsurface Tint", Color) = (0, 0, 0, 1)
+        [NoScaleOffset]
+        _SubsurfaceMap("Subsurface", 2D) = "white" { }
     }
     
     SubShader {
@@ -39,7 +41,7 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
         
         Pass {
             
-            Name "ClearCoatForward"
+            Name "AnisotropyForward"
             
             Tags {
                 "LightMode" = "OpaqueForward"
@@ -51,7 +53,8 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
             
             HLSLPROGRAM
 
-            #define _CLEAR_COAT
+            #define _FABRIC
+            #define _HAS_SUBSURFACE_COLOR
 
             #pragma shader_feature_local _PARALLAX_MAP
             #pragma multi_compile_instancing
@@ -62,7 +65,7 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
 
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
                 ARP_SURF_PER_MATERIAL_DATA
-                ARP_CLEAR_COAT_PER_MATERIAL_DATA
+                ARP_FABRIC_PER_MATERIAL_DATA
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
             ARPSurfVertexOutput StandardVertex(ARPSurfVertexInput input) {
@@ -85,7 +88,7 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
                 ARPSurfMatInputData matInput;
 
                 ARP_SURF_MATERIAL_INPUT_SETUP(matInput);
-                ARP_CLEAR_COAT_MATERIAL_INPUT_SETUP(matInput);
+                ARP_FABRIC_MATERIAL_INPUT_SETUP(matInput);
 
                 ARPSurfMatOutputData matData = (ARPSurfMatOutputData) 0;
                 ARPSurfMaterialSetup(matData, input, matInput);
@@ -97,8 +100,8 @@ Shader "Advanced Render Pipeline/ARPClearCoat" {
                 ARPSurfLighting(lightingData, matData, lightData);
 
                 output.forward = lightingData.forwardLighting;
-                output.gbuffer1 = EncodeNormalComplex(matData.N);
-                output.gbuffer2 = float4(matData.f0, matData.linearRoughness);
+                output.gbuffer1 = EncodeNormalComplex(matData.R);
+                output.gbuffer2 = float4(matData.sheen, matData.linearRoughness);
                 output.gbuffer3 = lightingData.iblOcclusion;
 
                 return output;

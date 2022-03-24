@@ -35,6 +35,10 @@
 |:--:|:--:|
 |*Anisotropy = 0*|*Anisotropy = 1*|
 
+|![fabric_material.png](https://s2.loli.net/2022/03/24/ULAGiqzVlEet9CR.png)|![non_fabric_material.png](https://s2.loli.net/2022/03/24/wkDgsW2LdI8leK4.png)|
+|:--:|:--:|
+|Velvet Fabric PBR|Original PBR|
+
  # Advanced Render Pipeline
 
  ## Rendering Layers

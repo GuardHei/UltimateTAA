@@ -28,6 +28,8 @@
 // #define POM_BIAS (.42f)
 #define POM_BIAS (.3f)
 
+#define DEFAULT_REFLECTANCE (.4f)
+
 #define MIN_LINEAR_ROUGHNESS (.045f)
 #define MIN_ROUGHNESS (.002025f)
 
@@ -189,6 +191,10 @@ TEXTURE2D(_TangentMap);
 SAMPLER(sampler_TangentMap);
 TEXTURE2D(_AnisotropyMap);
 SAMPLER(sampler_AnisotropyMap);
+TEXTURE2D(_SheenMap);
+SAMPLER(sampler_SheenMap);
+TEXTURE2D(_SubsurfaceMap);
+SAMPLER(sampler_SubsurfaceMap);
 
 TEXTURE2D(_PreintegratedDGFLut);
 SAMPLER(sampler_PreintegratedDGFLut);
@@ -227,9 +233,27 @@ float pow4(float b) {
 }
 
 float pow5(float b) {
-    float temp0 = b * b;
-    float temp1 = temp0 * temp0;
-    return temp1 * b;
+    float pow2 = b * b;
+    float pow4 = pow2 * pow2;
+    return pow4 * b;
+}
+
+float pow6(float b) {
+    float pow2 = b * b;
+    float pow4 = pow2 * pow2;
+    return pow4 * pow2;
+}
+
+float pow7(float b) {
+    float pow2 = b * b;
+    float pow4 = pow2 * pow2;
+    return pow4 * pow2 * b;
+}
+
+float pow8(float b) {
+    float pow2 = b * b;
+    float pow4 = pow2 * pow2;
+    return pow4 * pow4;
 }
 
 //////////////////////////////////////////
@@ -532,6 +556,10 @@ float3 F0ClearCoatToSurface(float3 f0) {
     return saturate(f0 * (f0 * (.941892f - .263008f * f0) + .346479f) - .0285998f);
 }
 
+float3 ShiftTangent(float3 T, float3 N, float shift) {
+    return normalize(T + N * shift);
+}
+
 void GetAnisotropyTB(float anisotropy, float roughness, out float2 atb) {
     atb.x = ClampMinRoughness(roughness * (1.0f + anisotropy));
     atb.y = ClampMinRoughness(roughness * (1.0f - anisotropy));
@@ -573,6 +601,38 @@ float V_Neubelt(float NdotL, float NdotV) {
     return saturate(1.0f / (4.0f * (NdotL + NdotV - NdotL * NdotV)));
 }
 
+float CharlieL(float x, float r) {
+    r = saturate(r);
+    r = 1.0f - pow2(1.0f - r);
+
+    float a = lerp(25.3245f, 21.5473f, r);
+    float b = lerp(3.32435f, 3.82987f, r);
+    float c = lerp(.16801f, 0.19823f, r);
+    float d = lerp(-1.27393f, -1.97760f, r);
+    float e = lerp(-4.85967f, -4.32054f, r);
+
+    return a / (1.0f + b * PositivePow(x, c)) + d * x + e;
+}
+
+float SoftenCharlie(float base, float cos_theta) {
+    const float softenTerm = 1.0f + 2.0f * pow8(1.0f - cos_theta);
+    return pow(base, softenTerm);
+}
+
+float V_Charlie_No_Softening(float NdotL, float NdotV, float roughness) {
+    const float lambdaV = NdotV < .5f ? exp(CharlieL(NdotV, roughness)) : exp(2.0f * CharlieL(.5f, roughness) - CharlieL(1.0f - NdotV, roughness));
+    const float lambdaL = NdotL < .5f ? exp(CharlieL(NdotL, roughness)) : exp(2.0f * CharlieL(.5f, roughness) - CharlieL(1.0f - NdotL, roughness));
+    return 1.0f / ((1.0f + lambdaV + lambdaL) * (4.0f * NdotV * NdotL));
+}
+
+float V_Charlie(float NdotL, float NdotV, float roughness) {
+    float lambdaV = NdotV < .5f ? exp(CharlieL(NdotV, roughness)) : exp(2.0f * CharlieL(.5f, roughness) - CharlieL(1.0f - NdotV, roughness));
+    lambdaV = SoftenCharlie(lambdaV, NdotV);
+    float lambdaL = NdotL < .5f ? exp(CharlieL(NdotL, roughness)) : exp(2.0f * CharlieL(.5f, roughness) - CharlieL(1.0f - NdotL, roughness));
+    lambdaL = SoftenCharlie(lambdaL, NdotL);
+    return 1.0f / ((1.0f + lambdaV + lambdaL) * (4.0f * NdotV * NdotL));
+}
+
 // Requires caller to "div PI"
 float D_GGX(float NdotH, float alphaG2) {
     // Higher accuracy?
@@ -590,6 +650,16 @@ float D_GGX_Anisotropic(float NdotH, float TdotH, float BdotH, float2 atb) {
     float v2 = dot(V, V);
     float w2 = a2 / v2;
     return a2 * w2 * w2;
+}
+
+// Requires caller to "div PI"
+// Ashikhmin 2007, "Distribution-based BRDFs"
+float D_Ashikhmin(float NdotH, float alphaG2) {
+    float cos2h = NdotH * NdotH;
+    float sin2h = max(1.0f - cos2h, .0078125f); // 2^(-14/2), so sin2h^2 > 0 in fp16
+    float sin4h = sin2h * sin2h;
+    float cot2 = -cos2h / (alphaG2 * sin2h);
+    return 1.0f / ((4.0f * alphaG2 + 1.0f) * sin4h) * (4.0f * exp(cot2) + sin4h);
 }
 
 // Requires caller to "div PI"
@@ -633,21 +703,30 @@ float3 DisneyDiffuseMultiScatter(float NdotV, float NdotL, float NdotH, float Ld
     return max(fd + fb, .0f) * diffuse;
 }
 
+float3 FabricLambertDiffuse(float roughness, float3 diffuse) {
+    return lerp(1.0f, .5f, roughness) * diffuse;
+}
+
 float3 CalculateFd(float NdotV, float NdotL, float LdotH, float linearRoughness, float3 diffuse) {
     float3 D = DisneyDiffuseRenormalized(NdotV, NdotL, LdotH, linearRoughness, diffuse);
-    return D / PI;
+    return D * INV_PI;
 }
 
 float3 CalculateFdMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 diffuse) {
     float3 D = DisneyDiffuseMultiScatter(NdotV, NdotL, NdotH, LdotH, alphaG2, diffuse);
-    return D / PI;
+    return D * INV_PI;
+}
+
+float3 CalculateFdFabric(float roughness, float3 diffuse) {
+    float3 D = FabricLambertDiffuse(roughness, diffuse);
+    return D * INV_PI;
 }
 
 float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0) {
     float V = V_SmithGGX(NdotV, NdotL, alphaG2);
     float D = D_GGX(NdotH, alphaG2);
     float3 F = F_Schlick(f0, LdotH);
-    return D * V / PI * F;
+    return D * V * INV_PI * F;
 }
 
 float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
@@ -659,18 +738,27 @@ float CalculateFrClearCoat(float NdotH, float LdotH, float clearCoatAlphaG2, flo
     float D = D_GGX(NdotH, clearCoatAlphaG2);
     float F = F_Schlick(.04f, LdotH).r * clearCoat;
     fc = F;
-    return D * V / PI * F;
+    return D * V * INV_PI * F;
 }
 
 float3 CalculateFrAnisotropic(float NdotV, float NdotL, float NdotH, float LdotH, float TdotH, float BdotH, float2 atb, float TdotV, float BdotV, float TdotL, float BdotL, float3 f0) {
     float V = V_SmithGGX_Anisotropic(atb, TdotV, BdotV, TdotL, BdotL, NdotV, NdotL);
     float D = D_GGX_Anisotropic(NdotH, TdotH, BdotH, atb);
     float3 F = F_Schlick(f0, LdotH);
-    return D * V / PI * F;
+    return D * V * INV_PI * F;
 }
 
 float3 CalculateFrAnisotropicMultiscatter(float NdotV, float NdotL, float NdotH, float LdotH, float TdotH, float BdotH, float2 atb, float TdotV, float BdotV, float TdotL, float BdotL, float3 f0, float3 energyCompensation) {
     return CalculateFrAnisotropic(NdotV, NdotL, NdotH, LdotH, TdotH, BdotH, atb, TdotV, BdotV, TdotL, BdotL, f0) * energyCompensation;
+}
+
+float3 CalculateFrFabric(float NdotV, float NdotL, float NdotH, float LdotH, float roughness, float3 sheen) {
+    float V = V_Neubelt(NdotL, NdotV);
+    // float V = V_Charlie(NdotL, NdotV, roughness);
+    float D = D_Charlie(NdotH, roughness);
+    float3 F = F_Schlick(sheen, LdotH);
+    // return V - V_Charlie(NdotL, NdotV, roughness);
+    return D * V * INV_PI * F;
 }
 
 //////////////////////////////////////////
