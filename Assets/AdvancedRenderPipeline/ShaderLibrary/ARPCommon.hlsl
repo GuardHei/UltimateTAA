@@ -57,13 +57,16 @@ struct RTHandleProperties {
     float4 rtHandleScale; // xy: curr, zw: prev
 };
 
-cbuffer CameraData {
+CBUFFER_START(CameraData)
     float4 _CameraPosWS;
     float4 _CameraFwdWS;
     float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
     float4x4 _FrustumCornersWS; // row 0: topLeft, row 1: bottomLeft, row 2: topRight, row 3: float4 _ZBufferParams { (f - n) / n, 1, (f - n) / n * f, 1 / f }
-    RTHandleProperties _RTHandleProps;
-};
+    // RTHandleProperties _RTHandleProps;
+    int4 _ViewportSize;
+    int4 _RTSize;
+    float4 _RTHandleScale;
+CBUFFER_END
 
 #ifndef DOTS_INSTANCING_ON // UnityPerDraw cbuffer doesn't exist with hybrid renderer
 
@@ -119,9 +122,11 @@ struct DirectionalLight {
     float4 color;
 };
 
-cbuffer MainLightData {
-    DirectionalLight _MainLight;
-};
+CBUFFER_START(MainLightData)
+    // DirectionalLight _MainLight;
+    float4 _MainLightDirection;
+    float4 _MainLightColor;
+CBUFFER_END
 
 //////////////////////////////////////////
 // Alpha Related                        //

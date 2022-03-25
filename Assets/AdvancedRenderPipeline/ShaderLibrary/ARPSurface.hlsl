@@ -307,15 +307,15 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
 }
 
 void ARPSurfLightSetup(inout ARPSurfLightInputData output, ARPSurfMatOutputData input) {
-    const float3 L = _MainLight.direction.xyz;
+    const float3 L = _MainLightDirection.xyz;
     const float3 H = normalize(input.V + L);
     const float LdotH = max(saturate(dot(L, H)), .0001f);
     const float NdotH = max(saturate(dot(input.N, H)), .0001f);
     const float NdotL = max(saturate(dot(input.N, L)), .0001f);
-    const float3 shadowedColor = _MainLight.color.rgb * input.materialShadow;
+    const float3 shadowedColor = _MainLightColor.rgb * input.materialShadow;
     const float3 lighting = NdotL * shadowedColor;
 
-    output.color = _MainLight.color.rgb;
+    output.color = _MainLightColor.rgb;
     output.shadowedColor = shadowedColor;
     output.lighting = lighting;
     output.L = L;

@@ -79,6 +79,6 @@ Material:
     m_Colors:
     - _AlbedoTint: {r: 0.764151, g: 0.018022425, b: 0.018022425, a: 1}
     - _EmissiveTint: {r: 0, g: 0, b: 0, a: 1}
-    - _SheenTint: {r: 0.010322088, g: 0.4245283, b: 0.006007465, a: 1}
+    - _SheenTint: {r: 0.3962264, g: 0.3962264, b: 0.3962264, a: 1}
     - _SubsurfaceTint: {r: 0.6415094, g: 0.6415094, b: 0.6415094, a: 1}
   m_BuildTextureStacks: []
