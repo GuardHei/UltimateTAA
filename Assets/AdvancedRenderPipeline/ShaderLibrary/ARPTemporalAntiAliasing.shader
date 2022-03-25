@@ -161,6 +161,7 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 // prev.rgb = YCoCgToRGB(ClipAABB(minColor, maxColor, RGBToYCoCg(prev.rgb)));
                 */
 
+                // sharpening
                 float3 corners = YCoCgToRGB(n2) + YCoCgToRGB(n3) + YCoCgToRGB(n7) + YCoCgToRGB(n8);
                 corners = (corners - curr.rgb) * 2.0f * .166667f;
                 corners = (curr.rgb - corners) * 2.718282f * _TaaParams_2.y;

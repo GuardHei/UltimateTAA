@@ -51,22 +51,16 @@
 #define UNITY_MATRIX_NONJITTERED_I_VP _InvNonJitteredMatrixVP;
 #define UNITY_MATRIX_P glstate_matrix_projection
 
-struct RTHandleProperties {
-    int4 viewportSize; // xy: curr, zw: prev
-    int4 rtSize; // xy: curr, zw: prev
-    float4 rtHandleScale; // xy: curr, zw: prev
-};
-
-struct DirectionalLight {
-    float4 direction;
-    float4 color;
-};
-
 CBUFFER_START(CameraData)
     float4 _CameraPosWS;
     float4 _CameraFwdWS;
     float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
     float4x4 _FrustumCornersWS; // row 0: topLeft, row 1: bottomLeft, row 2: topRight, row 3: float4 _ZBufferParams { (f - n) / n, 1, (f - n) / n * f, 1 / f }
+struct RTHandleProperties {
+    int4 viewportSize; // xy: curr, zw: prev
+    int4 rtSize; // xy: curr, zw: prev
+    float4 rtHandleScale; // xy: curr, zw: prev
+};
     RTHandleProperties _RTHandleProps;
 CBUFFER_END
 
@@ -120,6 +114,10 @@ float4x4 _InvNonJitteredMatrixVP;
 //////////////////////////////////////////
 
 CBUFFER_START(MainLightData)
+struct DirectionalLight {
+    float4 direction;
+    float4 color;
+};
     DirectionalLight _MainLight;
 CBUFFER_END
 
@@ -586,7 +584,6 @@ float V_SmithGGX(float NdotL, float NdotV, float alphaG2) {
 }
 
 float V_Kelemen(float LdotH) {
-    // return .25f / pow2(LdotH);
     return .25f / max(pow2(LdotH), .00001f);
 }
 
