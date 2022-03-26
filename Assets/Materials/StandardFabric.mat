@@ -70,7 +70,7 @@ Material:
     - _AnisotropyScale: 0
     - _ClearCoatScale: 1
     - _ClearCoatSmoothnessScale: 1
-    - _Cull: 0
+    - _Cull: 2
     - _HeightScale: 0
     - _MetallicScale: 0
     - _NormalScale: 1

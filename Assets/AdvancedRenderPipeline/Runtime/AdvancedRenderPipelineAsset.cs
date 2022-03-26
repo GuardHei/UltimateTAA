@@ -152,9 +152,9 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float minDepthRejection;
 		[Range(0f, 2f)]
 		public float depthRejectionScale;
-		[Range(0f, .5f)]
+		[Range(0f, 2f)]
 		public float minSharpness;
-		[Range(0f, .5f)]
+		[Range(0f, 2f)]
 		public float maxSharpness;
 
 		public Vector4 TaaParams0 => new(minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale);

@@ -45,17 +45,17 @@ MonoBehaviour:
     taaSettings:
       enabled: 1
       jitterNum: 8
-      jitterSpread: 0.75
+      jitterSpread: 1
       minHistoryWeight: 0.6
-      maxHistoryWeight: 0.9
+      maxHistoryWeight: 0.95
       minClipScale: 0.5
-      maxClipScale: 1.25
-      minVelocityRejection: 1
-      velocityRejectionScale: 0
+      maxClipScale: 1.5
+      minVelocityRejection: 0.1
+      velocityRejectionScale: 1.5
       minDepthRejection: 1
       depthRejectionScale: 0
       minSharpness: 0
-      maxSharpness: 0
+      maxSharpness: 0.1
     colorSettings:
       postExposure: 0
       contrast: 0
