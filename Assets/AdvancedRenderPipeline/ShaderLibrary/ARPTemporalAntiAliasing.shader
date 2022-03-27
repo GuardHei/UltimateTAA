@@ -31,7 +31,7 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
             float _EnableReprojection;
             float4 _TaaParams_0; // { minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale }
             float4 _TaaParams_1; // { minVelocityRejection, velocityRejectionScale, minDepthRejection, depthRejectionScale }
-            float4 _TaaParams_2; // { minSharpness, maxSharpness, staticClipScale }
+            float4 _TaaParams_2; // { minSharpness, maxSharpness, motionSharpeningFactor, staticClipScale }
 
             VertexOutput Vert(uint vertexID : SV_VertexID) {
                 VertexOutput output;
@@ -151,6 +151,8 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 const float depthRejectionScale = _TaaParams_1.w;
                 const float minSharpness = _TaaParams_2.x;
                 const float maxSharpness = _TaaParams_2.y;
+                const float motionSharpeningFactor = _TaaParams_2.z;
+                const float staticClipScale = _TaaParams_2.w;
                 
                 float mvScale = length(mv);
 
@@ -189,15 +191,34 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 atEdge = atEdge || st0 != st3;
                 atEdge = atEdge || st0 != st7;
                 atEdge = atEdge || st0 != st8;
-                
-                bool mismatch = !atEdge && (st0 != prevSt);
+
+                const float linearDepth0 = DepthToLinearEyeSpace(d0);
+                const float linearDepth2 = DepthToLinearEyeSpace(d2);
+                const float linearDepth3 = DepthToLinearEyeSpace(d3);
+                const float linearDepth7 = DepthToLinearEyeSpace(d7);
+                const float linearDepth8 = DepthToLinearEyeSpace(d8);
+
+                atEdge = atEdge || abs(linearDepth0 - linearDepth2) > minDepthRejection;
+                atEdge = atEdge || abs(linearDepth0 - linearDepth3) > minDepthRejection;
+                atEdge = atEdge || abs(linearDepth0 - linearDepth7) > minDepthRejection;
+                atEdge = atEdge || abs(linearDepth0 - linearDepth8) > minDepthRejection;
+
+                // return atEdge ? 1.0f : .0f;
 
                 const float prevDepth = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0).r;
+                const float linearPrevDepth = PrevDepthToLinearEyeSpace(prevDepth);
+
+                bool mismatch = (st0 != prevSt) || abs(linearDepth0 - linearPrevDepth) > minDepthRejection;
+                // mismatch = mismatch && !atEdge;
                 
                 clipScale = mismatch ? minClipScale : clipScale;
 
-                bool antiFlicker = mvScale < 2.0f * FLT_EPS && prevMVScale < 2.0f * FLT_EPS;
-                clipScale = (antiFlicker && atEdge) ? 3.0f : clipScale;
+                // count for imprecision
+                bool staticPixel = mvScale < 2.0f * FLT_EPS && prevMVScale < 2.0f * FLT_EPS;
+                // increase clip box scale when it is a static pixel and we detect a large different in depth/stencil either historically or spatially
+                // we also need to make sure it is not covered by any transparent effect, in which case the MV computation is broken
+                bool antiFlicker = staticPixel && (atEdge || mismatch || prev.a < .5f) && curr.a > .99f;
+                clipScale = antiFlicker ? staticClipScale : clipScale;
 
                 prev.rgb = YCoCgToRGB(ClipVariance(m1, m2, 9.0f, clipScale, RGBToYCoCg(prev.rgb)));
                 
@@ -239,15 +260,18 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 */
 
                 // cross pattern sharperning
-                float3 sharpen = c1 + c4 + c5 + c6;
-                curr.rgb = curr.rgb * (1.0 + 4.0f * maxSharpness) + sharpen * -maxSharpness;
+                float sharpnessFactor = lerp(maxSharpness, minSharpness, mvScale * motionSharpeningFactor);
+                float3 corners = c1 + c4 + c5 + c6;
+                curr.rgb = curr.rgb * (1.0 + 4.0f * sharpnessFactor) + corners * -sharpnessFactor;
                 curr = clamp(curr, .0f, HALF_MAX);
 
                 // decrease history weight when transparent pixel has a large opacity (motion vector is less reliable here)
                 float historyWeight = lerp(maxHistoryWeight, minHistoryWeight, curr.a);
 
                 output = lerp(curr, prev, historyWeight);
-                output.a = 1.0f;
+                // record antiFlicker history
+                output.a = antiFlicker ? .0f : 1.0f;
+                // output.rgb = clipScale > 1.0f ? 1.0f : .0f;
                 return output;
             }
             

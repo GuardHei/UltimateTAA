@@ -144,11 +144,15 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float minClipScale;
 		[Range(.05f, 6f)]
 		public float maxClipScale;
+		[Tooltip("Used for anti-flickering")]
+		[Range(.05f, 12f)]
+		public float staticClipScale;
 		[Range(0f, 1f)]
 		public float minVelocityRejection;
-		[Range(0f, 2f)]
+		[Range(0f, 10f)]
 		public float velocityRejectionScale;
-		[Range(0f, 1f)]
+		[Tooltip("Distance in eye space")]
+		[Range(0f, 50f)]
 		public float minDepthRejection;
 		[Range(0f, 2f)]
 		public float depthRejectionScale;
@@ -156,10 +160,12 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float minSharpness;
 		[Range(0f, 2f)]
 		public float maxSharpness;
+		[Range(0f, 10f)]
+		public float motionSharpeningFactor;
 
 		public Vector4 TaaParams0 => new(minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale);
 		public Vector4 TaaParams1 => new(minVelocityRejection, velocityRejectionScale, minDepthRejection, depthRejectionScale);
-		public Vector4 TaaParams2 => new(minSharpness, maxSharpness, 0f, 0f);
+		public Vector4 TaaParams2 => new(minSharpness, maxSharpness, motionSharpeningFactor, staticClipScale);
 	}
 
 	[Serializable]

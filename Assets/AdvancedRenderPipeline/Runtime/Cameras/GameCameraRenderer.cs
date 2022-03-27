@@ -176,6 +176,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_I_VP, _invNonJitteredMatrixVP);
 			
 			var farHalfFovTan = _farPlane * _verticalFovTan;
+			
+			_prevFrustumCornersWS = _frustumCornersWS;
 
 			_frustumCornersWS = new Matrix4x4();
 			
@@ -189,7 +191,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			// var bottomRight = fwdDir - upDir * 3f + rightDir * 3f;
 
 			var zBufferParams = new float4((_farPlane - _nearPlane) / _nearPlane,  1f, (_farPlane - _nearPlane) / (_nearPlane * _farPlane), 1f / _farPlane);
-			
+
 			_frustumCornersWS.SetRow(0, new float4(topLeft, .0f));
 			_frustumCornersWS.SetRow(1, new float4(bottomLeft, .0f));
 			_frustumCornersWS.SetRow(2, new float4(topRight, .0f));
@@ -200,6 +202,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				cameraFwdWS = new float4(_cameraFwdWS, 1.0f),
 				screenSize = screenSize,
 				frustumCornersWS = _frustumCornersWS,
+				prevFrustumCornersWS = _prevFrustumCornersWS,
 				_rtHandleProps = rtProps
 			};
 			

@@ -49,13 +49,15 @@ MonoBehaviour:
       minHistoryWeight: 0.6
       maxHistoryWeight: 0.95
       minClipScale: 0.5
-      maxClipScale: 1.5
-      minVelocityRejection: 0.1
-      velocityRejectionScale: 1.5
-      minDepthRejection: 1
-      depthRejectionScale: 0
-      minSharpness: 0
-      maxSharpness: 0.1
+      maxClipScale: 2
+      staticClipScale: 12
+      minVelocityRejection: 0.05
+      velocityRejectionScale: 3
+      minDepthRejection: 5
+      depthRejectionScale: 1
+      minSharpness: 0.05
+      maxSharpness: 0.22
+      motionSharpeningFactor: 2
     colorSettings:
       postExposure: 0
       contrast: 0

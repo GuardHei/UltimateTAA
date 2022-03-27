@@ -57,6 +57,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         protected float3 _cameraUpWS;
         protected float3 _cameraRightWS;
         protected Matrix4x4 _frustumCornersWS;
+        protected Matrix4x4 _prevFrustumCornersWS;
         protected Vector2[] _jitterPatterns = new Vector2[8];
         protected Vector2 _currJitter;
         protected Matrix4x4 _nonjitteredMatrixVP;

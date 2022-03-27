@@ -22,6 +22,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float4 cameraFwdWS;
 		public float4 screenSize;
 		public float4x4 frustumCornersWS;
+		public float4x4 prevFrustumCornersWS;
 		public PackedRTHandleProperties _rtHandleProps;
 	}
 

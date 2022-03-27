@@ -62,6 +62,7 @@ CBUFFER_START(CameraData)
     float4 _CameraFwdWS;
     float4 _ScreenSize; // { w, h, 1 / w, 1 / h }
     float4x4 _FrustumCornersWS; // row 0: topLeft, row 1: bottomLeft, row 2: topRight, row 3: float4 _ZBufferParams { (f - n) / n, 1, (f - n) / n * f, 1 / f }
+    float4x4 _PrevFrustumCornersWS; // same as above
     // RTHandleProperties _RTHandleProps;
     int4 _ViewportSize;
     int4 _RTSize;
@@ -426,6 +427,10 @@ float4 GetZBufferParams() {
     return _FrustumCornersWS[3];
 }
 
+float4 GetPrevZBufferParams() {
+    return _PrevFrustumCornersWS[3];
+}
+
 float SampleDepth(float2 uv) {
     return SAMPLE_DEPTH_TEXTURE(_DepthTex, sampler_point_clamp, uv);
 }
@@ -454,6 +459,14 @@ float4 DepthToWorldPos(float depth, float2 uv) {
     worldPosAccurate /= worldPosAccurate.w;
     worldPosAccurate.w = 1.0f;
     return worldPosAccurate;
+}
+
+float DepthToLinearEyeSpace(float depth) {
+    return LinearEyeDepth(depth, GetZBufferParams());
+}
+
+float PrevDepthToLinearEyeSpace(float depth) {
+    return LinearEyeDepth(depth, GetPrevZBufferParams());
 }
 
 float4 TransformObjectToWorldTangent(float4 tangentOS) {
