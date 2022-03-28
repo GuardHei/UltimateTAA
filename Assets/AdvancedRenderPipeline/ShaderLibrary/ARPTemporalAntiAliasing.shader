@@ -266,7 +266,7 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 curr = clamp(curr, .0f, HALF_MAX);
 
                 // decrease history weight when transparent pixel has a large opacity (motion vector is less reliable here)
-                float historyWeight = lerp(maxHistoryWeight, minHistoryWeight, curr.a);
+                float historyWeight = curr.a > .999f ? maxHistoryWeight : lerp(maxHistoryWeight, minHistoryWeight, curr.a);
 
                 output = lerp(curr, prev, historyWeight);
                 // record antiFlicker history

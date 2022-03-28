@@ -62,6 +62,10 @@ namespace AdvancedRenderPipeline.Runtime {
 			return true;
 		}
 
+		protected override void ProcessRenderRequests(ScriptableRenderContext context, Camera camera, List<Camera.RenderRequest> renderRequests) {
+			base.ProcessRenderRequests(context, camera, renderRequests);
+		}
+
 		private static void ExecuteIndependentCommandBufferRequest(ScriptableRenderContext context) {
 			if (independentCMDRequests.Count == 0) return;
 			

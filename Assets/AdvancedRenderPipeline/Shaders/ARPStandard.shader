@@ -89,6 +89,7 @@ Shader "Advanced Render Pipeline/ARPStandard" {
                 ARPSurfLighting(lightingData, matData, lightData);
 
                 output.forward = lightingData.forwardLighting;
+                // output.forward.rgb = float4(lightingData.indirectDiffuse, 1.0f);
                 output.gbuffer1 = EncodeNormalComplex(matData.N);
                 output.gbuffer2 = float4(matData.f0, matData.linearRoughness);
                 output.gbuffer3 = lightingData.iblOcclusion;

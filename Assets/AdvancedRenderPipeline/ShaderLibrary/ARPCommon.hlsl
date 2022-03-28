@@ -656,7 +656,7 @@ float D_GGX(float NdotH, float alphaG2) {
     const float f = (alphaG2 - 1.0f) * NdotH * NdotH + 1.0f;
     // const float f = (NdotH * alphaG2 - NdotH) * NdotH + 1;
     float f_sqr = f * f;
-    f_sqr = f_sqr == .0f ? .0001f : f_sqr;
+    f_sqr = f_sqr == .0f ? .00001f : f_sqr;
     return alphaG2 / f_sqr;
 }
 
@@ -747,6 +747,7 @@ float3 CalculateFr(float NdotV, float NdotL, float NdotH, float LdotH, float alp
 }
 
 float3 CalculateFrMultiScatter(float NdotV, float NdotL, float NdotH, float LdotH, float alphaG2, float3 f0, float3 energyCompensation) {
+    // return energyCompensation - 1.0f;
     return CalculateFr(NdotV, NdotL, NdotH, LdotH, alphaG2, f0) * energyCompensation;
 }
 
