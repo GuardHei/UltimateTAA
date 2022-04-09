@@ -593,7 +593,6 @@ float3 F_Schlick(in float3 f0, in float u) {
 
 float3 F_SchlickRoughness(float3 f0, float u, float linearRoughness) {
     float r = 1.0f - linearRoughness;
-    // r = 1.0f;
     return f0 + (max(float3(r, r, r), f0) - f0) * pow5(saturate(1.0f - u));
 }
 
@@ -860,7 +859,6 @@ float2 PrecomputeSpecularL_DFG(float3 V, float NdotV, float linearRoughness) {
             float G = IBL_G_SmithGGX(NdotV, NdotL, alphaG2);
             float Gv = G * VdotH / NdotH;
             float Fc = pow5(1.0f - VdotH);
-            // r.x += Gv * (1.0f - Fc);
             r.x += Gv;
             r.y += Gv * Fc;
         }

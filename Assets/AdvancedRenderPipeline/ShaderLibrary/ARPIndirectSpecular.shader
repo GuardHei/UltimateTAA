@@ -52,6 +52,7 @@ Shader "Hidden/ARPIndirectSpecular" {
             
             HLSLPROGRAM
 
+            #pragma shader_feature_local ACCURATE_TRANSFORM_ON
             #pragma vertex Vert
             #pragma fragment Fragment
 
@@ -60,7 +61,9 @@ Shader "Hidden/ARPIndirectSpecular" {
             struct VertexOutput {
                 float4 posCS : SV_POSITION;
                 float2 screenUV : VAR_SCREEN_UV;
+                #if !defined(ACCURATE_TRANSFORM_ON)
                 float3 ray : TEXCOORD0;
+                #endif
             };
 
             VertexOutput Vert(uint vertexID : SV_VertexID) {
@@ -69,8 +72,10 @@ Shader "Hidden/ARPIndirectSpecular" {
                 output.screenUV = VertexIDToScreenUV(vertexID);
                 // output.posCS = Test1(vertexID);
                 // output.screenUV = Test2(vertexID);
+                #if !defined(ACCURATE_TRANSFORM_ON)
                 output.ray = VertexIDToFrustumCorners(vertexID).xyz;
                 // output.ray.w = vertexID == 0 ? 2 : 0;
+                #endif
                 return output;
             }
 
@@ -82,7 +87,13 @@ Shader "Hidden/ARPIndirectSpecular" {
                 float iblOcclusion = SAMPLE_TEXTURE2D(_GBuffer3, sampler_point_clamp, uv).r;
                 
                 float depth = SampleDepth(uv);
+                
+                #if defined(ACCURATE_TRANSFORM_ON)
+                float4 posWS = DepthToWorldPos(depth, uv);
+                #else
                 float4 posWS = DepthToWorldPosFast(depth, input.ray);
+                #endif
+                
                 float3 V = normalize(_CameraPosWS.xyz - posWS.xyz);
 
                 float NdotV = dot(N, V);

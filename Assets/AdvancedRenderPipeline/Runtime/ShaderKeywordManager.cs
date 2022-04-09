@@ -104,7 +104,11 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#region Miscs
 
+		#region Shader Features
 
+		public static readonly string ACCURATE_TRANSFORM_ON = "ACCURATE_TRANSFORM_ON";
+
+		#endregion
 
 		#endregion
 	}

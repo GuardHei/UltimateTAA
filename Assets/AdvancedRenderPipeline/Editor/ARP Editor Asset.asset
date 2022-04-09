@@ -17,7 +17,7 @@ MonoBehaviour:
   iblLutFormat: 24
   diffuseLutFormat: 22
   specularLutFormat: 22
-  displayLutRefereces: 1
+  displayLutRefereces: 0
   referenceLut1: {fileID: 2800000, guid: e2e3e4fb8736241bc9bde57f001d4b86, type: 3}
   referenceLut2: {fileID: 2800000, guid: adffd39497e9940fc88d23b8cec40644, type: 3}
   iblLutGenerationShader: {fileID: 7200000, guid: 1f4f04ccce6c342658b303ed9520843d, type: 3}

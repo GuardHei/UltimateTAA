@@ -28,8 +28,9 @@ namespace AdvancedRenderPipeline.Runtime {
 			}
 
 			foreach (var pair in tempCameras) {
+				var cam = pair.Value;
 				cameraRenderers.Remove(pair.Key);
-				pair.Value.Dispose();
+				cam.Dispose();
 			}
 			
 			tempCameras.Clear();

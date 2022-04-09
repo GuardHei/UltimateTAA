@@ -358,8 +358,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
         public static CameraRenderer CreateCameraRenderer(Camera camera, AdvancedCameraType type) {
             switch (type) {
-                case AdvancedCameraType.Game: return new GameCameraRenderer(camera);
-                case AdvancedCameraType.Reflection: return new GameCameraRenderer(camera);
+                case AdvancedCameraType.Game: {
+                    Debug.Log("Create Game Camera");
+                    return new GameCameraRenderer(camera);
+                }
+                case AdvancedCameraType.Reflection: {
+                    Debug.Log("Create Reflection Camera");
+                    return new GameCameraRenderer(camera);
+                }
 #if UNITY_EDITOR
                 case AdvancedCameraType.SceneView: return new SceneViewCameraRenderer(camera);
                 case AdvancedCameraType.Preview: return new PreviewCameraRenderer(camera);

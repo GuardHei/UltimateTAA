@@ -53,6 +53,7 @@ namespace AdvancedRenderPipeline.Runtime {
 					indirectSpecularMat = new Material(AdvancedRenderPipeline.settings.indirectSpecularShader) {
 						hideFlags = HideFlags.HideAndDontSave
 					};
+					indirectSpecularMat.DisableKeyword(ShaderKeywordManager.ACCURATE_TRANSFORM_ON);
 				}
 				return indirectSpecularMat;
 			}
