@@ -25,6 +25,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly ShaderTagId SHADOW_CASTER = new ShaderTagId("ShadowCaster");
 		public static readonly ShaderTagId FORWARD = new ShaderTagId("Forward");
 		public static readonly ShaderTagId OPAQUE_FORWARD = new ShaderTagId("OpaqueForward");
+		public static readonly ShaderTagId DIFFUSE_PROBE_GBUFFER = new ShaderTagId("DiffuseProbeGBuffer");
 		
 		#endregion
 

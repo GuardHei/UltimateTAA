@@ -62,7 +62,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		public GameCameraRenderer(Camera camera) : base(camera) {
 			cameraType = AdvancedCameraType.Game;
 			_rendererDesc = "Render Game (" + camera.name + ")";
-			camera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
+			// camera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
 			InitBuffers();
 			InitComputeBuffers();
 		}
@@ -142,10 +142,13 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_context.SetupCameraProperties(camera);
 
 			var transform = camera.transform;
+			
+			var cameraViewMatrix = camera.worldToCameraMatrix;
+			
 			_cameraPosWS = transform.position;
-			_cameraFwdWS = transform.forward;
-			_cameraUpWS = transform.up;
-			_cameraRightWS = transform.right;
+			_cameraFwdWS = cameraViewMatrix.GetViewForward();
+			_cameraUpWS = cameraViewMatrix.GetViewUp();
+			_cameraRightWS = cameraViewMatrix.GetViewRight();
 
 			var screenSize = Vector4.one;
 			screenSize.x = InternalRes.x;

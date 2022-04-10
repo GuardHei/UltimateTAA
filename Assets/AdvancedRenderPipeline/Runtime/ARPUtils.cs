@@ -7,6 +7,12 @@ using UnityEngine.Rendering;
 namespace AdvancedRenderPipeline.Runtime {
 	public static class ARPUtils {
 
+		public static Vector3 GetViewForward(this Matrix4x4 mat) => -mat.GetRow(2);
+		
+		public static Vector3 GetViewUp(this Matrix4x4 mat) => mat.GetRow(1);
+		
+		public static Vector3 GetViewRight(this Matrix4x4 mat) => mat.GetRow(0);
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float4 ColorToFloat4(this Color color) => new float4(color.r, color.g, color.b, color.a);
 		

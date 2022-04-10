@@ -27,6 +27,8 @@ Shader "Advanced Render Pipeline/ARPStandardStatic" {
         
         UsePass "Advanced Render Pipeline/ARPStandard/StandardForward"
         
+        UsePass "Hidden/ARPDiffuseProbeGBuffer/DiffuseProbeGBuffer"
+        
         /*
         Pass {
             

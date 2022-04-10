@@ -358,20 +358,22 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
         public static CameraRenderer CreateCameraRenderer(Camera camera, AdvancedCameraType type) {
             switch (type) {
-                case AdvancedCameraType.Game: {
-                    Debug.Log("Create Game Camera");
-                    return new GameCameraRenderer(camera);
-                }
-                case AdvancedCameraType.Reflection: {
-                    Debug.Log("Create Reflection Camera");
-                    return new GameCameraRenderer(camera);
-                }
+                case AdvancedCameraType.Game: return new GameCameraRenderer(camera);
+                case AdvancedCameraType.Reflection: return new GameCameraRenderer(camera);
 #if UNITY_EDITOR
                 case AdvancedCameraType.SceneView: return new SceneViewCameraRenderer(camera);
                 case AdvancedCameraType.Preview: return new PreviewCameraRenderer(camera);
+                case AdvancedCameraType.DiffuseProbe: return new DiffuseProbeCameraRenderer(camera);
 #endif
                 default: throw new InvalidOperationException("Does not support camera type: " + type);
             }
+        }
+
+        public static AdvancedCameraType GetCameraType(Camera camera) {
+#if UNITY_EDITOR
+            if (camera.TryGetComponent<ARPCameraAdditionData>(out var additionData)) return additionData.cameraType;
+#endif
+            return DefaultToAdvancedCameraType(camera.cameraType);
         }
 
         public static AdvancedCameraType DefaultToAdvancedCameraType(CameraType cameraType) {
@@ -393,6 +395,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         SceneView = 2,
         Preview = 4,
         VR = 8,
-        Reflection = 16
+        Reflection = 16,
+        DiffuseProbe = 32
     }
 }

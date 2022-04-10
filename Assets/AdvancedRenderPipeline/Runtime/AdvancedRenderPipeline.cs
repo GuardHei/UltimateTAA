@@ -47,7 +47,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 
 		public static bool RegisterCamera(Camera camera) =>
-			RegisterCamera(camera, CameraRenderer.DefaultToAdvancedCameraType(camera.cameraType));
+			RegisterCamera(camera, CameraRenderer.GetCameraType(camera));
 
 		public static bool RegisterCamera(Camera camera, AdvancedCameraType type) {
 			if (cameraRenderers.ContainsKey(camera)) return false;
@@ -106,9 +106,12 @@ namespace AdvancedRenderPipeline.Runtime {
 			BeginFrameRendering(context, cameras);
 
 			foreach (var camera in cameras) {
+				var pixelWidth = camera.pixelWidth;
+				var pixelHeight = camera.pixelHeight;
+				
 				var cameraRenderer = GetCameraRenderer(camera);
 				cameraRenderer.PreUpdate();
-				cameraRenderer.SetResolutionAndRatio(screenWidth, screenHeight, 1f, 1f);
+				cameraRenderer.SetResolutionAndRatio(pixelWidth, pixelHeight, 1f, 1f);
 				
 				BeginCameraRendering(context, camera);
 				
@@ -130,9 +133,18 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 
 		internal CameraRenderer GetCameraRenderer(Camera camera) {
+			var cameraType = CameraRenderer.GetCameraType(camera);
+			// Debug.Log(camera.name + " " + cameraType);
 			if (!cameraRenderers.TryGetValue(camera, out var renderer)) {
-				renderer = CameraRenderer.CreateCameraRenderer(camera, CameraRenderer.DefaultToAdvancedCameraType(camera.cameraType));
+				renderer = CameraRenderer.CreateCameraRenderer(camera, cameraType);
 				cameraRenderers.Add(camera, renderer);
+			} else {
+				if (cameraType != renderer.cameraType) {
+					var oldRenderer = renderer;
+					renderer = CameraRenderer.CreateCameraRenderer(camera, cameraType);
+					cameraRenderers[camera] = renderer;
+					oldRenderer.Dispose();
+				}
 			}
 
 			return renderer;

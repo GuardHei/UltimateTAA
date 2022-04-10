@@ -15,6 +15,7 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     public Vector3 offset;
     public float viewDistance;
 
+    public bool dontCreateCamera = true;
     public Transform renderFromPosition;
     public string cubemapPath;
     public Cubemap targetCubemap;
@@ -24,16 +25,31 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
         var wizard = DisplayWizard<DiffuseProbeBakerWizard>("Diffuse Probe Baker", "Capture", "Clear");
         var transforms = Selection.transforms;
         if (transforms is { Length: > 0 }) wizard.renderFromPosition = transforms[0];
+        wizard.OnWizardUpdate();
     }
 
     public void OnWizardUpdate() {
         helpString = "Select transform to render from";
         isValid = renderFromPosition != null;
-        isValid &= (!string.IsNullOrWhiteSpace(cubemapPath) || targetCubemap);
+        // isValid &= (!string.IsNullOrWhiteSpace(cubemapPath) || targetCubemap);
     }
 
     public void OnWizardCreate() {
+        CaptureGBuffer();
+    }
 
+    public void CaptureGBuffer() {
+        // if (string.IsNullOrWhiteSpace(cubemapPath) && !targetCubemap) return;
+        if (dontCreateCamera) {
+            var go = renderFromPosition.gameObject;
+            var cam = go.GetComponent<Camera>();
+            if (!cam) return;
+            cam.farClipPlane = viewDistance;
+            cam.Render();
+        }
+    }
+
+    public void Capture() {
         if (string.IsNullOrWhiteSpace(cubemapPath) && !targetCubemap) return;
         
         // create temporary camera for rendering
@@ -49,7 +65,7 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
 
             Cubemap cubemap = !useTex2d ? targetCubemap : new Cubemap(cubemapResolution, TextureFormat.RGB24, false);
             
-            MaterialManager.IndirectSpecularMat.EnableKeyword(ShaderKeywordManager.ACCURATE_TRANSFORM_ON);
+            // MaterialManager.IndirectSpecularMat.EnableKeyword(ShaderKeywordManager.ACCURATE_TRANSFORM_ON);
         
             // render into cubemap
             cam.RenderToCubemap(cubemap);
@@ -87,7 +103,7 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         } finally {
-            MaterialManager.IndirectSpecularMat.DisableKeyword(ShaderKeywordManager.ACCURATE_TRANSFORM_ON);
+            // MaterialManager.IndirectSpecularMat.DisableKeyword(ShaderKeywordManager.ACCURATE_TRANSFORM_ON);
             // destroy temporary camera
             DestroyImmediate(go);
         }
