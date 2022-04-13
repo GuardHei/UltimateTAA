@@ -1,27 +1,46 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using AdvancedRenderPipeline.Runtime;
+using AdvancedRenderPipeline.Runtime.Cameras;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering;
 
 public class DiffuseProbeBakerWizard : ScriptableWizard {
 
     public int cubemapResolution = 256;
-    public int octhedronResolution = 16;
-    public int depthOcthedronResolution = 16;
-
-    public Vector3 offset;
     public float viewDistance;
 
     public bool dontCreateCamera = true;
     public Transform renderFromPosition;
     public string cubemapPath;
     public Cubemap targetCubemap;
+
+    public GraphicsFormat gbuffer0Format = GraphicsFormat.R8G8B8A8_UNorm;
+    public GraphicsFormat gbuffer1Format = GraphicsFormat.R8G8_UNorm;
+    public GraphicsFormat gbuffer2Format = GraphicsFormat.R16G16_SFloat;
+    
+    public List<RenderTexture> highResolutionGBuffer0 = new();
+    public List<RenderTexture> highResolutionGBuffer1 = new();
+    public List<RenderTexture> highResolutionGBuffer2 = new();
+    
+    public List<RenderTexture> lowResolutionGBuffer0 = new();
+    public List<RenderTexture> lowResolutionGBuffer1 = new();
+    public List<RenderTexture> lowResolutionGBuffer2 = new();
+    
+    public List<RenderTexture> octahdronGBuffer0 = new();
+    public List<RenderTexture> octahdronGBuffer1 = new();
+    public List<RenderTexture> octahdronGBuffer2 = new();
+
+    public static string ProbeDataDir;
+    public static DiffuseGISettings diffuseGISettings => AdvancedRenderPipeline.Runtime.AdvancedRenderPipeline.settings.diffuseGISettings;
     
     [MenuItem("ARP Probes/CaptureCubemap")]
     public static void CaptureCubemap() {
+        ProbeDataDir = Application.dataPath + "/Data/Probes/";
         var wizard = DisplayWizard<DiffuseProbeBakerWizard>("Diffuse Probe Baker", "Capture", "Clear");
         var transforms = Selection.transforms;
         if (transforms is { Length: > 0 }) wizard.renderFromPosition = transforms[0];
@@ -29,13 +48,145 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     }
 
     public void OnWizardUpdate() {
-        helpString = "Select transform to render from";
-        isValid = renderFromPosition != null;
+        isValid = true;
+        // helpString = "Select transform to render from";
+        // isValid = renderFromPosition != null;
         // isValid &= (!string.IsNullOrWhiteSpace(cubemapPath) || targetCubemap);
     }
 
     public void OnWizardCreate() {
-        CaptureGBuffer();
+        // CaptureGBuffer();
+        CaptureProbeGBuffer();
+    }
+
+    public void OnWizardOtherButton() {
+        Clear();
+    }
+
+    public void Clear() {
+        foreach (var rt in highResolutionGBuffer0) {
+            if (rt.IsCreated()) rt.Release();
+        }
+        
+        highResolutionGBuffer0.Clear();
+        
+        foreach (var rt in highResolutionGBuffer1) {
+            if (rt.IsCreated()) rt.Release();
+        }
+        
+        highResolutionGBuffer1.Clear();
+        
+        foreach (var rt in highResolutionGBuffer2) {
+            if (rt.IsCreated()) rt.Release();
+        }
+        
+        highResolutionGBuffer2.Clear();
+    }
+
+    public void CaptureProbeGBuffer() {
+        var count = diffuseGISettings.Count;
+        var dimensions = diffuseGISettings.dimensions;
+        var maxIntervals = diffuseGISettings.maxIntervals;
+        var origin = diffuseGISettings.Min;
+
+        var offlineCubemapSize = (int) diffuseGISettings.offlineCubemapSize;
+        var probeGBufferSize = (int) diffuseGISettings.probeGBufferSize;
+        var probeVBufferSize = (int) diffuseGISettings.probeVBufferSize;
+
+        var go = new GameObject("Diffuse Probe Capturer");
+        var tr = go.transform;
+        var cam = go.AddComponent<Camera>();
+        cam.farClipPlane = diffuseGISettings.probeViewDistance;
+        var additionalData = go.AddComponent<ARPCameraAdditionalData>();
+        additionalData.cameraType = AdvancedCameraType.DiffuseProbe;
+
+        var placeholderRT = new RenderTexture(offlineCubemapSize, offlineCubemapSize, GraphicsFormat.R8G8B8A8_UNorm, GraphicsFormat.None);
+        placeholderRT.Create();
+
+        cam.targetTexture = placeholderRT;
+
+        try {
+            var hrDesc0 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer0Format, 0, 1) {
+                dimension = TextureDimension.Cube,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var hrDesc1 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer1Format, 0, 1) {
+                dimension = TextureDimension.Cube,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var hrDesc2 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer2Format, 0, 1) {
+                dimension = TextureDimension.Cube,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+            
+            var lrDesc0 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer0Format, 0, 1) {
+                dimension = TextureDimension.Cube,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var lrDesc1 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer1Format, 0, 1) {
+                dimension = TextureDimension.Cube,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var lrDesc2 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, gbuffer2Format, 0, 1) {
+                dimension = TextureDimension.Cube,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+            
+            var ocDesc0 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer0Format, 0, 1) {
+                dimension = TextureDimension.Tex2DArray,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var ocDesc1 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer1Format, 0, 1) {
+                dimension = TextureDimension.Tex2DArray,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var ocDesc2 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, gbuffer2Format, 0, 1) {
+                dimension = TextureDimension.Tex2DArray,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            for (var i = 0; i < dimensions.x; i++) {
+                for (var j = 0; j < dimensions.y; j++) {
+                    for (var k = 0; k < dimensions.z; k++) {
+                        var pos = origin + new Vector3(i * maxIntervals.x, j * maxIntervals.y, k * maxIntervals.z);
+                        tr.position = pos;
+                        var gbuffer0 = new RenderTexture(hrDesc0);
+                        var gbuffer1 = new RenderTexture(hrDesc1);
+                        var gbuffer2 = new RenderTexture(hrDesc2);
+                        gbuffer0.Create();
+                        gbuffer1.Create();
+                        gbuffer2.Create();
+                        additionalData.diffuseProbeGBuffer0 = gbuffer0;
+                        additionalData.diffuseProbeGBuffer1 = gbuffer1;
+                        additionalData.diffuseProbeGBuffer2 = gbuffer2;
+                        highResolutionGBuffer0.Add(gbuffer0);
+                        highResolutionGBuffer1.Add(gbuffer1);
+                        highResolutionGBuffer2.Add(gbuffer2);
+                        cam.Render();
+                    }
+                }
+            }
+        } finally {
+            DestroyImmediate(go);
+            placeholderRT.Release();
+        }
+        
+        
     }
 
     public void CaptureGBuffer() {
@@ -95,7 +246,7 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
  
                 // write texture as png to disk
                 var textureData = texture.EncodeToPNG();
-                File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{cubemapPath}.png"), textureData);
+                File.WriteAllBytes(Path.Combine(ProbeDataDir, $"{cubemapPath}.png"), textureData);
             }
             
             // save to disk

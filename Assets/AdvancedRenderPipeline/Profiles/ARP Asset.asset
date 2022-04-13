@@ -42,6 +42,17 @@ MonoBehaviour:
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
     globalEnvMapRotation: 360
     skyboxMipLevel: 0
+    diffuseGISettings:
+      volumeCenter: {x: 0, y: 0, z: 0}
+      dimensions: {x: 2, y: 2, z: 2}
+      maxIntervals: {x: 1, y: 1, z: 1}
+      probeGBufferSize: 16
+      probeVBufferSize: 16
+      offlineCubemapSize: 512
+      probeViewDistance: 50
+      probeBufferPath0: probe_buffer_0
+      probeBufferPath1: probe_buffer_1
+      probeBufferPath2: probe_buffer_2
     taaSettings:
       enabled: 1
       jitterNum: 8

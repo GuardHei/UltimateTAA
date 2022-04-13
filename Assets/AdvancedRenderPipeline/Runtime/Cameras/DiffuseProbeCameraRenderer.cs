@@ -16,7 +16,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         };
 
         protected string _rendererDesc;
-        protected ARPCameraAdditionData _additionalData;
+        protected ARPCameraAdditionalData _additionalData;
 
         // GBuffer Layout
         // GBuffer 0 (RGBA8): RGB - Albedo, A - Sky Visibility
@@ -42,7 +42,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         public DiffuseProbeCameraRenderer(Camera camera) : base(camera) {
             cameraType = AdvancedCameraType.DiffuseProbe;
             _rendererDesc = "Render Diffuse Probe (" + camera.name + ")";
-            _additionalData = camera.GetComponent<ARPCameraAdditionData>();
+            _additionalData = camera.GetComponent<ARPCameraAdditionalData>();
             InitComputeBuffers();
         }
 

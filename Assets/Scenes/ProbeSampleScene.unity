@@ -1087,6 +1087,7 @@ GameObject:
   - component: {fileID: 1138084872}
   - component: {fileID: 1138084874}
   - component: {fileID: 1138084873}
+  - component: {fileID: 1138084875}
   m_Layer: 0
   m_Name: Origin
   m_TagString: Untagged
@@ -1168,6 +1169,22 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1138084875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138084871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ec09e72c675460db63818a74c11a4f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gizmosProbeMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  gizmosProbeMat: {fileID: 2100000, guid: 60190984736244e219d1d6e3c464bbd4, type: 2}
+  gizmosProbeRadius: 0.2
+  gizmosProbeColor: {r: 1, g: 0.98823535, b: 0, a: 0}
 --- !u!1 &1209756240
 GameObject:
   m_ObjectHideFlags: 0

@@ -371,7 +371,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
         public static AdvancedCameraType GetCameraType(Camera camera) {
 #if UNITY_EDITOR
-            if (camera.TryGetComponent<ARPCameraAdditionData>(out var additionData)) return additionData.cameraType;
+            if (camera.TryGetComponent<ARPCameraAdditionalData>(out var additionData)) return additionData.cameraType;
 #endif
             return DefaultToAdvancedCameraType(camera.cameraType);
         }
