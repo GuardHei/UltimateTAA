@@ -47,6 +47,24 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#endregion
 
+		#region Diffuse Light Probe Params
+
+		public static readonly int DIFFUSE_PROBE_PARAMS = Shader.PropertyToID("DiffuseProbeParams");
+		public static readonly int DIFFUSE_PROBE_PARAMS_0 = Shader.PropertyToID("_DiffuseProbeParams0");
+		public static readonly int DIFFUSE_PROBE_PARAMS_1 = Shader.PropertyToID("_DiffuseProbeParams1");
+		public static readonly int DIFFUSE_PROBE_PARAMS_2 = Shader.PropertyToID("_DiffuseProbeParams2");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_CUBEMAP_0 = Shader.PropertyToID("_DiffuseProbeGBufferCubemap0");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_CUBEMAP_1 = Shader.PropertyToID("_DiffuseProbeGBufferCubemap1");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_CUBEMAP_2 = Shader.PropertyToID("_DiffuseProbeGBufferCubemap2");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_0 = Shader.PropertyToID("_DiffuseProbeGBuffer0");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_1 = Shader.PropertyToID("_DiffuseProbeGBuffer1");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_2 = Shader.PropertyToID("_DiffuseProbeGBuffer2");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_0 = Shader.PropertyToID("_DiffuseProbeGBufferArray0");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_1 = Shader.PropertyToID("_DiffuseProbeGBufferArray1");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_2 = Shader.PropertyToID("_DiffuseProbeGBufferArray2");
+
+		#endregion
+
 		#region Render Targets
 
 		public static readonly int MAIN_TEXTURE = Shader.PropertyToID("_MainTex");

@@ -19,21 +19,23 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     public string cubemapPath;
     public Cubemap targetCubemap;
 
+    public GraphicsFormat gbuffer0CubemapFormat = GraphicsFormat.R8G8B8A8_UNorm;
+    public GraphicsFormat gbuffer1CubemapFormat = GraphicsFormat.R16G16_UNorm;
+    public GraphicsFormat gbuffer2CubemapFormat = GraphicsFormat.R16_SFloat;
+    
     public GraphicsFormat gbuffer0Format = GraphicsFormat.R8G8B8A8_UNorm;
     public GraphicsFormat gbuffer1Format = GraphicsFormat.R8G8_UNorm;
-    public GraphicsFormat gbuffer2Format = GraphicsFormat.R16G16_SFloat;
+    public GraphicsFormat gbuffer2Format = GraphicsFormat.R16_SFloat;
+    public GraphicsFormat vbuffer0Format = GraphicsFormat.R16G16_SFloat;
     
     public List<RenderTexture> highResolutionGBuffer0 = new();
     public List<RenderTexture> highResolutionGBuffer1 = new();
     public List<RenderTexture> highResolutionGBuffer2 = new();
-    
-    public List<RenderTexture> lowResolutionGBuffer0 = new();
-    public List<RenderTexture> lowResolutionGBuffer1 = new();
-    public List<RenderTexture> lowResolutionGBuffer2 = new();
-    
+
     public List<RenderTexture> octahdronGBuffer0 = new();
     public List<RenderTexture> octahdronGBuffer1 = new();
     public List<RenderTexture> octahdronGBuffer2 = new();
+    public List<RenderTexture> octahdronVBuffer0 = new();
 
     public static string ProbeDataDir;
     public static DiffuseGISettings diffuseGISettings => AdvancedRenderPipeline.Runtime.AdvancedRenderPipeline.settings.diffuseGISettings;
@@ -60,27 +62,7 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     }
 
     public void OnWizardOtherButton() {
-        Clear();
-    }
-
-    public void Clear() {
-        foreach (var rt in highResolutionGBuffer0) {
-            if (rt.IsCreated()) rt.Release();
-        }
         
-        highResolutionGBuffer0.Clear();
-        
-        foreach (var rt in highResolutionGBuffer1) {
-            if (rt.IsCreated()) rt.Release();
-        }
-        
-        highResolutionGBuffer1.Clear();
-        
-        foreach (var rt in highResolutionGBuffer2) {
-            if (rt.IsCreated()) rt.Release();
-        }
-        
-        highResolutionGBuffer2.Clear();
     }
 
     public void CaptureProbeGBuffer() {
@@ -96,6 +78,7 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
         var go = new GameObject("Diffuse Probe Capturer");
         var tr = go.transform;
         var cam = go.AddComponent<Camera>();
+        cam.nearClipPlane = 0.0001f;
         cam.farClipPlane = diffuseGISettings.probeViewDistance;
         var additionalData = go.AddComponent<ARPCameraAdditionalData>();
         additionalData.cameraType = AdvancedCameraType.DiffuseProbe;
@@ -106,42 +89,24 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
         cam.targetTexture = placeholderRT;
 
         try {
-            var hrDesc0 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer0Format, 0, 1) {
+            var hrDesc0 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer0CubemapFormat, 0, 1) {
                 dimension = TextureDimension.Cube,
                 enableRandomWrite = true,
                 useMipMap = false
             };
 
-            var hrDesc1 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer1Format, 0, 1) {
+            var hrDesc1 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer1CubemapFormat, 0, 1) {
                 dimension = TextureDimension.Cube,
                 enableRandomWrite = true,
                 useMipMap = false
             };
 
-            var hrDesc2 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer2Format, 0, 1) {
-                dimension = TextureDimension.Cube,
-                enableRandomWrite = true,
-                useMipMap = false
-            };
-            
-            var lrDesc0 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer0Format, 0, 1) {
+            var hrDesc2 = new RenderTextureDescriptor(offlineCubemapSize, offlineCubemapSize, gbuffer2CubemapFormat, 0, 1) {
                 dimension = TextureDimension.Cube,
                 enableRandomWrite = true,
                 useMipMap = false
             };
 
-            var lrDesc1 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer1Format, 0, 1) {
-                dimension = TextureDimension.Cube,
-                enableRandomWrite = true,
-                useMipMap = false
-            };
-
-            var lrDesc2 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, gbuffer2Format, 0, 1) {
-                dimension = TextureDimension.Cube,
-                enableRandomWrite = true,
-                useMipMap = false
-            };
-            
             var ocDesc0 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer0Format, 0, 1) {
                 dimension = TextureDimension.Tex2DArray,
                 enableRandomWrite = true,
@@ -154,7 +119,13 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                 useMipMap = false
             };
 
-            var ocDesc2 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, gbuffer2Format, 0, 1) {
+            var ocDesc2 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer2Format, 0, 1) {
+                dimension = TextureDimension.Tex2DArray,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var ocDesc3 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, vbuffer0Format, 0, 1) {
                 dimension = TextureDimension.Tex2DArray,
                 enableRandomWrite = true,
                 useMipMap = false
@@ -165,18 +136,34 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                     for (var k = 0; k < dimensions.z; k++) {
                         var pos = origin + new Vector3(i * maxIntervals.x, j * maxIntervals.y, k * maxIntervals.z);
                         tr.position = pos;
-                        var gbuffer0 = new RenderTexture(hrDesc0);
-                        var gbuffer1 = new RenderTexture(hrDesc1);
-                        var gbuffer2 = new RenderTexture(hrDesc2);
+                        var gbufferCubemap0 = new RenderTexture(hrDesc0);
+                        var gbufferCubemap1 = new RenderTexture(hrDesc1);
+                        var gbufferCubemap2 = new RenderTexture(hrDesc2);
+                        var gbuffer0 = new RenderTexture(ocDesc0);
+                        var gbuffer1 = new RenderTexture(ocDesc1);
+                        var gbuffer2 = new RenderTexture(ocDesc2);
+                        var vbuffer0 = new RenderTexture(ocDesc3);
+                        gbufferCubemap0.Create();
+                        gbufferCubemap1.Create();
+                        gbufferCubemap2.Create();
                         gbuffer0.Create();
                         gbuffer1.Create();
                         gbuffer2.Create();
+                        vbuffer0.Create();
+                        additionalData.diffuseProbeGBufferCubemap0 = gbufferCubemap0;
+                        additionalData.diffuseProbeGBufferCubemap1 = gbufferCubemap1;
+                        additionalData.diffuseProbeGBufferCubemap2 = gbufferCubemap2;
                         additionalData.diffuseProbeGBuffer0 = gbuffer0;
                         additionalData.diffuseProbeGBuffer1 = gbuffer1;
                         additionalData.diffuseProbeGBuffer2 = gbuffer2;
-                        highResolutionGBuffer0.Add(gbuffer0);
-                        highResolutionGBuffer1.Add(gbuffer1);
-                        highResolutionGBuffer2.Add(gbuffer2);
+                        additionalData.diffuseProbeVBuffer0 = vbuffer0;
+                        highResolutionGBuffer0.Add(gbufferCubemap0);
+                        highResolutionGBuffer1.Add(gbufferCubemap1);
+                        highResolutionGBuffer2.Add(gbufferCubemap2);
+                        octahdronGBuffer0.Add(gbuffer0);
+                        octahdronGBuffer1.Add(gbuffer1);
+                        octahdronGBuffer2.Add(gbuffer2);
+                        octahdronVBuffer0.Add(vbuffer0);
                         cam.Render();
                     }
                 }
@@ -185,8 +172,6 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
             DestroyImmediate(go);
             placeholderRT.Release();
         }
-        
-        
     }
 
     public void CaptureGBuffer() {

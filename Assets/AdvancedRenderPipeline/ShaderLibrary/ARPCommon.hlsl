@@ -69,6 +69,14 @@ CBUFFER_START(CameraData)
     float4 _RTHandleScale;
 CBUFFER_END
 
+CBUFFER_START(DiffuseProbeParams)
+    float4 _DiffuseProbeParams0; // xyz: volume center, w: view distance
+    float4 _DiffuseProbeParams1; // xyz: dimensions, w: probe depth sharpness
+    float4 _DiffuseProbeParams2; // xyz: max intervals, w: grid diagonal length
+    int4 _DiffuseProbeParams3; // x: probe gbuffer size, y: probe vbuffer size, z: offline cubemap size
+    float4 _DiffuseProbeParams4; // xyz: min position, w: probe irradiance gamma
+CBUFFER_END
+
 #ifndef DOTS_INSTANCING_ON // UnityPerDraw cbuffer doesn't exist with hybrid renderer
 
 CBUFFER_START(UnityPerDraw)
@@ -262,11 +270,25 @@ float pow8(float b) {
     return pow4 * pow4;
 }
 
+float SignNotZero(float n) {
+    return n >= .0f ? 1.0f : -1.0f;
+}
+
+float2 SignNotZero(float2 n) {
+    return float2(SignNotZero(n.x), SignNotZero(n.y));
+}
+
+float3 SignNotZero(float3 n) {
+    return float3(SignNotZero(n.x), SignNotZero(n.y), SignNotZero(n.z));
+}
+
+float4 SignNotZero(float4 n) {
+    return float4(SignNotZero(n.x), SignNotZero(n.y), SignNotZero(n.z), SignNotZero(n.w));
+}
+
 //////////////////////////////////////////
 // Noise Functions                      //
 //////////////////////////////////////////
-
-
 
 // xy should be a integer position
 float PseudoRandom(float2 xy) {
@@ -369,6 +391,22 @@ float BlueNoise1024(uint2 coord) {
     return LOAD_TEXTURE2D(_BlueNoise1024, coord & 0x3FF).r;
 }
 
+int GetDiffuseProbeGBufferSize() {
+    return _DiffuseProbeParams3.x;
+}
+
+int GetDiffuseProbeVBufferSize() {
+    return _DiffuseProbeParams3.y;
+}
+
+int GetDiffuseProbeGBufferSizeNoBorder() {
+    return _DiffuseProbeParams3.x - 2;
+}
+
+int GetDiffuseProbeVBufferSizeNoBorder() {
+    return _DiffuseProbeParams3.y - 2;
+}
+
 /*
 // Convert from Clip space (-1..1) to NDC 0..1 space.
 // Note it doesn't mean we don't have negative value, we store negative or positive offset in NDC space.
@@ -403,6 +441,16 @@ float2 EncodeNormalComplex(float3 N) {
 float3 DecodeNormalComplex(float2 N) {
     return UnpackNormalOctQuadEncode(N * 2.0f - 1.0f);
     // return UnpackNormalOctRectEncode(N * 2.0f - 1.0f);
+}
+
+// Convert to (-1, 1)
+float2 GetNormalizedOctCoords(uint2 coords, int size) {
+    float2 octCoords = float2(coords.x, coords.y);
+    octCoords += float2(.5f, .5f);
+    octCoords /= float(size);
+    octCoords *= 2.0f;
+    octCoords -= float2(1.0f, 1.0f);
+    return octCoords;
 }
 
 float4 VertexIDToPosCS(uint vertexID) {

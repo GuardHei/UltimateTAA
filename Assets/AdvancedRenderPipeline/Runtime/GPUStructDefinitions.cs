@@ -27,6 +27,15 @@ namespace AdvancedRenderPipeline.Runtime {
 	}
 
 	[Serializable]
+	public struct DiffuseProbeParams {
+		public float4 _DiffuseProbeParams0;
+		public float4 _DiffuseProbeParams1;
+		public float4 _DiffuseProbeParams2;
+		public int4 _DiffuseProbeParams3;
+		public float4 _DiffuseProbeParams4;
+	}
+
+	[Serializable]
 	public struct DirectionalLight {
 		public float4 direction;
 		public float4 color; // rgb - final light color, a - unused

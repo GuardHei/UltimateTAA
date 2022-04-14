@@ -1,0 +1,106 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GBufferPrefilter
+
+#include "ARPCommon.hlsl"
+
+TEXTURECUBE(_ProbeGBufferCubemap0);
+TEXTURECUBE(_ProbeGBufferCubemap1);
+TEXTURECUBE(_ProbeGBufferCubemap2);
+
+RW_TEXTURE2D(float4, _ProbeGBuffer0);
+RW_TEXTURE2D(float2, _ProbeGBuffer1);
+RW_TEXTURE2D(float, _ProbeGBuffer2);
+RW_TEXTURE2D(float2, _ProbeVBuffer0);
+
+[numthreads(8,8,1)]
+void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
+    uint2 coordNoBorder = id.xy + uint2(1u, 1u);
+    uint gbufferSizeNoBorder = GetDiffuseProbeGBufferSizeNoBorder();
+    float2 gbufferOctNoBorder = GetNormalizedOctCoords(coordNoBorder, gbufferSizeNoBorder);
+    float3 N = UnpackNormalOctQuadEncode(gbufferOctNoBorder);
+
+    float3 albedoTotal = float3(.0f, .0f, .0f);
+    float skyVisibilityTotal = .0f;
+    float3 normalTotal = float3(.0f, .0f, .0f);
+    float radialDepthTotal = .0f;
+    float weightTotal = .0f;
+
+    float3x3 o2w = GetLocalFrame(N);
+
+    const uint SAMPLE_COUNT = 512u;
+    for (uint i = 0; i < SAMPLE_COUNT; i++) {
+        float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
+        dir = dir * o2w;
+        float4 gbuffer0 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap0, sampler_point_clamp, dir, 0);
+        float2 gbuffer1 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap0, sampler_point_clamp, dir, 0);
+        float gbuffer2 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap2, sampler_point_clamp, dir, 0);
+
+        float3 albedo = gbuffer0.rgb;
+        float skyVisibility = gbuffer0.a;
+        float3 normal = DecodeNormalComplex(gbuffer1);
+        float radialDepth = gbuffer2;
+        
+        float cosTheta = dot(N, dir);
+        float weight = max(.0f, cosTheta);
+        weight = pow(weight, _DiffuseProbeParams1.w);
+
+        albedoTotal += albedo * weight;
+        normalTotal += normal * weight;
+        skyVisibilityTotal += skyVisibility * weight;
+        radialDepthTotal += radialDepth * weight;
+        weightTotal += weight;
+    }
+
+    // float sampleCount = float(SAMPLE_COUNT);
+    weightTotal = max(weightTotal, FLT_EPS);
+
+    float3 avgAlbedo = albedoTotal / weightTotal;
+    float avgSkyVisibility = skyVisibilityTotal / weightTotal;
+    float3 avgNormal = normalTotal / weightTotal;
+    float avgRadialDepth = radialDepthTotal / weightTotal;
+
+    _ProbeGBuffer0[coordNoBorder] = float4(avgAlbedo, avgSkyVisibility);
+    _ProbeGBuffer1[coordNoBorder] = EncodeNormalComplex(avgNormal);
+    _ProbeGBuffer2[coordNoBorder] = avgRadialDepth;
+}
+
+[numthreads(8,8,1)]
+void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
+    uint2 coordNoBorder = id.xy + uint2(1u, 1u);
+    uint vbufferSizeNoBorder = GetDiffuseProbeVBufferSizeNoBorder();
+    float2 vbufferOctNoBorder = GetNormalizedOctCoords(coordNoBorder, vbufferSizeNoBorder);
+    float3 N = UnpackNormalOctQuadEncode(vbufferOctNoBorder);
+
+    float radialDepthTotal = .0f;
+    float radialDepth2Total = .0f;
+    float weightTotal = .0f;
+
+    float3x3 o2w = GetLocalFrame(N);
+
+    const uint SAMPLE_COUNT = 512u;
+    for (uint i = 0; i < SAMPLE_COUNT; i++) {
+        float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
+        dir = dir * o2w;
+        float gbuffer2 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap2, sampler_linear_clamp, dir, 0);
+        
+        float maxRadialDepth = _DiffuseProbeParams2.w * 1.5f;
+        float radialDepth = min(gbuffer2, maxRadialDepth);
+        
+        float cosTheta = dot(N, dir);
+        float weight = max(.0f, cosTheta);
+        weight = pow(weight, _DiffuseProbeParams1.w);
+        radialDepthTotal += radialDepth * weight;
+        radialDepth2Total += (radialDepth * radialDepth) * weight;
+        weightTotal += weight;
+    }
+
+    // float sampleCount = float(SAMPLE_COUNT);
+    weightTotal = max(weightTotal, FLT_EPS);
+
+    float avgRadialDepth = radialDepthTotal / weightTotal;
+    float avgRadialDepth2 = radialDepth2Total / weightTotal;
+
+    _ProbeVBuffer0[coordNoBorder] = float2(avgRadialDepth, avgRadialDepth2);
+}

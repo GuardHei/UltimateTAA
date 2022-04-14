@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -203,6 +204,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public DiffuseGIProbeSize probeVBufferSize;
 		public DiffuseGIProbeSize offlineCubemapSize;
 		public float probeViewDistance;
+		public float probeDepthSharpness;
+		public float probeIrradianceGamma;
 		public string probeBufferPath0;
 		public string probeBufferPath1;
 		public string probeBufferPath2;
@@ -214,6 +217,23 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Vector3 Min => volumeCenter - Sizes * .5f;
 		
 		public Vector3 Max => volumeCenter + Sizes * .5f;
+
+		public float DiagonalLength => Vector3.Distance(Max, Min);
+
+		public float GridDiagonalLength => Mathf.Sqrt(maxIntervals.x * maxIntervals.x + maxIntervals.y * maxIntervals.y + maxIntervals.z * maxIntervals.z);
+
+		public DiffuseProbeParams GPUParams {
+			get {
+				var gpuParams = new DiffuseProbeParams {
+					_DiffuseProbeParams0 = new float4(volumeCenter.x, volumeCenter.y, volumeCenter.z, probeViewDistance),
+					_DiffuseProbeParams1 = new float4(dimensions.x, dimensions.y, dimensions.z, probeDepthSharpness),
+					_DiffuseProbeParams2 = new float4(maxIntervals.x, maxIntervals.y, maxIntervals.z, GridDiagonalLength),
+					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, 0),
+					_DiffuseProbeParams4 = new float4(Min, probeIrradianceGamma)
+				};
+				return gpuParams;
+			}
+		}
 		
 		public int GetProbeIndex1d(Vector3Int probe) => (probe.z * dimensions.x * dimensions.y) + (probe.y * dimensions.x) + probe.x;
 		

@@ -46,7 +46,7 @@ Shader "Hidden/ARPDiffuseProbeGBuffer" {
             struct GBufferOutput {
                 float4 gbuffer0 : SV_TARGET0;
                 float2 gbuffer1 : SV_TARGET1;
-                float2 gbuffer2 : SV_TARGET2;
+                float gbuffer2 : SV_TARGET2;
             };
 
             /*
@@ -113,7 +113,7 @@ Shader "Hidden/ARPDiffuseProbeGBuffer" {
 
                 output.gbuffer0 = float4(albedo, .0f);
                 output.gbuffer1 = EncodeNormalComplex(matData.N);
-                output.gbuffer2 = float2(radialDepth, radialDepth * radialDepth);
+                output.gbuffer2 = radialDepth;
 
                 return output;
             }

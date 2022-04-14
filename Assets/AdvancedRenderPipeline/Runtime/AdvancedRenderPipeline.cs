@@ -56,13 +56,6 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		}
 
-		public static bool AddIndependentCommandBufferRequest(CommandBuffer request, Action onSubmit) {
-			return false;
-			if (instance == null) return false;
-			independentCMDRequests.Add(request, onSubmit);
-			return true;
-		}
-
 		protected override void ProcessRenderRequests(ScriptableRenderContext context, Camera camera, List<Camera.RenderRequest> renderRequests) {
 			base.ProcessRenderRequests(context, camera, renderRequests);
 		}
@@ -84,6 +77,12 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#endregion
 
+		#region Pipeline Processors
+
+		internal DiffuseProbeProcessor _diffuseProbeProcessor = new();
+
+		#endregion
+
 		public AdvancedRenderPipeline(AdvancedRenderPipelineSettings settings) {
 			instance = this;
 			AdvancedRenderPipeline.settings = settings;
@@ -91,8 +90,6 @@ namespace AdvancedRenderPipeline.Runtime {
 			GraphicsSettings.lightsUseLinearIntensity = true;
 			GraphicsSettings.useScriptableRenderPipelineBatching = settings.enableSRPBatching;
 		}
-
-		private double tempA, tempB;
 
 		protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
 			
@@ -102,8 +99,10 @@ namespace AdvancedRenderPipeline.Runtime {
 
 			var screenWidth = Screen.width;
 			var screenHeight = Screen.height;
-			
+
 			BeginFrameRendering(context, cameras);
+			
+			SetupPipeline(context);
 
 			foreach (var camera in cameras) {
 				var pixelWidth = camera.pixelWidth;
@@ -125,11 +124,8 @@ namespace AdvancedRenderPipeline.Runtime {
 			EndFrameRendering(context, cameras);
 		}
 
-		protected override void Dispose(bool disposing) {
-			foreach (var renderer in cameraRenderers.Values) renderer.Dispose();
-			cameraRenderers.Clear();
-			tempCameras.Clear();
-			base.Dispose(disposing);
+		internal void SetupPipeline(ScriptableRenderContext context) {
+			_diffuseProbeProcessor.Process(context);
 		}
 
 		internal CameraRenderer GetCameraRenderer(Camera camera) {
@@ -148,6 +144,14 @@ namespace AdvancedRenderPipeline.Runtime {
 			}
 
 			return renderer;
+		}
+		
+		protected override void Dispose(bool disposing) {
+			foreach (var renderer in cameraRenderers.Values) renderer.Dispose();
+			cameraRenderers.Clear();
+			tempCameras.Clear();
+			_diffuseProbeProcessor.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

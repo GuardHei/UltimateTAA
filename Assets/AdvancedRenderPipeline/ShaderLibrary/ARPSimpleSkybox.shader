@@ -43,7 +43,8 @@ Shader "Advanced Render Pipeline/ARPSimpleSkybox" {
                 skybox *= _GlobalEnvMapExposure;
                 */
 
-                float3 skybox = SampleGlobalEnvMapSpecular(input.dir, _SkyboxMipLevel);
+                float3 dir = normalize(input.dir);
+                float3 skybox = SampleGlobalEnvMapSpecular(dir, _SkyboxMipLevel);
                 return float4(skybox, 1.0f);
             }
 

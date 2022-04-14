@@ -37,15 +37,15 @@ MonoBehaviour:
     iblLut: {fileID: 2800000, guid: de9d90a61eb0848dd8a35f98d367430f, type: 3}
     diffuseIBLLut: {fileID: 2800000, guid: 3b1341f5a97fb4ea7be016e40935dbc2, type: 3}
     specularIBLLut: {fileID: 2800000, guid: d2b1aa1c8d67742d896366ec636fd0c5, type: 3}
-    globalEnvMapDiffuse: {fileID: 8900000, guid: ecad7319420654d6194bd1ecab7ae466, type: 3}
-    globalEnvMapSpecular: {fileID: 8900000, guid: 4774adbdd17264952b6562a3707dc3c6, type: 3}
+    globalEnvMapDiffuse: {fileID: 8900000, guid: e51fdd5f41a3f43abb924252c34d1fbd, type: 3}
+    globalEnvMapSpecular: {fileID: 8900000, guid: 176063b10f7b745f4ba5fb659931f61f, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
-    globalEnvMapRotation: 360
+    globalEnvMapRotation: 0
     skyboxMipLevel: 0
     diffuseGISettings:
-      volumeCenter: {x: 0, y: 0, z: 0}
+      volumeCenter: {x: 0, y: 0.5, z: 0}
       dimensions: {x: 2, y: 2, z: 2}
-      maxIntervals: {x: 1, y: 1, z: 1}
+      maxIntervals: {x: 4, y: 1.5, z: 4}
       probeGBufferSize: 16
       probeVBufferSize: 16
       offlineCubemapSize: 512

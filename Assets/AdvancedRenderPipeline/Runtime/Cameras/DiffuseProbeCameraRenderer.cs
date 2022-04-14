@@ -21,10 +21,15 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         // GBuffer Layout
         // GBuffer 0 (RGBA8): RGB - Albedo, A - Sky Visibility
         // GBuffer 1 (RG8): RG - Normal (Octhedron Encoded)
-        // GBuffer 2 (RG16): R - Radial Distance, G - (Radial Distance) ^ 2
+        // GBuffer 2 (R16): R - Radial Distance
+        // VBuffer 0 (RG16): R - Radial Distance Clamped, G - (Radial Distance Clamped) ^ 2
+        protected Texture _gbufferCubemap0;
+        protected Texture _gbufferCubemap1;
+        protected Texture _gbufferCubemap2;
         protected Texture _gbuffer0;
         protected Texture _gbuffer1;
         protected Texture _gbuffer2;
+        protected Texture _vbuffer0;
 
         protected RenderTargetIdentifier[] _gbufferMRT = new RenderTargetIdentifier[3];
         protected RenderTargetIdentifier _depthTex = new(ShaderKeywordManager.DEPTH_TEXTURE);
@@ -47,11 +52,15 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         }
 
         public override void Render(ScriptableRenderContext context) {
+	        _gbufferCubemap0 = _additionalData.diffuseProbeGBufferCubemap0;
+	        _gbufferCubemap1 = _additionalData.diffuseProbeGBufferCubemap1;
+	        _gbufferCubemap2 = _additionalData.diffuseProbeGBufferCubemap2;
 	        _gbuffer0 = _additionalData.diffuseProbeGBuffer0;
 	        _gbuffer1 = _additionalData.diffuseProbeGBuffer1;
 	        _gbuffer2 = _additionalData.diffuseProbeGBuffer2;
+	        _vbuffer0 = _additionalData.diffuseProbeVBuffer0;
 	        
-	        if (!_gbuffer0 || !_gbuffer1 || !_gbuffer2) return;
+	        if (!_gbufferCubemap0 || !_gbufferCubemap1 || !_gbufferCubemap2 || !_gbuffer0 || !_gbuffer1 || !_gbuffer2 || !_vbuffer0) return;
 
 	        _context = context;
             _cmd = CommandBufferPool.Get(_rendererDesc);
@@ -163,9 +172,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         }
 
         public void DrawGBufferPass() {
-	        _gbufferMRT[0] = _gbuffer0;
-	        _gbufferMRT[1] = _gbuffer1;
-	        _gbufferMRT[2] = _gbuffer2;
+	        _gbufferMRT[0] = _gbufferCubemap0;
+	        _gbufferMRT[1] = _gbufferCubemap1;
+	        _gbufferMRT[2] = _gbufferCubemap2;
 
 	        _cmd.SetRenderTarget(_gbufferMRT, _depthTex, 0, (CubemapFace) _currentFace, 0);
 	        _cmd.ClearRenderTarget(true, true, Color.black, 1f);
@@ -197,7 +206,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         }
 
         public void ReleaseComputeBuffers() {
-	        _cameraDataBuffer.Dispose();
+	        _cameraDataBuffer?.Dispose();
         }
         
         public override void Dispose() {
