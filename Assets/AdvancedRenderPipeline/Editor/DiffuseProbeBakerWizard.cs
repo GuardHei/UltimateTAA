@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using AdvancedRenderPipeline.Runtime;
 using AdvancedRenderPipeline.Runtime.Cameras;
+using RP_Tests;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -18,6 +19,8 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     public Transform renderFromPosition;
     public string cubemapPath;
     public Cubemap targetCubemap;
+
+    public DiffuseProbeTest debugVisualizer;
 
     public GraphicsFormat gbuffer0CubemapFormat = GraphicsFormat.R8G8B8A8_UNorm;
     public GraphicsFormat gbuffer1CubemapFormat = GraphicsFormat.R16G16_UNorm;
@@ -66,6 +69,16 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     }
 
     public void CaptureProbeGBuffer() {
+        if (debugVisualizer) {
+            debugVisualizer.highResolutionGBuffer0 = highResolutionGBuffer0;
+            debugVisualizer.highResolutionGBuffer1 = highResolutionGBuffer1;
+            debugVisualizer.highResolutionGBuffer2 = highResolutionGBuffer2;
+            debugVisualizer.octahdronGBuffer0 = octahdronGBuffer0;
+            debugVisualizer.octahdronGBuffer1 = octahdronGBuffer1;
+            debugVisualizer.octahdronGBuffer2 = octahdronGBuffer2;
+            debugVisualizer.octahdronVBuffer0 = octahdronVBuffer0;
+        }
+
         var count = diffuseGISettings.Count;
         var dimensions = diffuseGISettings.dimensions;
         var maxIntervals = diffuseGISettings.maxIntervals;
@@ -108,25 +121,25 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
             };
 
             var ocDesc0 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer0Format, 0, 1) {
-                dimension = TextureDimension.Tex2DArray,
+                dimension = TextureDimension.Tex2D,
                 enableRandomWrite = true,
                 useMipMap = false
             };
 
             var ocDesc1 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer1Format, 0, 1) {
-                dimension = TextureDimension.Tex2DArray,
+                dimension = TextureDimension.Tex2D,
                 enableRandomWrite = true,
                 useMipMap = false
             };
 
             var ocDesc2 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer2Format, 0, 1) {
-                dimension = TextureDimension.Tex2DArray,
+                dimension = TextureDimension.Tex2D,
                 enableRandomWrite = true,
                 useMipMap = false
             };
 
             var ocDesc3 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, vbuffer0Format, 0, 1) {
-                dimension = TextureDimension.Tex2DArray,
+                dimension = TextureDimension.Tex2D,
                 enableRandomWrite = true,
                 useMipMap = false
             };

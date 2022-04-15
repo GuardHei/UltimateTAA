@@ -7,12 +7,30 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
     public unsafe class DiffuseProbeCameraRenderer : CameraRenderer {
 
         public static readonly Vector3[] CubemapEulerAngles = {
-            new(0.0f,-90.0f,0.0f), // +X
-            new(0.0f,90.0f,0.0f), // -X
-            new(-90.0f,0.0f,0.0f), // +Y
-            new(90.0f,0.0f,0.0f), // -Y
-            new(0.0f,0.0f,0.0f), // +Z
-            new(0.0f,180.0f,0.0f) // -Z
+            new(0.0f,-90.0f,180.0f), // +X
+            new(0.0f,90.0f,-180.0f), // -X
+            new(-90.0f,0.0f,180.0f), // +Y
+            new(90.0f,0.0f,-180.0f), // -Y
+            new(0.0f,0.0f,180.0f), // +Z
+            new(0.0f,180.0f,-180.0f) // -Z
+        };
+
+        public static readonly Vector3[] LookAtDirections = {
+	        Vector3.right,
+	        Vector3.left,
+	        Vector3.up,
+	        Vector3.down,
+	        Vector3.forward,
+	        Vector3.back
+        };
+        
+        public static readonly Vector3[] UpDirections = {
+	        Vector3.up,
+	        Vector3.up,
+	        Vector3.forward,
+	        Vector3.back,
+	        Vector3.up,
+	        Vector3.down
         };
 
         protected string _rendererDesc;
@@ -23,13 +41,13 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         // GBuffer 1 (RG8): RG - Normal (Octhedron Encoded)
         // GBuffer 2 (R16): R - Radial Distance
         // VBuffer 0 (RG16): R - Radial Distance Clamped, G - (Radial Distance Clamped) ^ 2
-        protected Texture _gbufferCubemap0;
-        protected Texture _gbufferCubemap1;
-        protected Texture _gbufferCubemap2;
-        protected Texture _gbuffer0;
-        protected Texture _gbuffer1;
-        protected Texture _gbuffer2;
-        protected Texture _vbuffer0;
+        protected RenderTexture _gbufferCubemap0;
+        protected RenderTexture _gbufferCubemap1;
+        protected RenderTexture _gbufferCubemap2;
+        protected RenderTexture _gbuffer0;
+        protected RenderTexture _gbuffer1;
+        protected RenderTexture _gbuffer2;
+        protected RenderTexture _vbuffer0;
 
         protected RenderTargetIdentifier[] _gbufferMRT = new RenderTargetIdentifier[3];
         protected RenderTargetIdentifier _depthTex = new(ShaderKeywordManager.DEPTH_TEXTURE);
@@ -71,9 +89,11 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
                 Setup();
                 Cull();
                 DrawGBufferPass();
-                FinalBlit();
                 Submit();
             }
+            
+            FinalBlit();
+            Submit();
 
             ReleaseBuffers();
 
@@ -86,6 +106,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             
             var transform = camera.transform;
             transform.eulerAngles = CubemapEulerAngles[_currentFace];
+
+            // transform.rotation = Quaternion.LookRotation(transform.position + LookAtDirections[_currentFace], UpDirections[_currentFace]);
             
             _context.SetupCameraProperties(camera);
             
@@ -184,12 +206,58 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 	        var sortingSettings = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque | SortingCriteria.OptimizeStateChanges | SortingCriteria.QuantizedFrontToBack };
 	        var drawSettings = new DrawingSettings(ShaderTagManager.DIFFUSE_PROBE_GBUFFER, sortingSettings) { enableInstancing = settings.enableAutoInstancing };
 	        var filterSettings = new FilteringSettings(RenderQueueRange.opaque);
-			
+
 	        _context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
         }
 
         public void FinalBlit() {
-            
+	        var cs = settings.diffuseGISettings.offlineComputeShader;
+	        var kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_PREFILTER);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_0, _gbufferCubemap0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_1, _gbufferCubemap1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_2, _gbufferCubemap2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0, _gbuffer0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1, _gbuffer1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2, _gbuffer2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_0, _vbuffer0);
+
+	        var gbufferSize = (int) settings.diffuseGISettings.probeGBufferSize;
+	        var threadGroupsX = (int) Mathf.Ceil(gbufferSize / 8.0f);
+	        var threadGroupsY = (int) Mathf.Ceil(gbufferSize / 8.0f);
+	        var threadGroupsZ = 1;
+	        
+	        _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
+
+	        ExecuteCommand();
+	        
+	        kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_PREFILTER);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_0, _gbufferCubemap0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_1, _gbufferCubemap1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_2, _gbufferCubemap2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0, _gbuffer0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1, _gbuffer1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2, _gbuffer2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_0, _vbuffer0);
+
+	        var vbufferSize = (int) settings.diffuseGISettings.probeVBufferSize;
+	        threadGroupsX = (int) Mathf.Ceil(vbufferSize / 8.0f);
+	        threadGroupsY = (int) Mathf.Ceil(vbufferSize / 8.0f);
+	        threadGroupsZ = 1;
+	        
+	        _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
+
+	        kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_PADDING);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_0, _gbufferCubemap0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_1, _gbufferCubemap1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_2, _gbufferCubemap2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0, _gbuffer0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1, _gbuffer1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2, _gbuffer2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_0, _vbuffer0);
+	        
+	        _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
+
+	        ExecuteCommand();
         }
         
         public void GetBuffers() {

@@ -1,23 +1,28 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel GBufferPrefilter
+#pragma kernel VBufferPrefilter
+#pragma kernel VBufferPadding
 
 #include "ARPCommon.hlsl"
 
-TEXTURECUBE(_ProbeGBufferCubemap0);
-TEXTURECUBE(_ProbeGBufferCubemap1);
-TEXTURECUBE(_ProbeGBufferCubemap2);
+TEXTURECUBE(_DiffuseProbeGBufferCubemap0);
+TEXTURECUBE(_DiffuseProbeGBufferCubemap1);
+TEXTURECUBE(_DiffuseProbeGBufferCubemap2);
 
-RW_TEXTURE2D(float4, _ProbeGBuffer0);
-RW_TEXTURE2D(float2, _ProbeGBuffer1);
-RW_TEXTURE2D(float, _ProbeGBuffer2);
-RW_TEXTURE2D(float2, _ProbeVBuffer0);
+RW_TEXTURE2D(float4, _DiffuseProbeGBuffer0);
+RW_TEXTURE2D(float2, _DiffuseProbeGBuffer1);
+RW_TEXTURE2D(float, _DiffuseProbeGBuffer2);
+RW_TEXTURE2D(float2, _DiffuseProbeVBuffer0);
 
 [numthreads(8,8,1)]
 void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
-    uint2 coordNoBorder = id.xy + uint2(1u, 1u);
-    uint gbufferSizeNoBorder = GetDiffuseProbeGBufferSizeNoBorder();
-    float2 gbufferOctNoBorder = GetNormalizedOctCoords(coordNoBorder, gbufferSizeNoBorder);
-    float3 N = UnpackNormalOctQuadEncode(gbufferOctNoBorder);
+    uint2 coord = id.xy;
+    uint gbufferSize = GetDiffuseProbeGBufferSize();
+
+    if (coord.x >= gbufferSize || coord.y >= gbufferSize) return;
+    
+    float2 gbufferOct = GetNormalizedOctCoords(coord, gbufferSize);
+    float3 N = UnpackNormalOctQuadEncode(gbufferOct);
 
     float3 albedoTotal = float3(.0f, .0f, .0f);
     float skyVisibilityTotal = .0f;
@@ -31,10 +36,10 @@ void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
     for (uint i = 0; i < SAMPLE_COUNT; i++) {
         float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
         float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
-        dir = dir * o2w;
-        float4 gbuffer0 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap0, sampler_point_clamp, dir, 0);
-        float2 gbuffer1 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap0, sampler_point_clamp, dir, 0);
-        float gbuffer2 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap2, sampler_point_clamp, dir, 0);
+        dir = mul(dir, o2w);
+        float4 gbuffer0 = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap0, sampler_linear_clamp, dir, 0);
+        float2 gbuffer1 = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap1, sampler_linear_clamp, dir, 0).rg;
+        float gbuffer2 = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap2, sampler_linear_clamp, dir, 0).r;
 
         float3 albedo = gbuffer0.rgb;
         float skyVisibility = gbuffer0.a;
@@ -60,15 +65,20 @@ void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
     float3 avgNormal = normalTotal / weightTotal;
     float avgRadialDepth = radialDepthTotal / weightTotal;
 
-    _ProbeGBuffer0[coordNoBorder] = float4(avgAlbedo, avgSkyVisibility);
-    _ProbeGBuffer1[coordNoBorder] = EncodeNormalComplex(avgNormal);
-    _ProbeGBuffer2[coordNoBorder] = avgRadialDepth;
+    _DiffuseProbeGBuffer0[coord] = float4(avgAlbedo, avgSkyVisibility);
+    _DiffuseProbeGBuffer1[coord] = EncodeNormalComplex(avgNormal);
+    _DiffuseProbeGBuffer2[coord] = avgRadialDepth;
 }
 
 [numthreads(8,8,1)]
 void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
-    uint2 coordNoBorder = id.xy + uint2(1u, 1u);
+    // vbuffer needs to have a 1-px wide border on both sides
+    uint2 coordNoBorder = id.xy;
+    uint2 coord = coordNoBorder + uint2(1u, 1u);
     uint vbufferSizeNoBorder = GetDiffuseProbeVBufferSizeNoBorder();
+
+    if (coordNoBorder.x > vbufferSizeNoBorder || coordNoBorder.y > vbufferSizeNoBorder) return;
+    
     float2 vbufferOctNoBorder = GetNormalizedOctCoords(coordNoBorder, vbufferSizeNoBorder);
     float3 N = UnpackNormalOctQuadEncode(vbufferOctNoBorder);
 
@@ -79,11 +89,11 @@ void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
     float3x3 o2w = GetLocalFrame(N);
 
     const uint SAMPLE_COUNT = 512u;
-    for (uint i = 0; i < SAMPLE_COUNT; i++) {
+    for (uint i = 0u; i < SAMPLE_COUNT; i++) {
         float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
         float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
-        dir = dir * o2w;
-        float gbuffer2 = SAMPLE_TEXTURECUBE_LOD(_ProbeGBufferCubemap2, sampler_linear_clamp, dir, 0);
+        dir = mul(dir, o2w);
+        float gbuffer2 = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap2, sampler_linear_clamp, dir, 0).r;
         
         float maxRadialDepth = _DiffuseProbeParams2.w * 1.5f;
         float radialDepth = min(gbuffer2, maxRadialDepth);
@@ -102,5 +112,50 @@ void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
     float avgRadialDepth = radialDepthTotal / weightTotal;
     float avgRadialDepth2 = radialDepth2Total / weightTotal;
 
-    _ProbeVBuffer0[coordNoBorder] = float2(avgRadialDepth, avgRadialDepth2);
+    _DiffuseProbeVBuffer0[coord] = float2(avgRadialDepth, avgRadialDepth2);
+}
+
+[numthreads(8,8,1)]
+void VBufferPadding(uint3 id : SV_DispatchThreadID) {
+    const uint vbufferSize = GetDiffuseProbeVBufferSize();
+    const uint vbufferSizeMinusOne = vbufferSize - 1u;
+    const uint vbufferSizeMinusTwo = vbufferSizeMinusOne - 1u;
+    const uint vbufferHalfSize = vbufferSize >> 1;
+    // if (id.x != 0 && id.y != 0 && id.x != vbufferSizeMinusOne && id.y != vbufferSizeMinusOne) return;
+
+    if (id.x > vbufferSizeMinusOne || id.y > vbufferSizeMinusOne) return;
+
+    if (id.x == 0) {
+        if (id.y == 0) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(vbufferSizeMinusTwo, vbufferSizeMinusTwo)];
+        } else if (id.y == vbufferSizeMinusOne) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(vbufferSizeMinusTwo, 1u)];
+        } else if (id.y < vbufferHalfSize) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(1u, vbufferHalfSize + (vbufferHalfSize - id.y - 1u))];
+        } else {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(1u, 1u + vbufferSizeMinusTwo - id.y)];
+        }
+    } else if (id.x == vbufferSizeMinusOne) {
+        if (id.y == 0) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(1u, vbufferSizeMinusTwo)];
+        } else if (id.y == vbufferSizeMinusOne) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(1u, 1u)];
+        } else if (id.y < vbufferHalfSize) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(vbufferSizeMinusTwo, vbufferHalfSize + (vbufferHalfSize - id.y - 1u))];
+        } else {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(vbufferSizeMinusTwo, 1u + vbufferSizeMinusTwo - id.y)];
+        }
+    } else if (id.x < vbufferHalfSize) {
+        if (id.y == 0) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(vbufferHalfSize + (vbufferHalfSize - id.x - 1u), 1u)];
+        } else if (id.y == vbufferSizeMinusOne) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(vbufferHalfSize + (vbufferHalfSize - id.x - 1u), vbufferSizeMinusTwo)];
+        }
+    } else {
+        if (id.y == 0) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(1u + vbufferSizeMinusTwo - id.x, 1u)];
+        } else if (id.y == vbufferSizeMinusOne) {
+            _DiffuseProbeVBuffer0[id.xy] = _DiffuseProbeVBuffer0[uint2(1u + vbufferSizeMinusTwo - id.x, vbufferSizeMinusTwo)];
+        }
+    }
 }

@@ -209,6 +209,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public string probeBufferPath0;
 		public string probeBufferPath1;
 		public string probeBufferPath2;
+		public ComputeShader offlineComputeShader; 
 
 		public int Count => dimensions.x * dimensions.y * dimensions.z;
 		

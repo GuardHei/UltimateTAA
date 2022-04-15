@@ -399,10 +399,6 @@ int GetDiffuseProbeVBufferSize() {
     return _DiffuseProbeParams3.y;
 }
 
-int GetDiffuseProbeGBufferSizeNoBorder() {
-    return _DiffuseProbeParams3.x - 2;
-}
-
 int GetDiffuseProbeVBufferSizeNoBorder() {
     return _DiffuseProbeParams3.y - 2;
 }

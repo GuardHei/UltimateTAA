@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using AdvancedRenderPipeline.Runtime;
 using UnityEditor;
@@ -18,6 +19,15 @@ namespace RP_Tests {
         public Material gizmosProbeMat;
         public float gizmosProbeRadius = .3f;
         public Color gizmosProbeColor;
+        
+        public List<RenderTexture> highResolutionGBuffer0;
+        public List<RenderTexture> highResolutionGBuffer1;
+        public List<RenderTexture> highResolutionGBuffer2;
+
+        public List<RenderTexture> octahdronGBuffer0;
+        public List<RenderTexture> octahdronGBuffer1;
+        public List<RenderTexture> octahdronGBuffer2;
+        public List<RenderTexture> octahdronVBuffer0;
 
         private MaterialPropertyBlock _mpb;
         private Matrix4x4[] _matrices;

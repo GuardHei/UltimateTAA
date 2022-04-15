@@ -59,6 +59,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int DIFFUSE_PROBE_GBUFFER_0 = Shader.PropertyToID("_DiffuseProbeGBuffer0");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_1 = Shader.PropertyToID("_DiffuseProbeGBuffer1");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_2 = Shader.PropertyToID("_DiffuseProbeGBuffer2");
+		public static readonly int DIFFUSE_PROBE_VBUFFER_0 = Shader.PropertyToID("_DiffuseProbeVBuffer0");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_0 = Shader.PropertyToID("_DiffuseProbeGBufferArray0");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_1 = Shader.PropertyToID("_DiffuseProbeGBufferArray1");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_2 = Shader.PropertyToID("_DiffuseProbeGBufferArray2");
@@ -125,6 +126,14 @@ namespace AdvancedRenderPipeline.Runtime {
 		#region Shader Features
 
 		public static readonly string ACCURATE_TRANSFORM_ON = "ACCURATE_TRANSFORM_ON";
+
+		#endregion
+		
+		#region Compute Shader Kernels
+
+		public static readonly string DIFFUSE_PROBE_GBUFFER_PREFILTER = "GBufferPrefilter";
+		public static readonly string DIFFUSE_PROBE_VBUFFER_PREFILTER = "VBufferPrefilter";
+		public static readonly string DIFFUSE_PROBE_VBUFFER_PADDING = "VBufferPadding";
 
 		#endregion
 

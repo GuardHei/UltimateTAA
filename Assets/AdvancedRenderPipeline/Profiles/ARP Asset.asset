@@ -43,16 +43,19 @@ MonoBehaviour:
     globalEnvMapRotation: 0
     skyboxMipLevel: 0
     diffuseGISettings:
-      volumeCenter: {x: 0, y: 0.5, z: 0}
+      volumeCenter: {x: 0, y: 1, z: 0}
       dimensions: {x: 2, y: 2, z: 2}
       maxIntervals: {x: 4, y: 1.5, z: 4}
       probeGBufferSize: 16
       probeVBufferSize: 16
       offlineCubemapSize: 512
       probeViewDistance: 50
+      probeDepthSharpness: 0
+      probeIrradianceGamma: 0
       probeBufferPath0: probe_buffer_0
       probeBufferPath1: probe_buffer_1
       probeBufferPath2: probe_buffer_2
+      offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}
     taaSettings:
       enabled: 1
       jitterNum: 8
