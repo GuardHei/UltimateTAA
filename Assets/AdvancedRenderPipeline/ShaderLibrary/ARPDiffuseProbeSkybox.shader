@@ -38,7 +38,9 @@ Shader "Hidden/ARPDiffuseProbeSkybox" {
             VertexOutput SkyboxVertex(VertexInput input) {
                 VertexOutput output;
                 // float3 rotated = RotateAroundYInDegrees(input.posOS, _GlobalEnvMapRotation);
-                output.posCS = TransformObjectToHClip(input.posOS);
+                float4 posCS = TransformObjectToHClip(input.posOS);
+                posCS.x = -posCS.x;
+                output.posCS = posCS;
                 output.dir = input.posOS.xyz;
                 return output;
             }

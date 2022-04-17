@@ -75,6 +75,7 @@ CBUFFER_START(DiffuseProbeParams)
     float4 _DiffuseProbeParams2; // xyz: max intervals, w: grid diagonal length
     int4 _DiffuseProbeParams3; // x: probe gbuffer size, y: probe vbuffer size, z: offline cubemap size, w: enabled or not (disabled = 0, enabled = 1)
     float4 _DiffuseProbeParams4; // xyz: min position, w: probe irradiance gamma
+    float4 _DiffuseProbeParams5; // xyz: max position
 CBUFFER_END
 
 #ifndef DOTS_INSTANCING_ON // UnityPerDraw cbuffer doesn't exist with hybrid renderer
@@ -217,13 +218,12 @@ SAMPLER(sampler_PreintegratedDLut);
 TEXTURE2D(_PreintegratedGFLut);
 SAMPLER(sampler_PreintegratedGFLut);
 
-TEXTURECUBE(_GlobalEnvMap);
-SAMPLER(sampler_GlobalEnvMap);
 TEXTURECUBE(_GlobalEnvMapSpecular);
 SAMPLER(sampler_GlobalEnvMapSpecular);
 TEXTURECUBE(_GlobalEnvMapDiffuse);
 SAMPLER(sampler_GlobalEnvMapDiffuse);
 
+TEXTURE2D_ARRAY(_DiffuseProbeArr);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr0);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr2);
@@ -1118,12 +1118,51 @@ int GetDiffuseProbeVBufferSizeNoBorder() {
     return _DiffuseProbeParams3.y - 2;
 }
 
+int GetDiffuseProbeSize() {
+    return GetDiffuseProbeGBufferSize();
+}
+
+int GetDiffuseProbeSizeNoBorder() {
+    return GetDiffuseProbeSize() - 2;
+}
+
+float3 GetDiffuseProbeDimensions() {
+    return _DiffuseProbeParams1.xyz;
+}
+
 float3 GetDiffuseProbeMaxIntervals() {
     return _DiffuseProbeParams2.xyz;
 }
 
 float3 GetDiffuseProbeVolumeMinPos() {
     return _DiffuseProbeParams4.xyz;
+}
+
+float3 GetDiffuseProbeVolumeMaxPos() {
+    return _DiffuseProbeParams5.xyz;
+}
+
+bool IsInsideDDGIVolume(float3 posWS, float tolerance) {
+    const float3 tolerances = float3(tolerance, tolerance, tolerance);
+    const float3 mi = GetDiffuseProbeVolumeMinPos() - tolerances;
+    const float3 ma = GetDiffuseProbeVolumeMaxPos() + tolerances;
+
+    const bool isInsideX = posWS.x >= mi.x && posWS.x <= ma.x;
+    const bool isInsideY = posWS.y >= mi.y && posWS.y <= ma.y;
+    const bool isInsideZ = posWS.z >= mi.z && posWS.z <= ma.z;
+
+    return isInsideX && isInsideY && isInsideZ;
+}
+
+bool IsInsideDDGIVolume(float3 posWS) {
+    const float3 mi = GetDiffuseProbeVolumeMinPos();
+    const float3 ma = GetDiffuseProbeVolumeMaxPos();
+
+    const bool isInsideX = posWS.x >= mi.x && posWS.x <= ma.x;
+    const bool isInsideY = posWS.y >= mi.y && posWS.y <= ma.y;
+    const bool isInsideZ = posWS.z >= mi.z && posWS.z <= ma.z;
+
+    return isInsideX && isInsideY && isInsideZ;
 }
 
 int GetProbeIndex1d(int probeX, int probeY, int probeZ) {
@@ -1152,6 +1191,45 @@ float3 GetDiffuseProbePosWS(int3 probeIndex) {
 
 float3 GetDiffuseProbePosWS(int probeIndex) {
     return GetDiffuseProbePosWS(GetProbeIndex3d(probeIndex));
+}
+
+// will clamp to the nearest probe if outside the volume
+int3 GetNearestProbeIndex3dFromPosWS(float3 posWS) {
+    float3 extents = posWS - GetDiffuseProbeVolumeMinPos();
+    float3 maxIntervals = GetDiffuseProbeMaxIntervals();
+    float3 counts = extents / maxIntervals;
+    counts = clamp(counts, float3(.0f, .0f, .0f), GetDiffuseProbeDimensions() - float3(1.0f, 1.0f, 1.0f));
+    int3 index3d = round(counts);
+    return index3d;
+}
+
+// will clamp to the nearest probe if outside the volume
+int GetNearestProbeIndex1dFromPosWS(float3 posWS) {
+    return GetProbeIndex1d(GetNearestProbeIndex3dFromPosWS(posWS));
+}
+
+float GetMaxVisibilityDepth() {
+    return _DiffuseProbeParams2.w * 1.5f;
+}
+
+// assume 1-px wide border on all 4 sides
+float2 GetUVWithBorder(float2 uvNoBorder, float size, float sizeNoBorder) {
+    float scaling = sizeNoBorder / size;
+    float offset = 1.0f / size;
+    float2 finalUV = uvNoBorder * scaling + offset;
+    return finalUV;
+}
+
+float2 GetUVWithBorder(float3 dir, float size, float sizeNoBorder) {
+    return GetUVWithBorder(EncodeNormalComplex(dir), size, sizeNoBorder);
+}
+
+float2 GetIrradianceMapUV(float3 dir) {
+    return GetUVWithBorder(dir, float(GetDiffuseProbeSize()), float(GetDiffuseProbeSizeNoBorder()));
+}
+
+float2 GetVisibilityMapUV(float3 dir) {
+    return GetUVWithBorder(dir, float(GetDiffuseProbeVBufferSize()), float(GetDiffuseProbeVBufferSizeNoBorder()));
 }
 
 float3 SampleIndirectDiffuseGI(float3 posWS, float3 N, float3 diffuse, float3 kD, float envD) {

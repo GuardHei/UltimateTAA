@@ -214,20 +214,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cameraDataBuffer.SetData(_cameraData);
 			
 			_cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
-			// _cmd.SetGlobalBuffer(ShaderKeywordManager.CAMERA_DATA, _cameraDataBuffer);
-
-			if (IsOnFirstFrame) {
-				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_16, settings.blueNoise16);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_64, settings.blueNoise64);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_256, settings.blueNoise256);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_512, settings.blueNoise512);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.BLUE_NOISE_1024, settings.blueNoise1024);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.PREINTEGRATED_DGF_LUT, settings.iblLut);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.PREINTEGRATED_D_LUT, settings.diffuseIBLLut);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.PREINTEGRATED_GF_LUT, settings.specularIBLLut);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.GLOBAL_ENV_MAP_SPECULAR, settings.globalEnvMapSpecular);
-				_cmd.SetGlobalTexture(ShaderKeywordManager.GLOBAL_ENV_MAP_DIFFUSE, settings.globalEnvMapDiffuse);
-			}
 
 			ExecuteCommand();
 		}

@@ -7,30 +7,12 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
     public unsafe class DiffuseProbeCameraRenderer : CameraRenderer {
 
         public static readonly Vector3[] CubemapEulerAngles = {
-            new(0.0f,-90.0f,180.0f), // +X
-            new(0.0f,90.0f,-180.0f), // -X
-            new(-90.0f,0.0f,180.0f), // +Y
-            new(90.0f,0.0f,-180.0f), // -Y
-            new(0.0f,0.0f,180.0f), // +Z
-            new(0.0f,180.0f,-180.0f) // -Z
-        };
-
-        public static readonly Vector3[] LookAtDirections = {
-	        Vector3.right,
-	        Vector3.left,
-	        Vector3.up,
-	        Vector3.down,
-	        Vector3.forward,
-	        Vector3.back
-        };
-        
-        public static readonly Vector3[] UpDirections = {
-	        Vector3.up,
-	        Vector3.up,
-	        Vector3.forward,
-	        Vector3.back,
-	        Vector3.up,
-	        Vector3.down
+	        new(0.0f,90.0f,180.0f), // +X
+	        new(0.0f,-90.0f,-180.0f), // -X
+            new(-90.0f,0.0f,-180.0f), // +Y
+            new(90.0f,0.0f,180.0f), // -Y
+            new(0.0f,0.0f,-180.0f), // +Z
+            new(0.0f,180.0f,180.0f) // -Z
         };
 
         protected string _rendererDesc;

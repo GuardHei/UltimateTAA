@@ -21,8 +21,6 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     public string cubemapPath;
     public Cubemap targetCubemap;
 
-    public DiffuseProbeTest debugVisualizer;
-
     public GraphicsFormat gbuffer0CubemapFormat = GraphicsFormat.R8G8B8A8_UNorm;
     public GraphicsFormat gbuffer1CubemapFormat = GraphicsFormat.R16G16_UNorm;
     public GraphicsFormat gbuffer2CubemapFormat = GraphicsFormat.R16_SFloat;
@@ -91,16 +89,6 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     }
 
     public void CaptureProbeGBuffer() {
-        if (debugVisualizer) {
-            debugVisualizer.highResolutionGBuffer0 = highResolutionGBuffer0;
-            debugVisualizer.highResolutionGBuffer1 = highResolutionGBuffer1;
-            debugVisualizer.highResolutionGBuffer2 = highResolutionGBuffer2;
-            debugVisualizer.octahdronGBuffer0 = octahdronGBuffer0;
-            debugVisualizer.octahdronGBuffer1 = octahdronGBuffer1;
-            debugVisualizer.octahdronGBuffer2 = octahdronGBuffer2;
-            debugVisualizer.octahdronVBuffer0 = octahdronVBuffer0;
-        }
-
         var count = diffuseGISettings.Count;
         var dimensions = diffuseGISettings.dimensions;
         var maxIntervals = diffuseGISettings.maxIntervals;
@@ -178,13 +166,6 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                 useMipMap = false
             };
             
-            /*
-            var gbuffer0Arr = new Texture2DArray(probeGBufferSize, probeGBufferSize, count, gbuffer0Format, TextureCreationFlags.None, 1);
-            var gbuffer1Arr = new Texture2DArray(probeGBufferSize, probeGBufferSize, count, gbuffer1Format, TextureCreationFlags.None, 1);
-            var gbuffer2Arr = new Texture2DArray(probeGBufferSize, probeGBufferSize, count, gbuffer2Format, TextureCreationFlags.None, 1);
-            var vbuffer0Arr = new Texture2DArray(probeVBufferSize, probeVBufferSize, count, vbuffer0Format, TextureCreationFlags.None, 1);
-            */
-            
             var gbuffer0Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer0Format, TextureCreationFlags.None);
             var gbuffer1Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer1Format, TextureCreationFlags.None);
             var gbuffer2Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer2Format, TextureCreationFlags.None);
@@ -249,44 +230,9 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         gbuffer1.Release();
                         gbuffer2.Release();
                         vbuffer0.Release();
-                        
-                        /*
-                        Graphics.CopyTexture(gbuffer0, 0, gbuffer0Arr, probeId);
-                        Graphics.CopyTexture(gbuffer1, 0, gbuffer1Arr, probeId);
-                        Graphics.CopyTexture(gbuffer2, 0, gbuffer2Arr, probeId);
-                        Graphics.CopyTexture(vbuffer0, 0, vbuffer0Arr, probeId);
-                        */
-
-                        /*
-                        Graphics.CopyTexture(gbuffer0, 0, 0, 0, 0, probeGBufferSize, probeGBufferSize, gbuffer0Arr, 0, 0, probeId * probeGBufferSize, 0);
-                        Graphics.CopyTexture(gbuffer1, 0, 0, 0, 0, probeGBufferSize, probeGBufferSize, gbuffer1Arr, 0, 0, probeId * probeGBufferSize, 0);
-                        Graphics.CopyTexture(gbuffer2, 0, 0, 0, 0, probeGBufferSize, probeGBufferSize, gbuffer2Arr, 0, 0, probeId * probeGBufferSize, 0);
-                        Graphics.CopyTexture(vbuffer0, 0, 0, 0, 0, probeVBufferSize, probeVBufferSize, vbuffer0Arr, 0, 0, probeId * probeVBufferSize, 0);
-                        */
-
-                        /*
-                        additionalData.diffuseProbeGBufferCubemap0 = null;
-                        additionalData.diffuseProbeGBufferCubemap1 = null;
-                        additionalData.diffuseProbeGBufferCubemap2 = null;
-                        additionalData.diffuseProbeGBuffer0 = null;
-                        additionalData.diffuseProbeGBuffer1 = null;
-                        additionalData.diffuseProbeGBuffer2 = null;
-                        additionalData.diffuseProbeVBuffer0 = null;
-                        
-                        gbufferCubemap0.Release();
-                        gbufferCubemap1.Release();
-                        gbufferCubemap2.Release();
-                        */
                     }
                 }
             }
-            
-            /*
-            AssetDatabase.CreateAsset(gbuffer0Arr, Path.Combine(ProbeDataDir, $"{diffuseGISettings.probeGBufferPath0}.asset"));
-            AssetDatabase.CreateAsset(gbuffer1Arr, Path.Combine(ProbeDataDir, $"{diffuseGISettings.probeGBufferPath1}.asset"));
-            AssetDatabase.CreateAsset(gbuffer2Arr, Path.Combine(ProbeDataDir, $"{diffuseGISettings.probeGBufferPath2}.asset"));
-            AssetDatabase.CreateAsset(vbuffer0Arr, Path.Combine(ProbeDataDir, $"{diffuseGISettings.probeVBufferPath0}.asset"));
-            */
             
             var gbuffer0Data = gbuffer0Arr.EncodeToPNG();
             File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{diffuseGISettings.probeGBufferPath0}.png"), gbuffer0Data);

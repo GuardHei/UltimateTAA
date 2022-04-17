@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ARP Asset
   m_EditorClassIdentifier: 
   settings:
-    enableTaaInEditor: 1
+    enableTaaInEditor: 0
     enableDebugView: 1
     enableDebugViewInEditor: 1
     debugOutput: 0
@@ -37,24 +37,23 @@ MonoBehaviour:
     iblLut: {fileID: 2800000, guid: de9d90a61eb0848dd8a35f98d367430f, type: 3}
     diffuseIBLLut: {fileID: 2800000, guid: 3b1341f5a97fb4ea7be016e40935dbc2, type: 3}
     specularIBLLut: {fileID: 2800000, guid: d2b1aa1c8d67742d896366ec636fd0c5, type: 3}
-    globalEnvMap: {fileID: 0}
     globalEnvMapDiffuse: {fileID: 8900000, guid: e51fdd5f41a3f43abb924252c34d1fbd, type: 3}
     globalEnvMapSpecular: {fileID: 8900000, guid: 176063b10f7b745f4ba5fb659931f61f, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
     globalEnvMapRotation: 0
     skyboxMipLevel: 0
     diffuseGISettings:
-      enabled: 0
+      enabled: 1
       markProbesDirty: 0
-      enabledFlag: 0
-      volumeCenter: {x: 0, y: 1, z: 0}
+      enabledFlag: 1
+      volumeCenter: {x: 0, y: 1.5, z: 0}
       dimensions: {x: 2, y: 2, z: 2}
       maxIntervals: {x: 4, y: 1.5, z: 4}
       probeGBufferSize: 32
       probeVBufferSize: 32
       offlineCubemapSize: 512
       probeViewDistance: 50
-      probeDepthSharpness: 60
+      probeDepthSharpness: 80
       probeIrradianceGamma: 0
       probeGBufferPath0: probe_gbuffer_arr_0
       probeGBufferPath1: probe_gbuffer_arr_1

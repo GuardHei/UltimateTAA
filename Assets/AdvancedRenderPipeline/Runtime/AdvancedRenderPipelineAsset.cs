@@ -63,7 +63,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Texture2D iblLut;
 		public Texture2D diffuseIBLLut;
 		public Texture2D specularIBLLut;
-		public Cubemap globalEnvMap;
 		public Cubemap globalEnvMapDiffuse;
 		public Cubemap globalEnvMapSpecular;
 		public Shader indirectSpecularShader;
@@ -75,7 +74,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public DiffuseGISettings diffuseGISettings = new() {
 			volumeCenter = Vector3.zero, dimensions = new Vector3Int(2, 2, 2), maxIntervals = Vector3.one, 
 			probeGBufferSize = DiffuseGIProbeSize._16, probeVBufferSize = DiffuseGIProbeSize._16, offlineCubemapSize = DiffuseGIProbeSize._512,
-			probeViewDistance = 50f, probeGBufferPath0 = "probe_buffer_0", probeGBufferPath1 = "probe_buffer_1", probeGBufferPath2 = "probe_buffer_2"
+			probeViewDistance = 50f, probeDepthSharpness = 80f, probeIrradianceGamma = 1f,
+			probeGBufferPath0 = "probe_gbuffer_0", probeGBufferPath1 = "probe_gbuffer_1", probeGBufferPath2 = "probe_gbuffer_2", probeVBufferPath0 = "probe_vbuffer_0"
 		};
 		[Header("Anti Aliasing")]
 		public TemporalAntiAliasingSettings taaSettings = new() {
@@ -228,6 +228,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Texture2DArray probeGBufferArr2;
 		public Texture2DArray probeVBufferArr0;
 
+		public bool Enabled => enabled && enabledFlag;
+
 		public int Count => dimensions.x * dimensions.y * dimensions.z;
 		
 		public Vector3 Sizes => new((dimensions.x - 1f) * maxIntervals.x, (dimensions.y - 1f) * maxIntervals.y, (dimensions.z - 1f) * maxIntervals.z);
@@ -246,8 +248,9 @@ namespace AdvancedRenderPipeline.Runtime {
 					_DiffuseProbeParams0 = new float4(volumeCenter.x, volumeCenter.y, volumeCenter.z, probeViewDistance),
 					_DiffuseProbeParams1 = new float4(dimensions.x, dimensions.y, dimensions.z, probeDepthSharpness),
 					_DiffuseProbeParams2 = new float4(maxIntervals.x, maxIntervals.y, maxIntervals.z, GridDiagonalLength),
-					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, enabledFlag ? 1 : 0),
-					_DiffuseProbeParams4 = new float4(Min, probeIrradianceGamma)
+					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, Enabled ? 1 : 0),
+					_DiffuseProbeParams4 = new float4(Min, probeIrradianceGamma),
+					_DiffuseProbeParams5 = new float4(Max, 0f)
 				};
 				return gpuParams;
 			}

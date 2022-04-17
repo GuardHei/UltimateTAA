@@ -15,19 +15,11 @@ namespace RP_Tests {
 
         public bool NeedsRefresh => _diffuseGISettings.volumeCenter != diffuseGISettings.volumeCenter || _diffuseGISettings.dimensions != diffuseGISettings.dimensions || _diffuseGISettings.maxIntervals != diffuseGISettings.maxIntervals;
 
+        public DiffuseProbeDebugMode debugMode = DiffuseProbeDebugMode.ALBEDO;
         public Mesh gizmosProbeMesh;
         public Material gizmosProbeMat;
         public float gizmosProbeRadius = .3f;
         public Color gizmosProbeColor;
-        
-        public List<RenderTexture> highResolutionGBuffer0;
-        public List<RenderTexture> highResolutionGBuffer1;
-        public List<RenderTexture> highResolutionGBuffer2;
-
-        public List<RenderTexture> octahdronGBuffer0;
-        public List<RenderTexture> octahdronGBuffer1;
-        public List<RenderTexture> octahdronGBuffer2;
-        public List<RenderTexture> octahdronVBuffer0;
 
         private MaterialPropertyBlock _mpb;
         private Matrix4x4[] _matrices;
@@ -54,6 +46,7 @@ namespace RP_Tests {
             _diffuseGISettings = diffuseGISettings;
             _matrices = new Matrix4x4[_diffuseGISettings.Count];
             var colorValues = new Vector4[_matrices.Length];
+            var debugModes = new float[_matrices.Length];
             var dimensions = diffuseGISettings.dimensions;
             var maxIntervals = diffuseGISettings.maxIntervals;
             var origin = diffuseGISettings.Min;
@@ -64,12 +57,14 @@ namespace RP_Tests {
                         var pos = origin + new Vector3(i * maxIntervals.x, j * maxIntervals.y, k * maxIntervals.z);
                         _matrices[probeIndex] = Matrix4x4.TRS(pos, Quaternion.identity, new Vector3(gizmosProbeRadius, gizmosProbeRadius, gizmosProbeRadius));
                         colorValues[probeIndex] = gizmosProbeColor;
+                        debugModes[probeIndex] = (int) debugMode;
                     }
                 }
             }
 
             _mpb = new MaterialPropertyBlock();
             if (colorValues.Length != 0) _mpb.SetVectorArray("_AlbedoTint", colorValues);
+            if (debugModes.Length != 0) _mpb.SetFloatArray("_DebugMode", debugModes);
         }
     }
 }

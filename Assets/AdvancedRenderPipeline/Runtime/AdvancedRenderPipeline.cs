@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AdvancedRenderPipeline.Runtime.Cameras;
+using AdvancedRenderPipeline.Runtime.PipelineProcessors;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
@@ -79,9 +80,13 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#region Pipeline Processors
 
-		internal DiffuseProbeProcessor _diffuseProbeProcessor = new();
+		internal List<PipelineProcessor> _pipelineProcessors = new List<PipelineProcessor>();
 
 		#endregion
+		
+		public bool IsOnFirstFrame => _frameNum == 1; // default is 0, and we start at 1.
+		
+		private int _frameNum = 0;
 
 		public AdvancedRenderPipeline(AdvancedRenderPipelineSettings settings) {
 			instance = this;
@@ -89,6 +94,10 @@ namespace AdvancedRenderPipeline.Runtime {
 			ReversedZ = SystemInfo.usesReversedZBuffer;
 			GraphicsSettings.lightsUseLinearIntensity = true;
 			GraphicsSettings.useScriptableRenderPipelineBatching = settings.enableSRPBatching;
+				
+			// add pipeline processors
+			_pipelineProcessors.Add(new GeneralPipelineProcessor());
+			_pipelineProcessors.Add(new DiffuseProbeProcessor());
 		}
 
 		protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
@@ -100,9 +109,11 @@ namespace AdvancedRenderPipeline.Runtime {
 			var screenWidth = Screen.width;
 			var screenHeight = Screen.height;
 
+			_frameNum++;
+
 			BeginFrameRendering(context, cameras);
 			
-			SetupPipeline(context);
+			ExecutePipelineProcessors(context);
 
 			foreach (var camera in cameras) {
 				var pixelWidth = camera.pixelWidth;
@@ -124,8 +135,8 @@ namespace AdvancedRenderPipeline.Runtime {
 			EndFrameRendering(context, cameras);
 		}
 
-		internal void SetupPipeline(ScriptableRenderContext context) {
-			_diffuseProbeProcessor.Process(context);
+		internal void ExecutePipelineProcessors(ScriptableRenderContext context) {
+			foreach (var processor in _pipelineProcessors) processor.Process(context);
 		}
 
 		internal CameraRenderer GetCameraRenderer(Camera camera) {
@@ -150,7 +161,7 @@ namespace AdvancedRenderPipeline.Runtime {
 			foreach (var renderer in cameraRenderers.Values) renderer.Dispose();
 			cameraRenderers.Clear();
 			tempCameras.Clear();
-			_diffuseProbeProcessor.Dispose();
+			foreach (var processor in _pipelineProcessors) processor.Dispose();
 			base.Dispose(disposing);
 		}
 	}

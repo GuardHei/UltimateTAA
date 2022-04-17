@@ -32,7 +32,7 @@ void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
 
     float3x3 o2w = GetLocalFrame(N);
 
-    const uint SAMPLE_COUNT = 512u;
+    const uint SAMPLE_COUNT = 2048u;
     for (uint i = 0; i < SAMPLE_COUNT; i++) {
         float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
         float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
@@ -106,14 +106,14 @@ void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
 
     float3x3 o2w = GetLocalFrame(N);
 
-    const uint SAMPLE_COUNT = 512u;
+    const uint SAMPLE_COUNT = 2048u;
     for (uint i = 0u; i < SAMPLE_COUNT; i++) {
         float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
         float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
         dir = mul(dir, o2w);
         float gbuffer2 = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap2, sampler_linear_clamp, dir, 0).r;
         
-        float maxRadialDepth = _DiffuseProbeParams2.w * 1.5f;
+        float maxRadialDepth = GetMaxVisibilityDepth();
         float radialDepth = min(gbuffer2, maxRadialDepth);
         
         float cosTheta = dot(N, dir);
