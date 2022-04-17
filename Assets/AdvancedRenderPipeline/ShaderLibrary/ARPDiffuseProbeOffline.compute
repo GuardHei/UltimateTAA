@@ -50,6 +50,8 @@ void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
         float weight = max(.0f, cosTheta);
         weight = pow(weight, _DiffuseProbeParams1.w);
 
+        // weight = 1.0f;
+
         albedoTotal += albedo * weight;
         normalTotal += normal * weight;
         skyVisibilityTotal += skyVisibility * weight;
@@ -57,17 +59,33 @@ void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
         weightTotal += weight;
     }
 
-    // float sampleCount = float(SAMPLE_COUNT);
+    float sampleCount = float(SAMPLE_COUNT);
     weightTotal = max(weightTotal, FLT_EPS);
+    // weightTotal = sampleCount;
 
     float3 avgAlbedo = albedoTotal / weightTotal;
     float avgSkyVisibility = skyVisibilityTotal / weightTotal;
     float3 avgNormal = normalTotal / weightTotal;
     float avgRadialDepth = radialDepthTotal / weightTotal;
 
+    /*
+    avgAlbedo = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap0, sampler_point_clamp, N, 0).rgb;
+    avgSkyVisibility = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap0, sampler_point_clamp, N, 0).a;
+    avgNormal = DecodeNormalComplex(SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap1, sampler_point_clamp, N, 0).rg);
+    avgRadialDepth = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap2, sampler_linear_clamp, N, 0).r;
+    */
+
+    // avgSkyVisibility = 1.0f;
+
     _DiffuseProbeGBuffer0[coord] = float4(avgAlbedo, avgSkyVisibility);
     _DiffuseProbeGBuffer1[coord] = EncodeNormalComplex(avgNormal);
     _DiffuseProbeGBuffer2[coord] = avgRadialDepth;
+
+    /*
+    _DiffuseProbeGBuffer0[coord] = float4(1, 0, 0, 1);
+    _DiffuseProbeGBuffer1[coord] = float2(0, 1);
+    _DiffuseProbeGBuffer2[coord] = 1;
+    */
 }
 
 [numthreads(8,8,1)]
@@ -105,6 +123,8 @@ void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
         radialDepth2Total += (radialDepth * radialDepth) * weight;
         weightTotal += weight;
     }
+
+    
 
     // float sampleCount = float(SAMPLE_COUNT);
     weightTotal = max(weightTotal, FLT_EPS);

@@ -60,9 +60,10 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int DIFFUSE_PROBE_GBUFFER_1 = Shader.PropertyToID("_DiffuseProbeGBuffer1");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_2 = Shader.PropertyToID("_DiffuseProbeGBuffer2");
 		public static readonly int DIFFUSE_PROBE_VBUFFER_0 = Shader.PropertyToID("_DiffuseProbeVBuffer0");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_0 = Shader.PropertyToID("_DiffuseProbeGBufferArray0");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_1 = Shader.PropertyToID("_DiffuseProbeGBufferArray1");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_2 = Shader.PropertyToID("_DiffuseProbeGBufferArray2");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_0 = Shader.PropertyToID("_DiffuseProbeGBufferArr0");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_1 = Shader.PropertyToID("_DiffuseProbeGBufferArr1");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_2 = Shader.PropertyToID("_DiffuseProbeGBufferArr2");
+		public static readonly int DIFFUSE_PROBE_VBUFFER_ARRAY_2 = Shader.PropertyToID("_DiffuseProbeVBufferArr2");
 
 		#endregion
 

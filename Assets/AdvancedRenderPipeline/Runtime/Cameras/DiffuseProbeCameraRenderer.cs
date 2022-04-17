@@ -208,6 +208,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 	        var filterSettings = new FilteringSettings(RenderQueueRange.opaque);
 
 	        _context.DrawRenderers(_cullingResults, ref drawSettings, ref filterSettings);
+	        
+	        _context.DrawSkybox(camera);
         }
 
         public void FinalBlit() {

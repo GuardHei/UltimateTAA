@@ -1,4 +1,5 @@
 using System;
+using AdvancedRenderPipeline.Runtime.CustomAttributes;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -62,6 +63,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Texture2D iblLut;
 		public Texture2D diffuseIBLLut;
 		public Texture2D specularIBLLut;
+		public Cubemap globalEnvMap;
 		public Cubemap globalEnvMapDiffuse;
 		public Cubemap globalEnvMapSpecular;
 		public Shader indirectSpecularShader;
@@ -73,7 +75,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public DiffuseGISettings diffuseGISettings = new() {
 			volumeCenter = Vector3.zero, dimensions = new Vector3Int(2, 2, 2), maxIntervals = Vector3.one, 
 			probeGBufferSize = DiffuseGIProbeSize._16, probeVBufferSize = DiffuseGIProbeSize._16, offlineCubemapSize = DiffuseGIProbeSize._512,
-			probeViewDistance = 50f, probeBufferPath0 = "probe_buffer_0", probeBufferPath1 = "probe_buffer_1", probeBufferPath2 = "probe_buffer_2"
+			probeViewDistance = 50f, probeGBufferPath0 = "probe_buffer_0", probeGBufferPath1 = "probe_buffer_1", probeGBufferPath2 = "probe_buffer_2"
 		};
 		[Header("Anti Aliasing")]
 		public TemporalAntiAliasingSettings taaSettings = new() {
@@ -197,19 +199,34 @@ namespace AdvancedRenderPipeline.Runtime {
 
 	[Serializable]
 	public struct DiffuseGISettings {
+		[Tooltip("Is the dynamic diffuse gi enabled by the user?")]
+		public bool enabled;
+		[Tooltip("Click to ask the pipeline to re-load the probe buffers from disks")]
+		public bool markProbesDirty;
+		[DisplayOnly]
+		[Tooltip("Is the dynamic diffuse gi actually enabled?")]
+		public bool enabledFlag;
 		public Vector3 volumeCenter;
 		public Vector3Int dimensions;
 		public Vector3 maxIntervals;
 		public DiffuseGIProbeSize probeGBufferSize;
 		public DiffuseGIProbeSize probeVBufferSize;
 		public DiffuseGIProbeSize offlineCubemapSize;
+		[Range(.1f, 250f)]
 		public float probeViewDistance;
+		[Range(0f, 200f)]
 		public float probeDepthSharpness;
+		[Range(0f, 5f)]
 		public float probeIrradianceGamma;
-		public string probeBufferPath0;
-		public string probeBufferPath1;
-		public string probeBufferPath2;
-		public ComputeShader offlineComputeShader; 
+		public string probeGBufferPath0;
+		public string probeGBufferPath1;
+		public string probeGBufferPath2;
+		public string probeVBufferPath0;
+		public ComputeShader offlineComputeShader;
+		public Texture2DArray probeGBufferArr0;
+		public Texture2DArray probeGBufferArr1;
+		public Texture2DArray probeGBufferArr2;
+		public Texture2DArray probeVBufferArr0;
 
 		public int Count => dimensions.x * dimensions.y * dimensions.z;
 		
@@ -229,7 +246,7 @@ namespace AdvancedRenderPipeline.Runtime {
 					_DiffuseProbeParams0 = new float4(volumeCenter.x, volumeCenter.y, volumeCenter.z, probeViewDistance),
 					_DiffuseProbeParams1 = new float4(dimensions.x, dimensions.y, dimensions.z, probeDepthSharpness),
 					_DiffuseProbeParams2 = new float4(maxIntervals.x, maxIntervals.y, maxIntervals.z, GridDiagonalLength),
-					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, 0),
+					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, enabledFlag ? 1 : 0),
 					_DiffuseProbeParams4 = new float4(Min, probeIrradianceGamma)
 				};
 				return gpuParams;

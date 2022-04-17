@@ -101,6 +101,19 @@ namespace AdvancedRenderPipeline.Runtime {
 		}
 		
 		private static Material taaMat;
+
+		public static Material DiffuseProbeSkyboxMat {
+			get {
+				if (diffuseProbeSkyboxMat == null) {
+					diffuseProbeSkyboxMat = new Material(Shader.Find("Hidden/ARPDiffuseProbeSkybox")) {
+						hideFlags = HideFlags.HideAndDontSave
+					};
+				}
+				return diffuseProbeSkyboxMat;
+			}
+		}
+
+		private static Material diffuseProbeSkyboxMat;
 		
 		#endregion
 

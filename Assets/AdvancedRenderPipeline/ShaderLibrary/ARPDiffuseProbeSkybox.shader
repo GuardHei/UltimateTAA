@@ -1,4 +1,4 @@
-Shader "Advanced Render Pipeline/ARPDiffuseProbeSkybox" {
+Shader "Hidden/ARPDiffuseProbeSkybox" {
 
     Subshader {
         
@@ -48,8 +48,10 @@ Shader "Advanced Render Pipeline/ARPDiffuseProbeSkybox" {
 
                 float3 normal = -normalize(input.dir);
                 float radialDepth = _DiffuseProbeParams0.w;
-                
-                output.gbuffer0 = float4(.0f, .0f, .0f, 1.0f);
+
+                float4 gbuffer0 = float4(.0f, .0f, .0f, 1.0f);
+
+                output.gbuffer0 = gbuffer0;
                 output.gbuffer1 = EncodeNormalComplex(normal);
                 output.gbuffer2 = radialDepth;
 

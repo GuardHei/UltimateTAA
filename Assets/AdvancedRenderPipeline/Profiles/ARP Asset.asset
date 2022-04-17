@@ -37,25 +37,34 @@ MonoBehaviour:
     iblLut: {fileID: 2800000, guid: de9d90a61eb0848dd8a35f98d367430f, type: 3}
     diffuseIBLLut: {fileID: 2800000, guid: 3b1341f5a97fb4ea7be016e40935dbc2, type: 3}
     specularIBLLut: {fileID: 2800000, guid: d2b1aa1c8d67742d896366ec636fd0c5, type: 3}
+    globalEnvMap: {fileID: 0}
     globalEnvMapDiffuse: {fileID: 8900000, guid: e51fdd5f41a3f43abb924252c34d1fbd, type: 3}
     globalEnvMapSpecular: {fileID: 8900000, guid: 176063b10f7b745f4ba5fb659931f61f, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
     globalEnvMapRotation: 0
     skyboxMipLevel: 0
     diffuseGISettings:
+      enabled: 0
+      markProbesDirty: 0
+      enabledFlag: 0
       volumeCenter: {x: 0, y: 1, z: 0}
       dimensions: {x: 2, y: 2, z: 2}
       maxIntervals: {x: 4, y: 1.5, z: 4}
-      probeGBufferSize: 16
-      probeVBufferSize: 16
+      probeGBufferSize: 32
+      probeVBufferSize: 32
       offlineCubemapSize: 512
       probeViewDistance: 50
-      probeDepthSharpness: 0
+      probeDepthSharpness: 60
       probeIrradianceGamma: 0
-      probeBufferPath0: probe_buffer_0
-      probeBufferPath1: probe_buffer_1
-      probeBufferPath2: probe_buffer_2
+      probeGBufferPath0: probe_gbuffer_arr_0
+      probeGBufferPath1: probe_gbuffer_arr_1
+      probeGBufferPath2: probe_gbuffer_arr_2
+      probeVBufferPath0: probe_vbuffer_arr_0
       offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}
+      probeGBufferArr0: {fileID: 18700000, guid: ec9d18032d3b2466fbc13f2a225defa0, type: 3}
+      probeGBufferArr1: {fileID: 18700000, guid: 322fa7294ee644f7fb3b009dfd2765c2, type: 3}
+      probeGBufferArr2: {fileID: 18700000, guid: 9ff0ef74211be4fc083e9c296bffd969, type: 3}
+      probeVBufferArr0: {fileID: 18700000, guid: a2e96d13e2fc54fbfa31d3646143ab98, type: 3}
     taaSettings:
       enabled: 1
       jitterNum: 8

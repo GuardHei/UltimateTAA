@@ -372,7 +372,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public void ResolveTAAPass() {
-
 			if (!IsOnFirstFrame && settings.taaSettings.enabled && _enableTaa) {
 				MaterialManager.TaaMat.SetFloat(ShaderKeywordManager.ENABLE_REPROJECTION, 1f);
 				MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS_0, settings.taaSettings.TaaParams0);
