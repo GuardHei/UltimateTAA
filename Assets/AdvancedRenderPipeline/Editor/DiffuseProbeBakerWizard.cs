@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AdvancedRenderPipeline.Editor;
 using AdvancedRenderPipeline.Runtime;
 using AdvancedRenderPipeline.Runtime.Cameras;
 using RP_Tests;
@@ -166,10 +167,28 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                 useMipMap = false
             };
             
+            var arrDesc2 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer2Format, 0, 1) {
+                dimension = TextureDimension.Tex2DArray,
+                volumeDepth = count,
+                sRGB = false,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+
+            var arrDesc3 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, vbuffer0Format, 0, 1) {
+                dimension = TextureDimension.Tex2DArray,
+                volumeDepth = count,
+                sRGB = false,
+                enableRandomWrite = true,
+                useMipMap = false
+            };
+            
             var gbuffer0Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer0Format, TextureCreationFlags.None);
             var gbuffer1Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer1Format, TextureCreationFlags.None);
-            var gbuffer2Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer2Format, TextureCreationFlags.None);
-            var vbuffer0Arr = new Texture2D(probeVBufferSize * count, probeVBufferSize, vbuffer0Format, TextureCreationFlags.None);
+            // var gbuffer2Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer2Format, TextureCreationFlags.None);
+            // var vbuffer0Arr = new Texture2D(probeVBufferSize * count, probeVBufferSize, vbuffer0Format, TextureCreationFlags.None);
+            var gbuffer2Arr = new Texture2DArray(probeGBufferSize, probeGBufferSize, count, gbuffer2Format, TextureCreationFlags.None);
+            var vbuffer0Arr = new Texture2DArray(probeVBufferSize, probeVBufferSize, count, vbuffer0Format, TextureCreationFlags.None);
 
             for (var i = 0; i < dimensions.x; i++) {
                 for (var j = 0; j < dimensions.y; j++) {
@@ -210,6 +229,9 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         octahdronVBuffer0.Add(vbuffer0);
                         
                         cam.Render();
+                        
+                        var gbuffer2Single = new Texture2D(probeGBufferSize, probeGBufferSize, gbuffer2Format, TextureCreationFlags.None);
+                        var vbuffer0Single = new Texture2D(probeVBufferSize, probeVBufferSize, vbuffer0Format, TextureCreationFlags.None);
 
                         var temp = RenderTexture.active;
 
@@ -218,10 +240,13 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         RenderTexture.active = gbuffer1;
                         gbuffer1Arr.ReadPixels(new Rect(0, 0, probeGBufferSize, probeGBufferSize), probeId * probeGBufferSize, 0, false);
                         RenderTexture.active = gbuffer2;
-                        gbuffer2Arr.ReadPixels(new Rect(0, 0, probeGBufferSize, probeGBufferSize), probeId * probeGBufferSize, 0, false);
+                        gbuffer2Single.ReadPixels(new Rect(0, 0, probeGBufferSize, probeGBufferSize), 0, 0, false);
                         RenderTexture.active = vbuffer0;
-                        vbuffer0Arr.ReadPixels(new Rect(0, 0, probeVBufferSize, probeVBufferSize), probeId * probeVBufferSize, 0, false);
+                        vbuffer0Single.ReadPixels(new Rect(0, 0, probeVBufferSize, probeVBufferSize), 0, 0, false);
                         RenderTexture.active = temp;
+                        
+                        gbuffer2Arr.SetPixels(gbuffer2Single.GetPixels(), probeId, 0);
+                        vbuffer0Arr.SetPixels(vbuffer0Single.GetPixels(), probeId, 0);
                         
                         gbufferCubemap0.Release();
                         gbufferCubemap1.Release();
@@ -233,15 +258,34 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                     }
                 }
             }
-            
+
             var gbuffer0Data = gbuffer0Arr.EncodeToPNG();
             File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{diffuseGISettings.probeGBufferPath0}.png"), gbuffer0Data);
             var gbuffer1Data = gbuffer1Arr.EncodeToPNG();
             File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{diffuseGISettings.probeGBufferPath1}.png"), gbuffer1Data);
-            var gbuffer2Data = gbuffer2Arr.EncodeToPNG();
-            File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{diffuseGISettings.probeGBufferPath2}.png"), gbuffer2Data);
-            var vbuffer0Data = vbuffer0Arr.EncodeToPNG();
-            File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{diffuseGISettings.probeVBufferPath0}.png"), vbuffer0Data);
+            /*
+            var gbuffer2Data = gbuffer2Arr.EncodeToEXR();
+            File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{diffuseGISettings.probeGBufferPath2}.exr"), gbuffer2Data);
+            var vbuffer0Data = vbuffer0Arr.EncodeToEXR();
+            File.WriteAllBytes(Path.Combine(Application.dataPath + "/Data/Probes/", $"{diffuseGISettings.probeVBufferPath0}.exr"), vbuffer0Data);
+            */
+
+            var gbuffer2Path = Path.Combine(ProbeDataDir, $"{diffuseGISettings.probeGBufferPath2}.asset");
+            var vbuffer0Path = Path.Combine(ProbeDataDir, $"{diffuseGISettings.probeVBufferPath0}.asset");
+
+            if (ARPEditorAsset.AssetExistsAt(gbuffer2Path)) {
+                Debug.Log(gbuffer2Path + " Exists!");
+                AssetDatabase.DeleteAsset(gbuffer2Path);
+            }
+            
+            AssetDatabase.CreateAsset(gbuffer2Arr, gbuffer2Path);
+            
+            if (ARPEditorAsset.AssetExistsAt(vbuffer0Path)) {
+                Debug.Log(vbuffer0Path + " Exists!");
+                AssetDatabase.DeleteAsset(vbuffer0Path);
+            }
+            
+            AssetDatabase.CreateAsset(vbuffer0Arr, vbuffer0Path);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

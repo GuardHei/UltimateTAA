@@ -62,8 +62,8 @@ MonoBehaviour:
       offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}
       probeGBufferArr0: {fileID: 18700000, guid: ec9d18032d3b2466fbc13f2a225defa0, type: 3}
       probeGBufferArr1: {fileID: 18700000, guid: 322fa7294ee644f7fb3b009dfd2765c2, type: 3}
-      probeGBufferArr2: {fileID: 18700000, guid: 9ff0ef74211be4fc083e9c296bffd969, type: 3}
-      probeVBufferArr0: {fileID: 18700000, guid: a2e96d13e2fc54fbfa31d3646143ab98, type: 3}
+      probeGBufferArr2: {fileID: 18700000, guid: 5e0919df36e7f4142854ffad666ce20b, type: 2}
+      probeVBufferArr0: {fileID: 18700000, guid: 42e6f916215054bedad54e810532e21f, type: 2}
     taaSettings:
       enabled: 1
       jitterNum: 8
@@ -87,5 +87,5 @@ MonoBehaviour:
       hueShift: 0
       saturation: 0
     tonemappingSettings:
-      tonemappingMode: 1
+      tonemappingMode: 0
       tonemappingShader: {fileID: 4800000, guid: 46b26b03ea0a40869bc6b9b2056589dc, type: 3}

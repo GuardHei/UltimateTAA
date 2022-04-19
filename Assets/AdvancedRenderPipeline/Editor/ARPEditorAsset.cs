@@ -29,5 +29,10 @@ namespace AdvancedRenderPipeline.Editor {
 			Debug.Log("Copy Texture Support: " + SystemInfo.copyTextureSupport);
 			Debug.Log("Supports Vibration: " + SystemInfo.supportsVibration);
 		}
+
+		public static bool AssetExistsAt(string path) {
+			var guid = AssetDatabase.AssetPathToGUID(path);
+			return !string.IsNullOrEmpty(guid);
+		}
 	}
 }

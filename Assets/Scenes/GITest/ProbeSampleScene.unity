@@ -1517,8 +1517,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1138084872}
-  - component: {fileID: 1138084874}
-  - component: {fileID: 1138084873}
   - component: {fileID: 1138084875}
   m_Layer: 0
   m_Name: Origin
@@ -1542,69 +1540,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1138084873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1138084871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44a33f0ba73a4c389027809bb36571b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cameraType: 32
-  diffuseProbeGBufferCubemap0: {fileID: 0}
-  diffuseProbeGBufferCubemap1: {fileID: 0}
-  diffuseProbeGBufferCubemap2: {fileID: 0}
-  diffuseProbeGBuffer0: {fileID: 8400000, guid: 226b332dbaf3a408792dd47568038227, type: 2}
-  diffuseProbeGBuffer1: {fileID: 8400000, guid: 3bc43357857ab4dc48f68fedd4435a89, type: 2}
-  diffuseProbeGBuffer2: {fileID: 8400000, guid: b9257b95ce786470d926418690151d72, type: 2}
-  diffuseProbeVBuffer0: {fileID: 0}
---- !u!20 &1138084874
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1138084871}
-  m_Enabled: 0
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 50
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 250
-  field of view: 90
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: 08b0decf23d044011bfdb984efe237cc, type: 2}
-  m_TargetDisplay: 1
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 1
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
 --- !u!114 &1138084875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1617,7 +1552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ec09e72c675460db63818a74c11a4f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugMode: 2
+  debugMode: 7
   gizmosProbeMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   gizmosProbeMat: {fileID: 2100000, guid: 60190984736244e219d1d6e3c464bbd4, type: 2}
   gizmosProbeRadius: 0.5
