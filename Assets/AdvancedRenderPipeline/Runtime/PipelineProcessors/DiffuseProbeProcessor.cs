@@ -36,10 +36,10 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         internal void Setup() {
 
             var valid = ValidateProbeData();
+            
+            var giSettings = diffuseGISettings;
 
             if (valid) {
-                
-                var giSettings = diffuseGISettings;
                 giSettings.enabledFlag = true;
                 
                 var needsUpdate = diffuseGISettings.markProbesDirty;
@@ -48,9 +48,9 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
                     SetupProbeBuffers();
                     giSettings.markProbesDirty = false;
                 }
-                
-                AdvancedRenderPipeline.settings.diffuseGISettings = giSettings;
-            }
+            } else giSettings.enabledFlag = false;
+            
+            AdvancedRenderPipeline.settings.diffuseGISettings = giSettings;
             
             var diffuseProbeParams = diffuseGISettings.GPUParams;
             _diffuseProbeParams[0] = diffuseProbeParams;

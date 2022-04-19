@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ARP Asset
   m_EditorClassIdentifier: 
   settings:
-    enableTaaInEditor: 0
+    enableTaaInEditor: 1
     enableDebugView: 1
     enableDebugViewInEditor: 1
     debugOutput: 0
@@ -46,9 +46,9 @@ MonoBehaviour:
       enabled: 1
       markProbesDirty: 0
       enabledFlag: 1
-      volumeCenter: {x: 0, y: 1.5, z: 0}
-      dimensions: {x: 2, y: 2, z: 2}
-      maxIntervals: {x: 4, y: 1.5, z: 4}
+      volumeCenter: {x: 0, y: 1, z: 0}
+      dimensions: {x: 4, y: 2, z: 4}
+      maxIntervals: {x: 1.8, y: 1.5, z: 1.8}
       probeGBufferSize: 32
       probeVBufferSize: 32
       offlineCubemapSize: 512
@@ -60,8 +60,8 @@ MonoBehaviour:
       probeGBufferPath2: probe_gbuffer_arr_2
       probeVBufferPath0: probe_vbuffer_arr_0
       offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}
-      probeGBufferArr0: {fileID: 18700000, guid: ec9d18032d3b2466fbc13f2a225defa0, type: 3}
-      probeGBufferArr1: {fileID: 18700000, guid: 322fa7294ee644f7fb3b009dfd2765c2, type: 3}
+      probeGBufferArr0: {fileID: 18700000, guid: 4b64edae4dad84e199c2a99eeb643d0c, type: 2}
+      probeGBufferArr1: {fileID: 18700000, guid: f6129fcc3554e4bb2b20ccd74c511525, type: 2}
       probeGBufferArr2: {fileID: 18700000, guid: 5e0919df36e7f4142854ffad666ce20b, type: 2}
       probeVBufferArr0: {fileID: 18700000, guid: 42e6f916215054bedad54e810532e21f, type: 2}
     taaSettings:

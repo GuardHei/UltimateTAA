@@ -34,5 +34,14 @@ namespace AdvancedRenderPipeline.Editor {
 			var guid = AssetDatabase.AssetPathToGUID(path);
 			return !string.IsNullOrEmpty(guid);
 		}
+
+		public static void CreateOrOverrideAssetAt(Object asset, string path) {
+			if (AssetExistsAt(path)) {
+				Debug.Log(path + " Exists!");
+				AssetDatabase.DeleteAsset(path);
+			}
+            
+			AssetDatabase.CreateAsset(asset, path);
+		}
 	}
 }
