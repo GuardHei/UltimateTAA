@@ -36,11 +36,24 @@ namespace AdvancedRenderPipeline.Editor {
 		}
 
 		public static void CreateOrOverrideAssetAt(Object asset, string path) {
+			/*
 			if (AssetExistsAt(path)) {
 				Debug.Log(path + " Exists!");
 				AssetDatabase.DeleteAsset(path);
 			}
+			*/
             
+			AssetDatabase.DeleteAsset(path);
+			AssetDatabase.CreateAsset(asset, path);
+		}
+
+		public static void CreateAssetAt(Object asset, string path, bool overrideExistingAsset = false) {
+			if (overrideExistingAsset) {
+				CreateOrOverrideAssetAt(asset, path);
+				return;
+			}
+
+			path = AssetDatabase.GenerateUniqueAssetPath(path);
 			AssetDatabase.CreateAsset(asset, path);
 		}
 	}

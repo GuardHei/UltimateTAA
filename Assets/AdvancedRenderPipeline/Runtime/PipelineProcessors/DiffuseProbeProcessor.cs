@@ -48,6 +48,8 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         }
 
         internal void Setup() {
+            
+            SetupGILights();
 
             var valid = ValidateProbeData();
             
@@ -72,6 +74,11 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
             _cmd.SetGlobalConstantBuffer(_diffuseProbeParamsBuffer, ShaderKeywordManager.DIFFUSE_PROBE_PARAMS, 0, sizeof(DiffuseProbeParams));
 
             ExecuteCommand();
+        }
+
+        internal void SetupGILights() {
+            var mainLight = RenderSettings.sun;
+            LightManager.GIMainLight = mainLight;
         }
 
         internal bool ValidateProbeData() {

@@ -338,16 +338,16 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
             AssetDatabase.Refresh();
 
             var giSettings = diffuseGISettings;
-            /*
             giSettings.probeGBufferArr0 = AssetDatabase.LoadAssetAtPath<Texture2DArray>(gbuffer0Path);
             giSettings.probeGBufferArr1 = AssetDatabase.LoadAssetAtPath<Texture2DArray>(gbuffer1Path);
             giSettings.probeGBufferArr2 = AssetDatabase.LoadAssetAtPath<Texture2DArray>(gbuffer2Path);
             giSettings.probeVBufferArr0 = AssetDatabase.LoadAssetAtPath<Texture2DArray>(vbuffer0Path);
-            */
+            /*
             giSettings.probeGBufferArr0 = gbuffer0Arr;
             giSettings.probeGBufferArr1 = gbuffer1Arr;
             giSettings.probeGBufferArr2 = gbuffer2Arr;
             giSettings.probeVBufferArr0 = vbuffer0Arr;
+            */
             giSettings.markProbesDirty = true;
             pipelineSettings.diffuseGISettings = giSettings;
         } finally {

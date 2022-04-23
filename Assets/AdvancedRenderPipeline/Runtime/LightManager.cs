@@ -8,17 +8,24 @@ namespace AdvancedRenderPipeline.Runtime {
 	public static class LightManager {
 		// public static bool MainLightIsAvailable => MainLight != null && MainLight.isActiveAndEnabled;
 		public static bool MainLightIsAvailable => MainLight != null;
+		public static bool GIMainLightIsAvailable => GIMainLight != null;
 		public static bool MainLightShadowAvailable => MainLightIsAvailable && MainLight.shadows != LightShadows.None;
 
 		public static Light MainLight {
 			get => mainLight;
 			set {
 				mainLight = value;
-				if (value == null) return;
-				MainLightData = new DirectionalLight {
-					direction = -mainLight.transform.localToWorldMatrix.GetColumn(2),
-					color = (mainLight.color * mainLight.intensity).ColorToFloat4()
-				};
+				if (value == null) {
+					MainLightData = new DirectionalLight {
+						direction = float4.zero,
+						color = float4.zero,
+					};
+				} else {
+					MainLightData = new DirectionalLight {
+						direction = -mainLight.transform.localToWorldMatrix.GetColumn(2),
+						color = (mainLight.color * mainLight.intensity).ColorToFloat4()
+					};
+				}
 			}
 		}
 
@@ -26,11 +33,17 @@ namespace AdvancedRenderPipeline.Runtime {
 			get => giMainLight;
 			set {
 				giMainLight = value;
-				if (value == null) return;
-				GIMainLightData = new DirectionalLight {
-					direction = -giMainLight.transform.localToWorldMatrix.GetColumn(2),
-					color = (giMainLight.color * giMainLight.intensity).ColorToFloat4()
-				};
+				if (value == null) {
+					GIMainLightData = new DirectionalLight {
+						direction = float4.zero,
+						color = float4.zero,
+					};
+				} else {
+					GIMainLightData = new DirectionalLight {
+						direction = -giMainLight.transform.localToWorldMatrix.GetColumn(2),
+						color = (giMainLight.color * giMainLight.intensity).ColorToFloat4()
+					};
+				}
 			}
 		}
 
@@ -63,13 +76,7 @@ namespace AdvancedRenderPipeline.Runtime {
 				}
 			}
 
-			if (!mainLightFound) {
-				MainLight = null;
-				MainLightData = new DirectionalLight {
-					direction = float4.zero,
-					color = float4.zero,
-				};
-			}
+			if (!mainLightFound) MainLight = null;
 		}
 	}
 }

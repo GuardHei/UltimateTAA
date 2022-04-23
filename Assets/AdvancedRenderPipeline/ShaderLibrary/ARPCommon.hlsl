@@ -436,6 +436,16 @@ float3 DecodeNormalComplex(float2 N) {
     // return UnpackNormalOctRectEncode(N * 2.0f - 1.0f);
 }
 
+// Convert direction from [-1, 1] to [0, 1]
+float2 DirToNormalizedOct(float3 dir) {
+    return PackNormalOctQuadEncode(dir) * .5f + .5f;
+}
+
+// Convert direction from [0, 1] to [-1, 1]
+float3 NormalizedOctToDir(float2 octCoords) {
+    return UnpackNormalOctQuadEncode(octCoords * 2.0f - 1.0f);
+}
+
 // Convert to (-1, 1)
 float2 GetNormalizedOctCoords(uint2 coords, int size) {
     float2 octCoords = float2(coords.x, coords.y);
@@ -1223,7 +1233,7 @@ float2 GetUVWithBorder(float2 uvNoBorder, float size, float sizeNoBorder) {
 }
 
 float2 GetUVWithBorder(float3 dir, float size, float sizeNoBorder) {
-    return GetUVWithBorder(EncodeNormalComplex(dir), size, sizeNoBorder);
+    return GetUVWithBorder(DirToNormalizedOct(dir), size, sizeNoBorder);
 }
 
 float2 GetIrradianceMapUV(float3 dir) {
