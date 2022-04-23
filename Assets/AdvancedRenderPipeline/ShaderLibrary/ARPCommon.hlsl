@@ -223,7 +223,9 @@ SAMPLER(sampler_GlobalEnvMapSpecular);
 TEXTURECUBE(_GlobalEnvMapDiffuse);
 SAMPLER(sampler_GlobalEnvMapDiffuse);
 
-TEXTURE2D_ARRAY(_DiffuseProbeArr);
+TEXTURE2D_ARRAY(_PrevDiffuseProbeIrradianceArr);
+TEXTURE2D_ARRAY(_DiffuseProbeIrradianceArr);
+TEXTURE2D_ARRAY(_DiffuseProbeRadianceArr);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr0);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr2);

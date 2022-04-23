@@ -68,7 +68,58 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     }
 
     public void OnWizardOtherButton() {
+        var probeGBufferSize = (int) diffuseGISettings.probeGBufferSize;
+        var probeVBufferSize = (int) diffuseGISettings.probeVBufferSize;
         
+        var ocDesc0 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer0Format, 0, 1) {
+            dimension = TextureDimension.Tex2D,
+            sRGB = false,
+            enableRandomWrite = true,
+            useMipMap = false
+        };
+
+        var ocDesc1 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer1Format, 0, 1) {
+            dimension = TextureDimension.Tex2D,
+            sRGB = false,
+            enableRandomWrite = true,
+            useMipMap = false
+        };
+
+        var ocDesc2 = new RenderTextureDescriptor(probeGBufferSize, probeGBufferSize, gbuffer2Format, 0, 1) {
+            dimension = TextureDimension.Tex2D,
+            sRGB = false,
+            enableRandomWrite = true,
+            useMipMap = false
+        };
+
+        var ocDesc3 = new RenderTextureDescriptor(probeVBufferSize, probeVBufferSize, vbuffer0Format, 0, 1) {
+            dimension = TextureDimension.Tex2D,
+            sRGB = false,
+            enableRandomWrite = true,
+            useMipMap = false
+        };
+        
+        var gbuffer0 = new RenderTexture(ocDesc0);
+        var gbuffer1 = new RenderTexture(ocDesc1);
+        var gbuffer2 = new RenderTexture(ocDesc2);
+        var vbuffer0 = new RenderTexture(ocDesc3);
+        gbuffer0.Create();
+        gbuffer1.Create();
+        gbuffer2.Create();
+        vbuffer0.Create();
+        
+        var gbuffer0Path = Path.Combine(ProbeDataDir, "cm_oc_b0.asset");
+        var gbuffer1Path = Path.Combine(ProbeDataDir, "cm_oc_b1.asset");
+        var gbuffer2Path = Path.Combine(ProbeDataDir, "cm_oc_b2.asset");
+        var vbuffer0Path = Path.Combine(ProbeDataDir, "cm_oc_v0.asset");
+            
+        ARPEditorAsset.CreateOrOverrideAssetAt(gbuffer0, gbuffer0Path);
+        ARPEditorAsset.CreateOrOverrideAssetAt(gbuffer1, gbuffer1Path);
+        ARPEditorAsset.CreateOrOverrideAssetAt(gbuffer2, gbuffer2Path);
+        ARPEditorAsset.CreateOrOverrideAssetAt(vbuffer0, vbuffer0Path);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 
     public void Clear() {

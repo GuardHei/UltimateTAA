@@ -277,7 +277,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		
 		public void SetupLights() {
 			LightManager.UpdateLight(_cullingResults);
-			_mainLights[0] = LightManager.mainLightData;
+			_mainLights[0] = LightManager.MainLightData;
 			_mainLightBuffer.SetData(_mainLights, 0, 0, 1);
 			_cmd.SetGlobalConstantBuffer(_mainLightBuffer, ShaderKeywordManager.MAIN_LIGHT_DATA, 0, sizeof(DirectionalLight));
 			// _cmd.SetGlobalBuffer(ShaderKeywordManager.MAIN_LIGHT_DATA, _mainLightBuffer);
@@ -573,6 +573,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				_historyBuffers.Dispose();
 			}
 			
+			ReleaseBuffers();
 			ReleaseComputeBuffers();
 			
 			base.Dispose();

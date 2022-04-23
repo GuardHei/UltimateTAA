@@ -140,6 +140,8 @@ Shader "Advanced Render Pipeline/ARPStandardDebug" {
                             float maxDepth = GetMaxVisibilityDepth();
                             depth2 /= maxDepth * maxDepth;
                             debugInfo = float3(depth2, depth2, depth2);
+                        } else if (debugMode == 12) {
+                            
                         }
                     } else {
                         // set color to magenta to display error

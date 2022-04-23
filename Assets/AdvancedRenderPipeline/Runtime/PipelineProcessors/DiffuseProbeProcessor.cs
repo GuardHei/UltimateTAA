@@ -1,10 +1,21 @@
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
     public unsafe class DiffuseProbeProcessor : PipelineProcessor {
 
         public static DiffuseGISettings diffuseGISettings => AdvancedRenderPipeline.settings.diffuseGISettings;
+        
+        #region RT Handles & Render Target Identifiers
+        
+        protected readonly BufferedRTHandleSystem _historyBuffers = new();
+
+        protected RTHandle _diffuseProbeRadianceArr;
+        protected RTHandle _diffuseProbeIrradianceArr;
+        protected RTHandle _prevDiffuseProbeIrradianceArr;
+        
+        #endregion
 
         #region Compute Buffers
 
@@ -16,6 +27,7 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
 
         public DiffuseProbeProcessor() {
             _processorDesc = "Process Diffuse Probes";
+            InitBuffers();
             InitComputeBuffers();
         }
 
@@ -26,8 +38,10 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
             Setup();
 
             if (diffuseGISettings.Enabled) {
+                GetBuffers();
                 RelightProbes();
                 PrefilterProbes();
+                ReleaseBuffers();
             }
 
             DisposeCommandBuffer();
@@ -92,17 +106,47 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
             
         }
 
-        public void InitComputeBuffers() {
+        internal void InitBuffers() {
+            var s = (int) diffuseGISettings.probeGBufferSize;
+            
+            _historyBuffers.AllocBuffer(ShaderKeywordManager.DIFFUSE_PROBE_IRRADIANCE_ARRAY,
+                (system, i) => system.Alloc(size => new Vector2Int(s, s), colorFormat: GraphicsFormat.B10G11R11_UFloatPack32,
+                    filterMode: FilterMode.Bilinear, name: "DiffuseProbeIrradianceArray"), 2);
+            
+            _historyBuffers.AllocBuffer(ShaderKeywordManager.DIFFUSE_PROBE_RADIANCE_ARRAY,
+                (system, i) => system.Alloc(size => new Vector2Int(s, s), colorFormat: GraphicsFormat.B10G11R11_UFloatPack32,
+                    filterMode: FilterMode.Bilinear, name: "DiffuseProbeRadianceArray"), 1);
+        }
+
+        internal void InitComputeBuffers() {
             _diffuseProbeParams = new DiffuseProbeParams[1];
             _diffuseProbeParamsBuffer = new ComputeBuffer(1, sizeof(DiffuseProbeParams), ComputeBufferType.Constant);
         }
 
-        public void ReleaseComputeBuffers() {
+        internal void GetBuffers() {
+            var s = (int) diffuseGISettings.probeGBufferSize;
+            _historyBuffers.SwapAndSetReferenceSize(s, s);
+
+            _diffuseProbeIrradianceArr = _historyBuffers.GetFrameRT(ShaderKeywordManager.DIFFUSE_PROBE_IRRADIANCE_ARRAY, 0);
+            _diffuseProbeRadianceArr = _historyBuffers.GetFrameRT(ShaderKeywordManager.DIFFUSE_PROBE_RADIANCE_ARRAY, 0);
+            
+            _prevDiffuseProbeIrradianceArr = _historyBuffers.GetFrameRT(ShaderKeywordManager.DIFFUSE_PROBE_IRRADIANCE_ARRAY, 1);
+        }
+        
+        internal void ReleaseBuffers() { }
+
+        internal void ReleaseComputeBuffers() {
             _diffuseProbeParamsBuffer?.Dispose();
         }
         
         public override void Dispose() {
+            if (_historyBuffers != null) {
+                _historyBuffers.ReleaseAll();
+                _historyBuffers.Dispose();
+            }
+            
             DisposeCommandBuffer();
+            ReleaseBuffers();
             ReleaseComputeBuffers();
         }
     }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ARP Asset
   m_EditorClassIdentifier: 
   settings:
-    enableTaaInEditor: 1
+    enableTaaInEditor: 0
     enableDebugView: 1
     enableDebugViewInEditor: 1
     debugOutput: 0
@@ -53,7 +53,7 @@ MonoBehaviour:
       probeVBufferSize: 32
       offlineCubemapSize: 512
       probeViewDistance: 50
-      probeDepthSharpness: 80
+      probeDepthSharpness: 60
       probeIrradianceGamma: 0
       probeGBufferPath0: probe_gbuffer_arr_0
       probeGBufferPath1: probe_gbuffer_arr_1
@@ -87,5 +87,5 @@ MonoBehaviour:
       hueShift: 0
       saturation: 0
     tonemappingSettings:
-      tonemappingMode: 0
+      tonemappingMode: 1
       tonemappingShader: {fileID: 4800000, guid: 46b26b03ea0a40869bc6b9b2056589dc, type: 3}

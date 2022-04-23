@@ -55,5 +55,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		VISIBILITY_DEPTH_NORM = 9,
 		VISIBILITY_DEPTH_2 = 10,
 		VISIBILITY_DEPTH_2_NORM = 11,
+		RADIANCE = 12
 	}
 }
