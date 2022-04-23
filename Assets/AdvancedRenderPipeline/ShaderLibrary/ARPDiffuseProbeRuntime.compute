@@ -1,0 +1,24 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel RadianceUpdate
+#pragma kernel IrradiancePrefilter
+#pragma kernel IrradiancePadding
+
+#include "ARPCommon.hlsl"
+
+RW_TEXTURE2D_ARRAY(float3, _RadianceArr);
+RW_TEXTURE2D_ARRAY(float3, _IrradianceArr);
+
+[numthreads(8,8,1)]
+void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
+    
+}
+
+[numthreads(8,8,1)]
+void IrradiancePrefilter(uint3 id : SV_DispatchThreadID) {
+    
+}
+
+[numthreads(8,8,1)]
+void IrradiancePadding(uint3 id : SV_DispatchThreadID) {
+    
+}

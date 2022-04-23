@@ -223,6 +223,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public string probeGBufferPath2;
 		public string probeVBufferPath0;
 		public ComputeShader offlineComputeShader;
+		public ComputeShader runtimeComputeShader;
 		public Texture2DArray probeGBufferArr0;
 		public Texture2DArray probeGBufferArr1;
 		public Texture2DArray probeGBufferArr2;

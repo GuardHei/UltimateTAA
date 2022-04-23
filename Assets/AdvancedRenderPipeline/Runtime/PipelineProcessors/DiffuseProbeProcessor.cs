@@ -20,8 +20,10 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         #region Compute Buffers
 
         protected DiffuseProbeParams[] _diffuseProbeParams;
+        protected DirectionalLight[] _mainLights;
 
         protected ComputeBuffer _diffuseProbeParamsBuffer;
+        protected ComputeBuffer _mainLightsBuffer;
 
         #endregion
 
@@ -79,6 +81,9 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         internal void SetupGILights() {
             var mainLight = RenderSettings.sun;
             LightManager.GIMainLight = mainLight;
+
+            _mainLights[0] = LightManager.GIMainLightData;
+            _mainLightsBuffer.SetData(_mainLights);
         }
 
         internal bool ValidateProbeData() {
@@ -128,6 +133,9 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         internal void InitComputeBuffers() {
             _diffuseProbeParams = new DiffuseProbeParams[1];
             _diffuseProbeParamsBuffer = new ComputeBuffer(1, sizeof(DiffuseProbeParams), ComputeBufferType.Constant);
+
+            _mainLights = new DirectionalLight[1];
+            _mainLightsBuffer = new ComputeBuffer(1, sizeof(DirectionalLight), ComputeBufferType.Constant);
         }
 
         internal void GetBuffers() {
@@ -144,6 +152,7 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
 
         internal void ReleaseComputeBuffers() {
             _diffuseProbeParamsBuffer?.Dispose();
+            _mainLightsBuffer?.Dispose();
         }
         
         public override void Dispose() {

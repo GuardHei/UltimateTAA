@@ -60,6 +60,7 @@ MonoBehaviour:
       probeGBufferPath2: probe_gbuffer_arr_2
       probeVBufferPath0: probe_vbuffer_arr_0
       offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}
+      runtimeComputeShader: {fileID: 7200000, guid: 753bbe1d3eeaa4eb388959a6c0d6b951, type: 3}
       probeGBufferArr0: {fileID: 18700000, guid: 4b64edae4dad84e199c2a99eeb643d0c, type: 2}
       probeGBufferArr1: {fileID: 18700000, guid: f6129fcc3554e4bb2b20ccd74c511525, type: 2}
       probeGBufferArr2: {fileID: 18700000, guid: 5e0919df36e7f4142854ffad666ce20b, type: 2}

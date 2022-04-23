@@ -15,7 +15,7 @@ public class VelocityTexDebug : MonoBehaviour {
     public float interval;
 
     public Material mat;
-    public MeshRenderer renderer;
+    public MeshRenderer meshRenderer;
 
     private void Update() {
         if (!target || !from || !to) return;
@@ -30,6 +30,6 @@ public class VelocityTexDebug : MonoBehaviour {
             if (mat.GetShaderPassEnabled(ShaderTagManager.MOTION_VECTORS_PASS)) Debug.Log("Issue found!");
         }
         
-        if (renderer) print(renderer.localToWorldMatrix.ToString("F3"));
+        if (meshRenderer) print(meshRenderer.localToWorldMatrix.ToString("F3"));
     }
 }

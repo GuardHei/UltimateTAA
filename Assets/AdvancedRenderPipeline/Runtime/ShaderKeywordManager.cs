@@ -66,6 +66,10 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_1 = Shader.PropertyToID("_DiffuseProbeGBufferArr1");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_2 = Shader.PropertyToID("_DiffuseProbeGBufferArr2");
 		public static readonly int DIFFUSE_PROBE_VBUFFER_ARRAY_0 = Shader.PropertyToID("_DiffuseProbeVBufferArr0");
+		
+		// Only used in compute shaders
+		public static readonly int RADIANCE_ARRAY = Shader.PropertyToID("_RadianceArr");
+		public static readonly int IRRADIANCE_ARRAY = Shader.PropertyToID("_IrradianceArr");
 
 		#endregion
 
