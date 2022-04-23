@@ -9,8 +9,27 @@ RW_TEXTURE2D_ARRAY(float3, _RadianceArr);
 RW_TEXTURE2D_ARRAY(float3, _IrradianceArr);
 
 [numthreads(8,8,1)]
-void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
+void RadianceUpdate(uint3 id : SV_DispatchThreadID) {\
+    float4 gbuffer0 = LOAD_TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr0, id.xy, id.z);
+
+    float2 gbuffer1 = LOAD_TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1, id.xy, id.z).rg;
+
+    float3 albedo = gbuffer0.rgb;
+    float skyVisibility = gbuffer0.a;
+
+    float3 N = DecodeNormalComplex(gbuffer1);
     
+    float3 L = _MainLightDirection.rgb;  
+    float3 lightColor = _MainLightColor.rgb;
+    
+    float2 gbufferOct = GetNormalizedOctCoords(id.xy, GetDiffuseProbeSize());
+    float3 dir = UnpackNormalOctQuadEncode(gbufferOct);
+    float3 skyColor = SampleGlobalEnvMapSpecular(dir, .0f);
+
+
+    float3 diffuseColor = saturate(dot(N, L)) * INV_PI * albedo * lightColor;
+
+    _RadianceArr[id] = lerp(diffuseColor, skyColor, skyVisibility);
 }
 
 [numthreads(8,8,1)]

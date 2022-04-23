@@ -141,7 +141,8 @@ Shader "Advanced Render Pipeline/ARPStandardDebug" {
                             depth2 /= maxDepth * maxDepth;
                             debugInfo = float3(depth2, depth2, depth2);
                         } else if (debugMode == 12) {
-                            
+                            float4 info = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeRadianceArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0);
+                            debugInfo = info.rgb;
                         }
                     } else {
                         // set color to magenta to display error
