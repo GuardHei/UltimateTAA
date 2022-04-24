@@ -98,7 +98,9 @@ Shader "Advanced Render Pipeline/ARPStandardDebug" {
                         int debugMode = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _DebugMode);
 
                         if (debugMode == 0) {
-                            
+                            uvNoBorder = GetIrradianceMapUV(matData.N);
+                            float4 info = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeIrradianceArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0);
+                            debugInfo = info.rgb;
                         } else if (debugMode == 1) {
                             
                         } else if (debugMode == 2) {

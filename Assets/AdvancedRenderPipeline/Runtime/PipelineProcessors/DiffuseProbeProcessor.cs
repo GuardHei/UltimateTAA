@@ -43,6 +43,7 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
                 GetBuffers();
                 RelightProbes();
                 PrefilterProbes();
+                PadProbes();
                 ReleaseBuffers();
             }
             
@@ -115,7 +116,7 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
 
         internal void RelightProbes() {
             var cs = diffuseGISettings.runtimeComputeShader;
-            var kernel = cs.FindKernel("RadianceUpdate");
+            var kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_RADIANCE_UPDATE);
             
             _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.RADIANCE_ARRAY, _diffuseProbeRadianceArr);
             _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.IRRADIANCE_ARRAY, _diffuseProbeIrradianceArr);
@@ -132,7 +133,38 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         }
 
         internal void PrefilterProbes() {
-            
+            var cs = diffuseGISettings.runtimeComputeShader;
+            var kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_IRRADIANCE_PREFILTER);
+
+            _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.RADIANCE_ARRAY, _diffuseProbeRadianceArr);
+            _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.IRRADIANCE_ARRAY, _diffuseProbeIrradianceArr);
+
+            var gbufferSize = (int) diffuseGISettings.probeGBufferSize;
+            var threadGroupsX = (int) Mathf.Ceil(gbufferSize / 8.0f);
+            var threadGroupsY = (int) Mathf.Ceil(gbufferSize / 8.0f);
+            var threadGroupsZ = diffuseGISettings.Count;
+
+            _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);    
+            ExecuteCommand();
+        }
+
+        internal void PadProbes() {
+
+            var cs = diffuseGISettings.runtimeComputeShader;
+            var kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_IRRADIANCE_PADDING);
+
+            _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.RADIANCE_ARRAY, _diffuseProbeRadianceArr);
+            _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.IRRADIANCE_ARRAY, _diffuseProbeIrradianceArr);
+
+            var gbufferSize = (int) diffuseGISettings.probeGBufferSize;
+            var threadGroupsX = (int) Mathf.Ceil(gbufferSize / 8.0f);
+            var threadGroupsY = (int) Mathf.Ceil(gbufferSize / 8.0f);
+            var threadGroupsZ = diffuseGISettings.Count;
+
+            _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
+
+            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_IRRADIANCE_ARRAY, _diffuseProbeIrradianceArr);
+            ExecuteCommand();
         }
 
         internal void InitBuffers() {

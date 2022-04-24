@@ -24,7 +24,7 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
     
     float2 gbufferOct = GetNormalizedOctCoords(id.xy, GetDiffuseProbeSize());
     float3 dir = UnpackNormalOctQuadEncode(gbufferOct);
-    float3 skyColor = SampleGlobalEnvMapSpecular(dir, .0f);
+    float3 skyColor = SampleGlobalEnvMapSpecular(dir, .0f) * 0.0f;
 
 
     float3 diffuseColor = saturate(dot(N, L)) * INV_PI * albedo * lightColor;
@@ -36,10 +36,91 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
 
 [numthreads(8,8,1)]
 void IrradiancePrefilter(uint3 id : SV_DispatchThreadID) {
-    
+    uint endCoord = GetDiffuseProbeSize() - 1u;
+    if (id.x == 0u || id.y == 0u 
+        || id.x >= endCoord
+        || id.y >= endCoord) {
+        return;
+    }
+    float2 coordNoBorder = id.xy - uint2(1u, 1u);
+    float2 gbufferOct = GetNormalizedOctCoords(coordNoBorder, GetDiffuseProbeSizeNoBorder());
+    float3 N = UnpackNormalOctQuadEncode(gbufferOct);
+    float3x3 o2w = GetLocalFrame(N);
+
+    float3 radiance_sum = float3(.0f, .0f, .0f);
+    float weight_sum = .0f;
+
+    const uint SAMPLE_COUNT = 2048u;
+    for (uint i = 0u; i < SAMPLE_COUNT; i++) {
+        float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
+        float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
+        dir = mul(dir, o2w);
+
+        float2 sampled_uv = DirToNormalizedOct(dir);
+        float3 sampled_radiance = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeRadianceArr, sampler_linear_clamp, sampled_uv, id.z, 0).rgb;
+        float cosTheta = dot(N, dir);
+        float weight = max(.0f, cosTheta);
+
+        radiance_sum += sampled_radiance * weight;
+        weight_sum += weight;
+    }
+
+    weight_sum = max(weight_sum, FLT_EPS);
+    _IrradianceArr[id] = radiance_sum / weight_sum;
 }
 
 [numthreads(8,8,1)]
 void IrradiancePadding(uint3 id : SV_DispatchThreadID) {
-    
+    const uint probeSize = GetDiffuseProbeSize();
+    const uint probeSizeMinusOne = probeSize - 1u;
+    const uint probeSizeMinusTwo = probeSizeMinusOne - 1u;
+    const uint probeHalfSize = probeSize >> 1;
+    // if (id.x != 0 && id.y != 0 && id.x != probeSizeMinusOne && id.y != probeSizeMinusOne) return;
+
+    if (id.x > probeSizeMinusOne || id.y > probeSizeMinusOne) return;
+
+    if (id.x == 0) {
+        if (id.y == 0) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, probeSizeMinusTwo, id.z)];
+        }
+        else if (id.y == probeSizeMinusOne) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, 1u, id.z)];
+        }
+        else if (id.y < probeHalfSize) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(1u, probeHalfSize + (probeHalfSize - id.y - 1u), id.z)];
+        }
+        else {
+            _IrradianceArr[id] = _IrradianceArr[uint3(1u, 1u + probeSizeMinusTwo - id.y, id.z)];
+        }
+    }
+    else if (id.x == probeSizeMinusOne) {
+        if (id.y == 0) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(1u, probeSizeMinusTwo, id.z)];
+        }
+        else if (id.y == probeSizeMinusOne) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(1u, 1u, id.z)];
+        }
+        else if (id.y < probeHalfSize) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, probeHalfSize + (probeHalfSize - id.y - 1u), id.z)];
+        }
+        else {
+            _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, 1u + probeSizeMinusTwo - id.y, id.z)];
+        }
+    }
+    else if (id.x < probeHalfSize) {
+        if (id.y == 0) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(probeHalfSize + (probeHalfSize - id.x - 1u), 1u, id.z)];
+        }
+        else if (id.y == probeSizeMinusOne) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(probeHalfSize + (probeHalfSize - id.x - 1u), probeSizeMinusTwo, id.z)];
+        }
+    }
+    else {
+        if (id.y == 0) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(1u + probeSizeMinusTwo - id.x, 1u, id.z)];
+        }
+        else if (id.y == probeSizeMinusOne) {
+            _IrradianceArr[id] = _IrradianceArr[uint3(1u + probeSizeMinusTwo - id.x, probeSizeMinusTwo, id.z)];
+        }
+    }
 }
