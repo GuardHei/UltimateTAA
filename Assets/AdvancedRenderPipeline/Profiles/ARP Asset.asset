@@ -42,7 +42,7 @@ MonoBehaviour:
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
     globalEnvMapRotation: 0
     skyboxMipLevel: 0
-    skyboxIntensity: 0.08
+    skyboxIntensity: 0.3
     diffuseGISettings:
       enabled: 1
       markProbesDirty: 0
@@ -89,5 +89,5 @@ MonoBehaviour:
       hueShift: 0
       saturation: 0
     tonemappingSettings:
-      tonemappingMode: 0
+      tonemappingMode: 1
       tonemappingShader: {fileID: 4800000, guid: 46b26b03ea0a40869bc6b9b2056589dc, type: 3}
