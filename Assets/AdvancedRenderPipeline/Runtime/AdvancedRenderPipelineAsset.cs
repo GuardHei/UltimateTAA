@@ -70,6 +70,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float globalEnvMapRotation;
 		[Range(0f, 11.0f)]
 		public float skyboxMipLevel;
+		[Range(0f, 3f)]
+		public float skyboxIntensity = 1.0f;
 		[Header("Global Illumination")]
 		public DiffuseGISettings diffuseGISettings = new() {
 			volumeCenter = Vector3.zero, dimensions = new Vector3Int(2, 2, 2), maxIntervals = Vector3.one, 

@@ -6,8 +6,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace RP_Tests {
-	
-	[CanEditMultipleObjects]
 	[ExecuteInEditMode]
 	public class PBRShowcase : MonoBehaviour {
 

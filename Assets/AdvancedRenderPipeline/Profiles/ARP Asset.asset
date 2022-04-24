@@ -42,6 +42,7 @@ MonoBehaviour:
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
     globalEnvMapRotation: 0
     skyboxMipLevel: 0
+    skyboxIntensity: 0.08
     diffuseGISettings:
       enabled: 1
       markProbesDirty: 0

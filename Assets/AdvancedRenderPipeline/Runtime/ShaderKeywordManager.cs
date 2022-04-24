@@ -43,6 +43,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int GLOBAL_ENV_MAP_DIFFUSE = Shader.PropertyToID("_GlobalEnvMapDiffuse");
 		public static readonly int GLOBAL_ENV_MAP_ROTATION = Shader.PropertyToID("_GlobalEnvMapRotation");
 		public static readonly int SKYBOX_MIP_LEVEL = Shader.PropertyToID("_SkyboxMipLevel");
+		public static readonly int SKYBOX_INTENSITY = Shader.PropertyToID("_SkyboxIntensity");
 
 		#endregion
 

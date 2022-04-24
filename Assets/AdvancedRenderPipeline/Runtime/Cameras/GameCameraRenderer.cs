@@ -81,7 +81,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			beforeCull?.Invoke();
 
 			Cull();
-			SetupSkybox();
 
 			beforeFirstPass?.Invoke();
 			
@@ -274,11 +273,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			ExecuteCommand();
 		}
 
-		internal void SetupSkybox() {
-			_cmd.SetGlobalFloat(ShaderKeywordManager.GLOBAL_ENV_MAP_ROTATION, settings.globalEnvMapRotation);
-			_cmd.SetGlobalFloat(ShaderKeywordManager.SKYBOX_MIP_LEVEL, settings.skyboxMipLevel);
-		}
-		
 		internal void SetupLights() {
 			LightManager.UpdateLight(_cullingResults);
 			_mainLights[0] = LightManager.MainLightData;

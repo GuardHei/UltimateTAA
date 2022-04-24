@@ -150,6 +150,7 @@ static float _AlphaCutOff;
 
 float _GlobalEnvMapRotation;
 float _SkyboxMipLevel;
+float _SkyboxIntensity;
 
 //////////////////////////////////////////
 // Built-in Textures and Samplers       //
@@ -967,12 +968,12 @@ float4 PrefilterEnvMap(TextureCube envMap, float resolution, float roughness, fl
 
 float3 SampleGlobalEnvMapDiffuse(float3 dir) {
     dir = RotateAroundYInDegrees(dir, _GlobalEnvMapRotation);
-    return _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, dir, DIFF_IBL_MAX_MIP).rgb;
+    return _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, dir, DIFF_IBL_MAX_MIP).rgb * _SkyboxIntensity;
 }
 
 float3 SampleGlobalEnvMapSpecular(float3 dir, float mipLevel) {
     dir = RotateAroundYInDegrees(dir, _GlobalEnvMapRotation);
-    return _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, dir, mipLevel).rgb;
+    return _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, dir, mipLevel).rgb * _SkyboxIntensity;
 }
 
 float ComputeHorizonSpecularOcclusion(float3 R, float3 vertexNormal, float horizonFade) {
@@ -989,7 +990,6 @@ float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 diffuse, float d) {
     // float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, DIFF_IBL_MAX_MIP).rgb;
     float3 indirectDiffuse = SampleGlobalEnvMapDiffuse(N);
     indirectDiffuse *= diffuse * kD * d;
-    indirectDiffuse *= .0f;
     return indirectDiffuse;
 }
 

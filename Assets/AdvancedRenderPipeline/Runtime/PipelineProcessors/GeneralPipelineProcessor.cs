@@ -10,6 +10,8 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         public override void Process(ScriptableRenderContext context) {
             _context = context;
             _cmd = CommandBufferPool.Get(_processorDesc);
+            
+            SetupSkybox();
 
             FirstFrameSetup();
             
@@ -33,6 +35,13 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
             _cmd.SetGlobalTexture(ShaderKeywordManager.GLOBAL_ENV_MAP_DIFFUSE, settings.globalEnvMapDiffuse);
                 
             ExecuteCommand();
+        }
+        
+        internal void SetupSkybox() {
+            var settings = AdvancedRenderPipeline.settings;
+            _cmd.SetGlobalFloat(ShaderKeywordManager.GLOBAL_ENV_MAP_ROTATION, settings.globalEnvMapRotation);
+            _cmd.SetGlobalFloat(ShaderKeywordManager.SKYBOX_MIP_LEVEL, settings.skyboxMipLevel);
+            _cmd.SetGlobalFloat(ShaderKeywordManager.SKYBOX_INTENSITY, settings.skyboxIntensity);
         }
 
         public override void Dispose() {
