@@ -9,7 +9,7 @@ RW_TEXTURE2D_ARRAY(float3, _RadianceArr);
 RW_TEXTURE2D_ARRAY(float3, _IrradianceArr);
 
 [numthreads(8,8,1)]
-void RadianceUpdate(uint3 id : SV_DispatchThreadID) {\
+void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
     float4 gbuffer0 = LOAD_TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr0, id.xy, id.z);
 
     float2 gbuffer1 = LOAD_TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1, id.xy, id.z).rg;
@@ -30,6 +30,8 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {\
     float3 diffuseColor = saturate(dot(N, L)) * INV_PI * albedo * lightColor;
 
     _RadianceArr[id] = lerp(diffuseColor, skyColor, skyVisibility);
+    // _RadianceArr[id] = saturate(dot(N, L));
+    // _RadianceArr[id] = skyColor;
 }
 
 [numthreads(8,8,1)]

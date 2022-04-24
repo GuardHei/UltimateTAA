@@ -167,11 +167,15 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			*/
 
 			var viewMatrix = camera.worldToCameraMatrix;
-			_matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * viewMatrix;
+			var projectionMatrix = camera.projectionMatrix;
+			// projectionMatrix *= Matrix4x4.Scale(new Vector3(-1, 1, 1));
+			// camera.projectionMatrix = projectionMatrix;
+			_matrixVP = GL.GetGPUProjectionMatrix(projectionMatrix, false) * viewMatrix;
 			_invMatrixVP = _matrixVP.inverse;
 			_nonjitteredMatrixVP = GL.GetGPUProjectionMatrix(camera.nonJitteredProjectionMatrix, false) * viewMatrix;
 			_invNonJitteredMatrixVP = _nonjitteredMatrixVP.inverse;
 
+			_cmd.SetInvertCulling(false);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, _invMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _nonjitteredMatrixVP : _prevMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invNonJitteredMatrixVP : _prevInvMatrixVP);

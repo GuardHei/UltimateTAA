@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using AdvancedRenderPipeline.Runtime;
+using AdvancedRenderPipeline.Runtime.PipelineProcessors;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;

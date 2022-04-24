@@ -45,11 +45,11 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
     public static AdvancedRenderPipelineSettings pipelineSettings => AdvancedRenderPipeline.Runtime.AdvancedRenderPipeline.settings;
     public static DiffuseGISettings diffuseGISettings => AdvancedRenderPipeline.Runtime.AdvancedRenderPipeline.settings.diffuseGISettings;
     
-    [MenuItem("ARP Probes/CaptureCubemap")]
-    public static void CaptureCubemap() {
+    [MenuItem("ARP Probes/CaptureDiffuseProbes")]
+    public static void CaptureDiffuseProbes() {
         ProbeDataDir = Application.dataPath + "/Data/Probes/";
         ProbeDataDir = "Assets/Data/Probes/";
-        var wizard = DisplayWizard<DiffuseProbeBakerWizard>("Diffuse Probe Baker", "Capture", "Clear");
+        var wizard = DisplayWizard<DiffuseProbeBakerWizard>("Diffuse Probe Baker", "Capture", "Extra");
         var transforms = Selection.transforms;
         if (transforms is { Length: > 0 }) wizard.renderFromPosition = transforms[0];
         wizard.OnWizardUpdate();
@@ -234,6 +234,28 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                 useMipMap = false
             };
             
+            var gbufferCubemap0 = new RenderTexture(hrDesc0);
+            var gbufferCubemap1 = new RenderTexture(hrDesc1);
+            var gbufferCubemap2 = new RenderTexture(hrDesc2);
+            var gbuffer0 = new RenderTexture(ocDesc0);
+            var gbuffer1 = new RenderTexture(ocDesc1);
+            var gbuffer2 = new RenderTexture(ocDesc2);
+            var vbuffer0 = new RenderTexture(ocDesc3);
+            gbufferCubemap0.Create();
+            gbufferCubemap1.Create();
+            gbufferCubemap2.Create();
+            gbuffer0.Create();
+            gbuffer1.Create();
+            gbuffer2.Create();
+            vbuffer0.Create();
+            additionalData.diffuseProbeGBufferCubemap0 = gbufferCubemap0;
+            additionalData.diffuseProbeGBufferCubemap1 = gbufferCubemap1;
+            additionalData.diffuseProbeGBufferCubemap2 = gbufferCubemap2;
+            additionalData.diffuseProbeGBuffer0 = gbuffer0;
+            additionalData.diffuseProbeGBuffer1 = gbuffer1;
+            additionalData.diffuseProbeGBuffer2 = gbuffer2;
+            additionalData.diffuseProbeVBuffer0 = vbuffer0;
+            
             // var gbuffer0Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer0Format, TextureCreationFlags.None);
             // var gbuffer1Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer1Format, TextureCreationFlags.None);
             // var gbuffer2Arr = new Texture2D(probeGBufferSize * count, probeGBufferSize, gbuffer2Format, TextureCreationFlags.None);
@@ -254,27 +276,8 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         var probeId = diffuseGISettings.GetProbeIndex1d(new Vector3Int(i, j, k));
                         var pos = origin + new Vector3(i * maxIntervals.x, j * maxIntervals.y, k * maxIntervals.z);
                         tr.position = pos;
-                        var gbufferCubemap0 = new RenderTexture(hrDesc0);
-                        var gbufferCubemap1 = new RenderTexture(hrDesc1);
-                        var gbufferCubemap2 = new RenderTexture(hrDesc2);
-                        var gbuffer0 = new RenderTexture(ocDesc0);
-                        var gbuffer1 = new RenderTexture(ocDesc1);
-                        var gbuffer2 = new RenderTexture(ocDesc2);
-                        var vbuffer0 = new RenderTexture(ocDesc3);
-                        gbufferCubemap0.Create();
-                        gbufferCubemap1.Create();
-                        gbufferCubemap2.Create();
-                        gbuffer0.Create();
-                        gbuffer1.Create();
-                        gbuffer2.Create();
-                        vbuffer0.Create();
-                        additionalData.diffuseProbeGBufferCubemap0 = gbufferCubemap0;
-                        additionalData.diffuseProbeGBufferCubemap1 = gbufferCubemap1;
-                        additionalData.diffuseProbeGBufferCubemap2 = gbufferCubemap2;
-                        additionalData.diffuseProbeGBuffer0 = gbuffer0;
-                        additionalData.diffuseProbeGBuffer1 = gbuffer1;
-                        additionalData.diffuseProbeGBuffer2 = gbuffer2;
-                        additionalData.diffuseProbeVBuffer0 = vbuffer0;
+
+                        /*
                         highResolutionGBuffer0.Add(gbufferCubemap0);
                         highResolutionGBuffer1.Add(gbufferCubemap1);
                         highResolutionGBuffer2.Add(gbufferCubemap2);
@@ -282,6 +285,7 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         octahdronGBuffer1.Add(gbuffer1);
                         octahdronGBuffer2.Add(gbuffer2);
                         octahdronVBuffer0.Add(vbuffer0);
+                        */
                         
                         cam.Render();
 
@@ -301,17 +305,17 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         gbuffer1Arr.SetPixels(gbuffer1Single.GetPixels(), probeId, 0);
                         gbuffer2Arr.SetPixels(gbuffer2Single.GetPixels(), probeId, 0);
                         vbuffer0Arr.SetPixels(vbuffer0Single.GetPixels(), probeId, 0);
-                        
-                        gbufferCubemap0.Release();
-                        gbufferCubemap1.Release();
-                        gbufferCubemap2.Release();
-                        gbuffer0.Release();
-                        gbuffer1.Release();
-                        gbuffer2.Release();
-                        vbuffer0.Release();
                     }
                 }
             }
+            
+            gbufferCubemap0.Release();
+            gbufferCubemap1.Release();
+            gbufferCubemap2.Release();
+            gbuffer0.Release();
+            gbuffer1.Release();
+            gbuffer2.Release();
+            vbuffer0.Release();
 
             /*
             var gbuffer0Data = gbuffer0Arr.EncodeToPNG();
@@ -354,6 +358,9 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
             DestroyImmediate(go);
             Clear();
             placeholderRT.Release();
+            
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
     }
 

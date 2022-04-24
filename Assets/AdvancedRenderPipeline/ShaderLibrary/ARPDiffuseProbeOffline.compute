@@ -68,6 +68,8 @@ void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
     float3 avgNormal = normalTotal / weightTotal;
     float avgRadialDepth = radialDepthTotal / weightTotal;
 
+    // avgNormal = DecodeNormalComplex(SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap1, sampler_point_clamp, N, 0).rg);
+
     /*
     avgAlbedo = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap0, sampler_point_clamp, N, 0).rgb;
     avgSkyVisibility = SAMPLE_TEXTURECUBE_LOD(_DiffuseProbeGBufferCubemap0, sampler_point_clamp, N, 0).a;

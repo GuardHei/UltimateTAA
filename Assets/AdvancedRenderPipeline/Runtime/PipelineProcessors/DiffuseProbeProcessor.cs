@@ -23,7 +23,7 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         protected DirectionalLight[] _mainLights;
 
         protected ComputeBuffer _diffuseProbeParamsBuffer;
-        protected ComputeBuffer _mainLightsBuffer;
+        protected ComputeBuffer _mainLightBuffer;
 
         #endregion
 
@@ -45,6 +45,8 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
                 PrefilterProbes();
                 ReleaseBuffers();
             }
+            
+            context.Submit();
 
             DisposeCommandBuffer();
         }
@@ -83,7 +85,8 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
             LightManager.GIMainLight = mainLight;
 
             _mainLights[0] = LightManager.GIMainLightData;
-            _mainLightsBuffer.SetData(_mainLights);
+            _mainLightBuffer.SetData(_mainLights);
+            _cmd.SetGlobalConstantBuffer(_mainLightBuffer, ShaderKeywordManager.MAIN_LIGHT_DATA, 0, sizeof(DirectionalLight));
         }
 
         internal bool ValidateProbeData() {
@@ -111,7 +114,21 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         }
 
         internal void RelightProbes() {
+            var cs = diffuseGISettings.runtimeComputeShader;
+            var kernel = cs.FindKernel("RadianceUpdate");
             
+            _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.RADIANCE_ARRAY, _diffuseProbeRadianceArr);
+            _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.IRRADIANCE_ARRAY, _diffuseProbeIrradianceArr);
+            
+            var gbufferSize = (int) diffuseGISettings.probeGBufferSize;
+            var threadGroupsX = (int) Mathf.Ceil(gbufferSize / 8.0f);
+            var threadGroupsY = (int) Mathf.Ceil(gbufferSize / 8.0f);
+            var threadGroupsZ = diffuseGISettings.Count;
+            
+            _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
+            
+            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_RADIANCE_ARRAY, _diffuseProbeRadianceArr);
+            ExecuteCommand();
         }
 
         internal void PrefilterProbes() {
@@ -120,14 +137,15 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
 
         internal void InitBuffers() {
             var s = (int) diffuseGISettings.probeGBufferSize;
+            var count = diffuseGISettings.Count;
             
             _historyBuffers.AllocBuffer(ShaderKeywordManager.DIFFUSE_PROBE_IRRADIANCE_ARRAY,
                 (system, i) => system.Alloc(size => new Vector2Int(s, s), colorFormat: GraphicsFormat.B10G11R11_UFloatPack32,
-                    filterMode: FilterMode.Bilinear, name: "DiffuseProbeIrradianceArray"), 2);
+                    filterMode: FilterMode.Bilinear, enableRandomWrite: true, dimension: TextureDimension.Tex2DArray, slices: count, name: "DiffuseProbeIrradianceArray"), 2);
             
             _historyBuffers.AllocBuffer(ShaderKeywordManager.DIFFUSE_PROBE_RADIANCE_ARRAY,
                 (system, i) => system.Alloc(size => new Vector2Int(s, s), colorFormat: GraphicsFormat.B10G11R11_UFloatPack32,
-                    filterMode: FilterMode.Bilinear, name: "DiffuseProbeRadianceArray"), 1);
+                    filterMode: FilterMode.Bilinear, enableRandomWrite: true, dimension: TextureDimension.Tex2DArray, slices: count, name: "DiffuseProbeRadianceArray"), 1);
         }
 
         internal void InitComputeBuffers() {
@@ -135,7 +153,7 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
             _diffuseProbeParamsBuffer = new ComputeBuffer(1, sizeof(DiffuseProbeParams), ComputeBufferType.Constant);
 
             _mainLights = new DirectionalLight[1];
-            _mainLightsBuffer = new ComputeBuffer(1, sizeof(DirectionalLight), ComputeBufferType.Constant);
+            _mainLightBuffer = new ComputeBuffer(1, sizeof(DirectionalLight), ComputeBufferType.Constant);
         }
 
         internal void GetBuffers() {
@@ -152,7 +170,7 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
 
         internal void ReleaseComputeBuffers() {
             _diffuseProbeParamsBuffer?.Dispose();
-            _mainLightsBuffer?.Dispose();
+            _mainLightBuffer?.Dispose();
         }
         
         public override void Dispose() {

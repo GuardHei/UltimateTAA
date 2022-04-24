@@ -23,7 +23,7 @@ namespace AdvancedRenderPipeline.Runtime {
 				} else {
 					MainLightData = new DirectionalLight {
 						direction = -mainLight.transform.localToWorldMatrix.GetColumn(2),
-						color = (mainLight.color * mainLight.intensity).ColorToFloat4()
+						color = (mainLight.color.linear * mainLight.intensity).ColorToFloat4()
 					};
 				}
 			}
@@ -41,7 +41,7 @@ namespace AdvancedRenderPipeline.Runtime {
 				} else {
 					GIMainLightData = new DirectionalLight {
 						direction = -giMainLight.transform.localToWorldMatrix.GetColumn(2),
-						color = (giMainLight.color * giMainLight.intensity).ColorToFloat4()
+						color = (giMainLight.color.linear * giMainLight.intensity).ColorToFloat4()
 					};
 				}
 			}

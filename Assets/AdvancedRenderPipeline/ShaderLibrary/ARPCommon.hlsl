@@ -989,6 +989,7 @@ float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 diffuse, float d) {
     // float3 indirectDiffuse = _GlobalEnvMapDiffuse.SampleLevel(sampler_GlobalEnvMapDiffuse, N, DIFF_IBL_MAX_MIP).rgb;
     float3 indirectDiffuse = SampleGlobalEnvMapDiffuse(N);
     indirectDiffuse *= diffuse * kD * d;
+    indirectDiffuse *= .0f;
     return indirectDiffuse;
 }
 

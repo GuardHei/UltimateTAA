@@ -115,11 +115,19 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             };
             
             var viewMatrix = camera.worldToCameraMatrix;
-			_matrixVP = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * viewMatrix;
+            
+            camera.ResetProjectionMatrix();
+            var projectionMatrix = camera.projectionMatrix;
+            projectionMatrix *= Matrix4x4.Scale(new Vector3(-1f, 1f, 1f));
+            camera.projectionMatrix = projectionMatrix;
+			_matrixVP = GL.GetGPUProjectionMatrix(projectionMatrix, false) * viewMatrix;
 			_invMatrixVP = _matrixVP.inverse;
-			_nonjitteredMatrixVP = GL.GetGPUProjectionMatrix(camera.nonJitteredProjectionMatrix, false) * viewMatrix;
-			_invNonJitteredMatrixVP = _nonjitteredMatrixVP.inverse;
+			
+			// _nonjitteredMatrixVP = GL.GetGPUProjectionMatrix(camera.nonJitteredProjectionMatrix, false) * viewMatrix;
+			_nonjitteredMatrixVP = _matrixVP;
+			_invNonJitteredMatrixVP = _invMatrixVP;
 
+			_cmd.SetInvertCulling(true);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, _invMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _nonjitteredMatrixVP : _prevMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invNonJitteredMatrixVP : _prevInvMatrixVP);
@@ -241,6 +249,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 	        
 	        _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
 
+	        _cmd.SetInvertCulling(false);
 	        ExecuteCommand();
         }
         

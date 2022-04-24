@@ -141,6 +141,9 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly string DIFFUSE_PROBE_GBUFFER_PREFILTER = "GBufferPrefilter";
 		public static readonly string DIFFUSE_PROBE_VBUFFER_PREFILTER = "VBufferPrefilter";
 		public static readonly string DIFFUSE_PROBE_VBUFFER_PADDING = "VBufferPadding";
+		public static readonly string DIFFUSE_PROBE_RADIANCE_UPDATE = "RadianceUpdate";
+		public static readonly string DIFFUSE_PROBE_IRRADIANCE_PREFILTER = "IrradiancePrefilter";
+		public static readonly string DIFFUSE_PROBE_IRRADIANCE_PADDING = "IrradiancePadding";
 
 		#endregion
 
