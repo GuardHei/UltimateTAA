@@ -116,6 +116,7 @@ struct ARPSurfMatOutputData {
     float3 N;
     float3 V;
     float3 R;
+    float3 posWS;
     float NdotV;
     float2 uv;
     float3 diffuse;
@@ -295,6 +296,7 @@ void ARPSurfMaterialSetup(inout ARPSurfMatOutputData output, ARPSurfVertexOutput
     output.N = N;
     output.V = V;
     output.R = R;
+    output.posWS = input.posWS;
     output.NdotV = NdotV;
     output.uv = uv;
     output.diffuse = diffuse;
@@ -382,7 +384,16 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     kD *=  1.0f - metallic;
     // float negE = 1.0f - envGF;
     
-    float3 indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
+    float3 indirectDiffuse;
+
+    if (_DiffuseProbeParams5.w == .0f) {
+        indirectDiffuse = float3(.0f, .0f, .0f);
+    } else if (_DiffuseProbeParams5.w == 1.0f) {
+        indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
+    } else {
+        // indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
+        indirectDiffuse = SampleIndirectDiffuseGI(mat.posWS, mat.N, mat.diffuse, kD, envD) * occlusion;
+    }
     
     float4 forwardLighting = float4(.0f, .0f, .0f, 1.0f);
     

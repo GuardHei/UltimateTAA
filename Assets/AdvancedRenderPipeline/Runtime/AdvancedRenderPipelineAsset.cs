@@ -55,10 +55,16 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Shader cameraMotionShader;
 		[Header("Transparency"), Min(0f)]
 		public float alphaTestDepthCutOff = .001f;
-		[Header("Shadow"), Min(0f)]
-		public float mainLightShadowDistance = 100f;
-		public ShadowmapSize mainLightShadowmapSize = ShadowmapSize._2048;
-		public SoftShadowMode mainLightSoftShadow = SoftShadowMode.None;
+		[Header("Shadow")]
+		public ShadowSettings shadowSettings = new() {
+			enabled = false,
+			mainLightShadowDistance = 100f,
+			mainLightShadowCascade1 = .1f,
+			mainLightShadowCascade2 = .25f,
+			mainLightShadowCascade3 = .5f,
+			mainLightShadowmapSize = ShadowmapSize._2048,
+			mainLightSoftShadow = SoftShadowMode.Pcf3x3
+		};
 		[Header("Image Based Lighting")]
 		public Texture2D iblLut;
 		public Texture2D diffuseIBLLut;
@@ -74,6 +80,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float skyboxIntensity = 1.0f;
 		[Header("Global Illumination")]
 		public DiffuseGISettings diffuseGISettings = new() {
+			src = DiffuseGISource.Skybox,
 			volumeCenter = Vector3.zero, dimensions = new Vector3Int(2, 2, 2), maxIntervals = Vector3.one, 
 			probeGBufferSize = DiffuseGIProbeSize._16, probeVBufferSize = DiffuseGIProbeSize._16, offlineCubemapSize = DiffuseGIProbeSize._512,
 			probeViewDistance = 50f, probeDepthSharpness = 80f, probeIrradianceGamma = 1f,
@@ -122,8 +129,8 @@ namespace AdvancedRenderPipeline.Runtime {
 	}
 
 	public enum SoftShadowMode {
-		None = 0,
-		Pcf = 1,
+		Pcf3x3 = 0,
+		Pcf5x5 = 1,
 		Pcss = 2
 	}
 
@@ -139,6 +146,22 @@ namespace AdvancedRenderPipeline.Runtime {
 		_4 = 4,
 		_8 = 8,
 		_16 = 16
+	}
+
+	[Serializable]
+	public struct ShadowSettings {
+		public bool enabled;
+		public float mainLightShadowDistance;
+		[Range(0f, 1f)]
+		public float mainLightShadowCascade1;
+		[Range(0f, 1f)]
+		public float mainLightShadowCascade2;
+		[Range(0f, 1f)]
+		public float mainLightShadowCascade3;
+		public ShadowmapSize mainLightShadowmapSize;
+		public SoftShadowMode mainLightSoftShadow;
+
+		public Vector3 MainLightShadowCascades => new(mainLightShadowCascade1, mainLightShadowCascade2, mainLightShadowCascade3);
 	}
 
 	[Serializable]
@@ -208,6 +231,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		[DisplayOnly]
 		[Tooltip("Is the dynamic diffuse gi actually enabled?")]
 		public bool enabledFlag;
+		public DiffuseGISource src;
 		public Vector3 volumeCenter;
 		public Vector3Int dimensions;
 		public Vector3 maxIntervals;
@@ -253,7 +277,7 @@ namespace AdvancedRenderPipeline.Runtime {
 					_DiffuseProbeParams2 = new float4(maxIntervals.x, maxIntervals.y, maxIntervals.z, GridDiagonalLength),
 					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, Enabled ? 1 : 0),
 					_DiffuseProbeParams4 = new float4(Min, probeIrradianceGamma),
-					_DiffuseProbeParams5 = new float4(Max, 0f)
+					_DiffuseProbeParams5 = new float4(Max, (int) src)
 				};
 				return gpuParams;
 			}
@@ -281,5 +305,11 @@ namespace AdvancedRenderPipeline.Runtime {
 		_256 = 256,
 		_512 = 512,
 		_1024 = 1024
+	}
+
+	public enum DiffuseGISource {
+		None = 0,
+		Skybox = 1,
+		DDGI = 2
 	}
 }

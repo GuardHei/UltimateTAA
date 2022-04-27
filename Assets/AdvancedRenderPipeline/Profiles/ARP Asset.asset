@@ -31,18 +31,23 @@ MonoBehaviour:
     integrateOpaqueLightingShader: {fileID: 4800000, guid: f29b3703c3454c149cc0c39561a8ff6c, type: 3}
     cameraMotionShader: {fileID: 4800000, guid: 0bc3da1da68d4e84affef526b5434fb2, type: 3}
     alphaTestDepthCutOff: 0.001
-    mainLightShadowDistance: 100
-    mainLightShadowmapSize: 2048
-    mainLightSoftShadow: 0
+    shadowSettings:
+      enabled: 0
+      mainLightShadowDistance: 100
+      mainLightShadowCascade1: 0.1
+      mainLightShadowCascade2: 0.25
+      mainLightShadowCascade3: 0.5
+      mainLightShadowmapSize: 2048
+      mainLightSoftShadow: 0
     iblLut: {fileID: 2800000, guid: de9d90a61eb0848dd8a35f98d367430f, type: 3}
     diffuseIBLLut: {fileID: 2800000, guid: 3b1341f5a97fb4ea7be016e40935dbc2, type: 3}
     specularIBLLut: {fileID: 2800000, guid: d2b1aa1c8d67742d896366ec636fd0c5, type: 3}
-    globalEnvMapDiffuse: {fileID: 8900000, guid: e51fdd5f41a3f43abb924252c34d1fbd, type: 3}
-    globalEnvMapSpecular: {fileID: 8900000, guid: 176063b10f7b745f4ba5fb659931f61f, type: 3}
+    globalEnvMapDiffuse: {fileID: 8900000, guid: ecad7319420654d6194bd1ecab7ae466, type: 3}
+    globalEnvMapSpecular: {fileID: 8900000, guid: 4774adbdd17264952b6562a3707dc3c6, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
     globalEnvMapRotation: 0
     skyboxMipLevel: 0
-    skyboxIntensity: 0.3
+    skyboxIntensity: 1
     diffuseGISettings:
       enabled: 1
       markProbesDirty: 0

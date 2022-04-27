@@ -63,6 +63,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			cameraType = AdvancedCameraType.Game;
 			_rendererDesc = "Render Game (" + camera.name + ")";
 			// camera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
+
 			InitBuffers();
 			InitComputeBuffers();
 		}
