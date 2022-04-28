@@ -1287,48 +1287,65 @@ float2 GetVisibilityMapUV(float3 dir) {
 //     return float4(probeIrradiance * netWeight, netWeight);
 // }
 
-/* Using the power cosine weighting expression William posted in the Discord */
 float4 GetProbeIrradianceWeighted(int3 probeIndex, float3 posWS, float3 N) {
     // Weights for each factor
     const float trilinearWeightFactor = 1.0f;
+    const float cosWeightFactor = 1.0f;
     const float visibilityWeightFactor = 1.0f;
-    const float sharpnessFactor = 1.0f;
 
+    // Offset used to ensure probes do not occlude themselves
+    const float surfaceOffset = 0.1f;
+
+    // Minimum Chebyshev weight value, so that we never have a weight of 0
+    const float minVarianceWeight = 0.05f;
+
+    // Probe sampling starts here ////////////////////////////////////////////////////////////////
     // Find probe world-space position
     float3 probePos = GetDiffuseProbePosWS(probeIndex);
 
-    // Weight bias of 1.0f
+    // Our final weight will be the product of the trilinear, cosine, and variance-based weights; init weight = 1.f
     float netWeight = 1.0f;
 
     // Trilinear weighting: smaller value (dist to probe) -> higher weight
     float3 pointToProbe = normalize(probePos - posWS);
     float distToProbe = length(pointToProbe);
     // DiffuseProbeParams2.w is maximum diagonal length
-    float distWeight = saturate((_DiffuseProbeParams2.w - distToProbe) / _DiffuseProbeParams2.w);
-    netWeight += distWeight * trilinearWeightFactor;
+    float trilinearWeight = saturate((_DiffuseProbeParams2.w - distToProbe) / _DiffuseProbeParams2.w);
+    netWeight *= trilinearWeight * trilinearWeightFactor;
 
-    // Visibility weighting: larger value -> higher weight
-    // Sky visibility stored in .a channel of GBuffer0
-    // Do we need to use GetMaxVisibilityDepth() here?
-    float2 visibilityUV = GetVisibilityMapUV(N);
-    float visibilityWeight = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeGBufferArr0, sampler_linear_clamp, visibilityUV, GetProbeIndex1d(probeIndex), 0);
-    // Assuming that visibility is a value <= 1.0
-    netWeight += visibilityWeight * visibilityWeightFactor;
-
-    // Power cosine weighting: smaller value (angle between N and point-to-probe) -> higher weight
+    // Cosine weighting: smaller value (angle between normal and point-to-probe) -> higher weight
+    // If the angle between our sampled normal direction and the actual direction are close together, our sample was
+    //  closer to the best expected sample; thus, we weight these results higher
     // cos(theta) = (a dot b) / (|a| * |b|); pointToProbe and N are both normalized, so |a| == |b| == 1
-    float cos_theta = abs(dot(N, pointToProbe));
-    // Apply power weighting using the sharpness factor specified above
-    float cos_weight = pow(cos_theta, sharpnessFactor);
+    float cosWeight = saturate(dot(N, pointToProbe));
+    netWeight *= cosWeight * cosWeightFactor;
 
-    // Final weight calculated as follows (using expression William posted in our group chat):
-    netWeight = cos_weight / netWeight;
+    // Visibility weighting:
+    // This value is dependent on whether or not the current sample position is occluded by the current probe
+    //  We sample from VBuffer, which stores distance info (result.x is scaled E[x], result.y is scaled E[x^2]), and use these values to calculate variance
+    float2 visParams = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, GetVisibilityMapUV(N), GetProbeIndex1d(probeIndex), 0).xy;
+    float variance = abs((visParams.x * visParams.x) - visParams.y);
+
+    // Check for occlusion, when the offset distance between the sample point and probe is greater than the distance to the closest geometry (stored in VBuffer)
+    float chebyshevWeight = 1.0f;
+    if (distToProbe - surfaceOffset > visParams.x)
+    {
+        // occlusion occurs; weight this probe's result using chebyshev's inequality
+        float k = (distToProbe - surfaceOffset) - visParams.x;
+        chebyshevWeight = variance / (variance + (k * k));
+    }
+
+    // Clamp resulting Chebyshev weight to some min value above 0; in the case that all probes are occluded, we use a heavily reduced sample from all probes
+    chebyshevWeight = max(minVarianceWeight, chebyshevWeight);
+    netWeight *= chebyshevWeight * visibilityWeightFactor;
+
+    // Avoid final weight being 0, and clamp to FLT_EPS
+    netWeight = max(netWeight, FLT_EPS);
 
     // Sample the texture given normal vector N
-    float2 probeTexUV = GetIrradianceMapUV(N);
-    float3 probeIrradiance = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeIrradianceArr, sampler_linear_clamp, probeTexUV, GetProbeIndex1d(probeIndex), 0);
+    float3 probeIrradiance = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeIrradianceArr, sampler_linear_clamp, GetIrradianceMapUV(N), GetProbeIndex1d(probeIndex), 0);
 
-    // Weight the resulting irradiance, return irradiance and weight in float4
+    // Weight the resulting irradiance, return both irradiance and weight in float4
     return float4(probeIrradiance * netWeight, netWeight);
 }
 
@@ -1337,13 +1354,13 @@ float3 SampleIndirectDiffuseGI(float3 posWS, float3 N, float3 diffuse, float3 kD
 
     // todo
     // sample the nearest 8 diffuse probes and weight them accordingly
-
+    
     // Get the index of the closest probe to posWS; this is probe 0
     int3 startProbeIndex = GetNearestProbeIndex3dFromPosWS(posWS);
     float3 startProbePos = GetDiffuseProbePosWS(startProbeIndex);
 
     // probeOffsets stores the 1d index offset to get to the next adjacent light probe, based on the nearest probe's xyz position
-    int3 probeOffsets;
+    int3 probeOffsets = int3(0, 0, 0);
 
     // Determine whether we +1/-1 to the index to get the next probe
     probeOffsets.x = (posWS.x >= startProbePos.x) ? 1 : -1;
@@ -1362,52 +1379,68 @@ float3 SampleIndirectDiffuseGI(float3 posWS, float3 N, float3 diffuse, float3 kD
 
     // Node visiting order follows the example picture from the NVIDIA paper
 
+    // Note: we need to clamp index values to int3(0, 0, 0) and int3(max_x - 1, max_y - 1, max_z - 1)
+    const int3 minProbeDimensions = int3(0, 0, 0);
+    const int3 maxProbeDimensions = int3(GetDiffuseProbeDimensions().x - 1, GetDiffuseProbeDimensions().y - 1, GetDiffuseProbeDimensions().z - 1);
+
+    
+    
     // PROBE 0 (startProbeIndex)
     float4 probeIrr = GetProbeIrradianceWeighted(startProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     //PROBE 3
-    int3 probeIndex3 = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z);
-    probeIrr = GetProbeIrradianceWeighted(probeIndex3, posWS, N);
+    int3 currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z);
+    clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 6
-    int3 probeIndex6 = int3(startProbeIndex.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z + probeOffsets.z);
-    probeIrr = GetProbeIrradianceWeighted(probeIndex6, posWS, N);
+    currProbeIndex = int3(startProbeIndex.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z + probeOffsets.z);
+    clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 1
-    int3 probeIndex1 = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y, startProbeIndex.z);
-    probeIrr = GetProbeIrradianceWeighted(probeIndex1, posWS, N);
+    currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y, startProbeIndex.z);
+    clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 4
-    int3 probeIndex4 = int3(startProbeIndex.x, startProbeIndex.y, startProbeIndex.z + probeOffsets.z);
-    probeIrr = GetProbeIrradianceWeighted(probeIndex4, posWS, N);
+    currProbeIndex = int3(startProbeIndex.x, startProbeIndex.y, startProbeIndex.z + probeOffsets.z);
+    clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 7
-    int3 probeIndex7 = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z + probeOffsets.z);
-    probeIrr = GetProbeIrradianceWeighted(probeIndex7, posWS, N);
+    currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z + probeOffsets.z);
+    clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 2
-    int3 probeIndex2 = int3(startProbeIndex.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z);
-    probeIrr = GetProbeIrradianceWeighted(probeIndex2, posWS, N);
+    currProbeIndex = int3(startProbeIndex.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z);
+    clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 5
-    int3 probeIndex5 = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y, startProbeIndex.z + probeOffsets.z);
-    probeIrr = GetProbeIrradianceWeighted(probeIndex5, posWS, N);
+    currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y, startProbeIndex.z + probeOffsets.z);
+    clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N);
     indirectDiffuse += probeIrr.rgb;
     sumWeights += probeIrr.a;
+
+    // Final clamp on weighting
+    sumWeights = max(sumWeights, FLT_EPS);
 
     // Normalize total irradiance by the sum of all weights
     indirectDiffuse /= sumWeights;
