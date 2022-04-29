@@ -1459,8 +1459,9 @@ float3 SampleIndirectDiffuseGI(float3 posWS, float3 N, float3 diffuse, float3 kD
     irradiance /= sumWeights;
 
     float3 indirectDiffuse = irradiance * diffuse * kD * INV_PI;
-    
-    return irradiance;
+
+    return indirectDiffuse;
+    // return irradiance;
 }
 
 #endif
