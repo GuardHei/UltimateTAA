@@ -50,7 +50,8 @@ void IrradiancePrefilter(uint3 id : SV_DispatchThreadID) {
     float3 radiance_sum = float3(.0f, .0f, .0f);
     float weight_sum = .0f;
 
-    const uint SAMPLE_COUNT = 2048u;
+    const uint SAMPLE_COUNT = 512u;
+    
     for (uint i = 0u; i < SAMPLE_COUNT; i++) {
         float2 Xi = Hammersley2dSeq(i, SAMPLE_COUNT);
         float3 dir = SampleHemisphereUniform(Xi.x, Xi.y);
@@ -77,50 +78,64 @@ void IrradiancePadding(uint3 id : SV_DispatchThreadID) {
     const uint probeHalfSize = probeSize >> 1;
     // if (id.x != 0 && id.y != 0 && id.x != probeSizeMinusOne && id.y != probeSizeMinusOne) return;
 
+    // float3 debugColor = float3(1.0f, .0f, .0f);
+
     if (id.x > probeSizeMinusOne || id.y > probeSizeMinusOne) return;
 
     if (id.x == 0) {
         if (id.y == 0) {
             _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, probeSizeMinusTwo, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else if (id.y == probeSizeMinusOne) {
             _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, 1u, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else if (id.y < probeHalfSize) {
             _IrradianceArr[id] = _IrradianceArr[uint3(1u, probeHalfSize + (probeHalfSize - id.y - 1u), id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else {
             _IrradianceArr[id] = _IrradianceArr[uint3(1u, 1u + probeSizeMinusTwo - id.y, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
     }
     else if (id.x == probeSizeMinusOne) {
         if (id.y == 0) {
             _IrradianceArr[id] = _IrradianceArr[uint3(1u, probeSizeMinusTwo, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else if (id.y == probeSizeMinusOne) {
             _IrradianceArr[id] = _IrradianceArr[uint3(1u, 1u, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else if (id.y < probeHalfSize) {
             _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, probeHalfSize + (probeHalfSize - id.y - 1u), id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else {
             _IrradianceArr[id] = _IrradianceArr[uint3(probeSizeMinusTwo, 1u + probeSizeMinusTwo - id.y, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
     }
     else if (id.x < probeHalfSize) {
         if (id.y == 0) {
             _IrradianceArr[id] = _IrradianceArr[uint3(probeHalfSize + (probeHalfSize - id.x - 1u), 1u, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else if (id.y == probeSizeMinusOne) {
             _IrradianceArr[id] = _IrradianceArr[uint3(probeHalfSize + (probeHalfSize - id.x - 1u), probeSizeMinusTwo, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
     }
     else {
         if (id.y == 0) {
             _IrradianceArr[id] = _IrradianceArr[uint3(1u + probeSizeMinusTwo - id.x, 1u, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
         else if (id.y == probeSizeMinusOne) {
             _IrradianceArr[id] = _IrradianceArr[uint3(1u + probeSizeMinusTwo - id.x, probeSizeMinusTwo, id.z)];
+            // _IrradianceArr[id] = debugColor;
         }
     }
 }

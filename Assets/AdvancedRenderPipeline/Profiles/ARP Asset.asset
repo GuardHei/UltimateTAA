@@ -52,10 +52,11 @@ MonoBehaviour:
       enabled: 1
       markProbesDirty: 0
       enabledFlag: 1
-      volumeCenter: {x: 0, y: 1, z: 0}
-      dimensions: {x: 4, y: 2, z: 4}
+      src: 2
+      volumeCenter: {x: 0, y: 0.5, z: 0}
+      dimensions: {x: 6, y: 4, z: 6}
       maxIntervals: {x: 1.8, y: 1.5, z: 1.8}
-      probeGBufferSize: 32
+      probeGBufferSize: 16
       probeVBufferSize: 32
       offlineCubemapSize: 512
       probeViewDistance: 50
@@ -94,5 +95,5 @@ MonoBehaviour:
       hueShift: 0
       saturation: 0
     tonemappingSettings:
-      tonemappingMode: 1
+      tonemappingMode: 0
       tonemappingShader: {fileID: 4800000, guid: 46b26b03ea0a40869bc6b9b2056589dc, type: 3}
