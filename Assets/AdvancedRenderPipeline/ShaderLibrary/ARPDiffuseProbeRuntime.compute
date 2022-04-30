@@ -10,9 +10,9 @@ RW_TEXTURE2D_ARRAY(float3, _IrradianceArr);
 
 [numthreads(8,8,1)]
 void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
-    float4 gbuffer0 = LOAD_TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr0, id.xy, id.z);
-
-    float2 gbuffer1 = LOAD_TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1, id.xy, id.z).rg;
+    float4 gbuffer0 = LOAD_TEXTURE2D_ARRAY_LOD(_DiffuseProbeGBufferArr0, id.xy, id.z, 0);
+    float2 gbuffer1 = LOAD_TEXTURE2D_ARRAY_LOD(_DiffuseProbeGBufferArr1, id.xy, id.z, 0).rg;
+    float gbuffer2 = LOAD_TEXTURE2D_ARRAY_LOD(_DiffuseProbeGBufferArr2, id.xy, id.z, 0).r;
 
     float3 albedo = gbuffer0.rgb;
     float skyVisibility = gbuffer0.a;
@@ -25,9 +25,15 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
     float2 gbufferOct = GetNormalizedOctCoords(id.xy, GetDiffuseProbeSize());
     float3 dir = UnpackNormalOctQuadEncode(gbufferOct);
     float3 skyColor = SampleGlobalEnvMapSpecular(dir, .0f);
-
-
+    
     float3 diffuseColor = saturate(dot(N, L)) * INV_PI * albedo * lightColor;
+    
+    float3 posWS = GetDiffuseProbePosWS(id.z) + dir * gbuffer2;
+
+    if (IsDiffuseProbeMultiBounceEnabled()) {
+        float3 indirectDiffuse = SampleIndirectDiffuseGI(posWS, N, albedo, float3(1.0f, 1.0f, 1.0f), true);
+        diffuseColor += indirectDiffuse;
+    }
 
     _RadianceArr[id] = lerp(diffuseColor, skyColor, skyVisibility);
     // _RadianceArr[id] = saturate(dot(N, L));

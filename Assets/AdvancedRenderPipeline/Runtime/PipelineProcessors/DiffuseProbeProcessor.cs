@@ -120,7 +120,8 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
             
             _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.RADIANCE_ARRAY, _diffuseProbeRadianceArr);
             _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.IRRADIANCE_ARRAY, _diffuseProbeIrradianceArr);
-            
+            _cmd.SetGlobalTexture(ShaderKeywordManager.PREV_DIFFUSE_PROBE_IRRADIANCE_ARRAY, _prevDiffuseProbeIrradianceArr);
+
             var gbufferSize = (int) diffuseGISettings.probeGBufferSize;
             var threadGroupsX = (int) Mathf.Ceil(gbufferSize / 8.0f);
             var threadGroupsY = (int) Mathf.Ceil(gbufferSize / 8.0f);

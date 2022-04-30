@@ -386,14 +386,11 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     
     float3 indirectDiffuse;
 
-    if (_DiffuseProbeParams5.w == .0f) {
-        indirectDiffuse = float3(.0f, .0f, .0f);
-    } else if (_DiffuseProbeParams5.w == 1.0f) {
-        indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
-    } else {
-        // indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
-        indirectDiffuse = SampleIndirectDiffuseGI(mat.posWS, mat.N, mat.diffuse, kD, envD) * occlusion;
-    }
+    float giSrc = GetGISource();
+
+    if (giSrc == .0f) indirectDiffuse = float3(.0f, .0f, .0f);
+    else if (giSrc == 1.0f) indirectDiffuse = EvaluateDiffuseIBL(kD, mat.N, mat.diffuse, envD) * occlusion;
+    else indirectDiffuse = SampleIndirectDiffuseGI(mat.posWS, mat.N, mat.diffuse, kD, false) * occlusion;
     
     float4 forwardLighting = float4(.0f, .0f, .0f, 1.0f);
     

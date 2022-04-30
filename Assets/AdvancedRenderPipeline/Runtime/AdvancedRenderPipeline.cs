@@ -80,13 +80,13 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#region Pipeline Processors
 
-		internal List<PipelineProcessor> _pipelineProcessors = new List<PipelineProcessor>();
+		internal List<PipelineProcessor> _pipelineProcessors = new();
 
 		#endregion
 		
 		public bool IsOnFirstFrame => _frameNum == 1; // default is 0, and we start at 1.
 		
-		private int _frameNum = 0;
+		private int _frameNum;
 
 		public AdvancedRenderPipeline(AdvancedRenderPipelineSettings settings) {
 			instance = this;

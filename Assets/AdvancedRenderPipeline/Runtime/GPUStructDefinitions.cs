@@ -34,6 +34,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public int4 _DiffuseProbeParams3;
 		public float4 _DiffuseProbeParams4;
 		public float4 _DiffuseProbeParams5;
+		public float4 _DiffuseProbeParams6;
 	}
 
 	[Serializable]

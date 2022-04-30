@@ -12,7 +12,7 @@
    1. Offline capture - Fin.
    2. Runtime radiance update
       1. Single bounce - Fin.
-      2. Multi bounce - WIP.
+      2. Multi bounce - Fin.
       3. Indirect shadow - WIP.
    3. Runtime irradiance prefilter - Fin.
    4. Runtime irradiance sampling - Fin.

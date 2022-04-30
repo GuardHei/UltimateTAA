@@ -80,10 +80,10 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float skyboxIntensity = 1.0f;
 		[Header("Global Illumination")]
 		public DiffuseGISettings diffuseGISettings = new() {
-			src = DiffuseGISource.Skybox,
+			source = DiffuseGISource.Skybox,
 			volumeCenter = Vector3.zero, dimensions = new Vector3Int(2, 2, 2), maxIntervals = Vector3.one, 
 			probeGBufferSize = DiffuseGIProbeSize._16, probeVBufferSize = DiffuseGIProbeSize._16, offlineCubemapSize = DiffuseGIProbeSize._512,
-			probeViewDistance = 50f, probeDepthSharpness = 80f, probeIrradianceGamma = 1f,
+			probeViewDistance = 50f, probeDepthSharpness = 80f, probeIrradianceGamma = 1f, visibilityTestBias = .3f,
 			probeGBufferPath0 = "probe_gbuffer_0", probeGBufferPath1 = "probe_gbuffer_1", probeGBufferPath2 = "probe_gbuffer_2", probeVBufferPath0 = "probe_vbuffer_0"
 		};
 		[Header("Anti Aliasing")]
@@ -151,6 +151,7 @@ namespace AdvancedRenderPipeline.Runtime {
 	[Serializable]
 	public struct ShadowSettings {
 		public bool enabled;
+		[Range(1f, 500f)]
 		public float mainLightShadowDistance;
 		[Range(0f, 1f)]
 		public float mainLightShadowCascade1;
@@ -162,6 +163,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public SoftShadowMode mainLightSoftShadow;
 
 		public Vector3 MainLightShadowCascades => new(mainLightShadowCascade1, mainLightShadowCascade2, mainLightShadowCascade3);
+		public Vector4 MainLightShadowCascadeRatios => new(mainLightShadowCascade1, mainLightShadowCascade2 - mainLightShadowCascade1, mainLightShadowCascade3 - mainLightShadowCascade2, 1.0f - mainLightShadowCascade3);
 	}
 
 	[Serializable]
@@ -231,7 +233,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		[DisplayOnly]
 		[Tooltip("Is the dynamic diffuse gi actually enabled?")]
 		public bool enabledFlag;
-		public DiffuseGISource src;
+		public DiffuseGISource source;
 		public Vector3 volumeCenter;
 		public Vector3Int dimensions;
 		public Vector3 maxIntervals;
@@ -244,12 +246,16 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float probeDepthSharpness;
 		[Range(0f, 5f)]
 		public float probeIrradianceGamma;
+		[Range(0f, 1f)]
+		public float visibilityTestBias;
+		public bool enableMultiBounce;
+		public bool enableIndirectShadowSampling;
+		public ComputeShader offlineComputeShader;
+		public ComputeShader runtimeComputeShader;
 		public string probeGBufferPath0;
 		public string probeGBufferPath1;
 		public string probeGBufferPath2;
 		public string probeVBufferPath0;
-		public ComputeShader offlineComputeShader;
-		public ComputeShader runtimeComputeShader;
 		public Texture2DArray probeGBufferArr0;
 		public Texture2DArray probeGBufferArr1;
 		public Texture2DArray probeGBufferArr2;
@@ -277,7 +283,8 @@ namespace AdvancedRenderPipeline.Runtime {
 					_DiffuseProbeParams2 = new float4(maxIntervals.x, maxIntervals.y, maxIntervals.z, GridDiagonalLength),
 					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, Enabled ? 1 : 0),
 					_DiffuseProbeParams4 = new float4(Min, probeIrradianceGamma),
-					_DiffuseProbeParams5 = new float4(Max, (int) src)
+					_DiffuseProbeParams5 = new float4(Max, (int) source),
+					_DiffuseProbeParams6 = new float4(visibilityTestBias, enableMultiBounce ? 1f : 0f, enableIndirectShadowSampling ? 1f : 0f, .0f)
 				};
 				return gpuParams;
 			}

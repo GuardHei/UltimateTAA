@@ -103,14 +103,12 @@ Shader "Advanced Render Pipeline/ARPStandardDebug" {
                             debugInfo = info.rgb;
                         } else if (debugMode == 1) {
                             float3 energyCompensation;
-                            float4 lut = GetDGFFromLut(energyCompensation, matData.f0, LinearRoughnessToRoughness(matData.linearRoughness), matData.NdotV);
-                            float envD = lut.a;
                             float3 kS = F_SchlickRoughness(matData.f0, matData.NdotV, matData.linearRoughness);
                             float3 kD = 1.0f - kS;
                             kD *=  1.0f - matData.metallic;
                             uvNoBorder = GetIrradianceMapUV(matData.N);
                             float3 indirectDiffuse = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeIrradianceArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0).rgb;
-                            debugInfo = indirectDiffuse * matData.diffuse * kD * (envD * matData.occlusion * INV_PI);
+                            debugInfo = indirectDiffuse * matData.diffuse * kD * (matData.occlusion * INV_PI);
                         } else if (debugMode == 2) {
                             float4 info = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeGBufferArr0, sampler_linear_clamp, uvNoBorder, probeIndex, 0);
                             debugInfo = info.rgb;
