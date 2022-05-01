@@ -712,15 +712,20 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 09702542323f49fdb20664c1c508f942, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onlyShowWhenSelected: 1
-  drawBBoxes: 0
-  drawEntireFrustum: 0
+  drawBBoxes: 1
+  drawEntireFrustum: 1
   drawFrustums: 0
+  useCustomColors: 1
+  c0: {r: 1, g: 0, b: 0, a: 1}
+  c1: {r: 1, g: 0.96826184, b: 0, a: 1}
+  c2: {r: 0, g: 1, b: 0.013520718, a: 1}
+  c3: {r: 0, g: 0.8787503, b: 1, a: 1}
+  color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &713885295
 GameObject:
   m_ObjectHideFlags: 0
@@ -3027,7 +3032,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1950546569}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.852, y: 0.114, z: 1.328}
+  m_LocalPosition: {x: -1.852, y: 0.114, z: 2.015}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []

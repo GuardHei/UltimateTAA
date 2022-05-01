@@ -18,12 +18,12 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		#endregion
 
-		protected readonly BufferedRTHandleSystem _historyBuffers = new();
-
 		protected bool _enableTaa = true;
 		protected string _rendererDesc;
 
 		#region RT Handles & Render Target Identifiers
+		
+		protected readonly BufferedRTHandleSystem _historyBuffers = new();
 
 		protected RTHandle _rawColorTex;
 		protected RTHandle _colorTex;
@@ -44,6 +44,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		protected RTHandle _screenSpaceReflection;
 		protected RTHandle _prevScreenSpaceReflection;
 		protected RTHandle _indirectSpecular;
+		
+		protected RenderTexture _mainLightShadowmapArray;
 
 		protected RenderTargetIdentifier[] _forwardMRTs = new RenderTargetIdentifier[4];
 
@@ -53,16 +55,24 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		protected CameraData[] _cameraData;
 		protected DirectionalLight[] _mainLights;
+		protected MainLightShadowData[] _mainLightShadowData;
+		protected Matrix4x4[] _mainLightShadowMatrixVPs;
+		protected Matrix4x4[] _mainLightShadowMatrixInvVPs;
+		protected float[] _mainLightShadowOrthoWidths;
 
 		protected ComputeBuffer _cameraDataBuffer;
 		protected ComputeBuffer _mainLightBuffer;
+		protected ComputeBuffer _mainLightShadowDataBuffer;
 
 		#endregion
+
+		protected ShadowmapManager _shadowManager;
 
 		public GameCameraRenderer(Camera camera) : base(camera) {
 			cameraType = AdvancedCameraType.Game;
 			_rendererDesc = "Render Game (" + camera.name + ")";
-			// camera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
+
+			_shadowManager = new ShadowmapManager();
 
 			InitBuffers();
 			InitComputeBuffers();
@@ -82,15 +92,17 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			beforeCull?.Invoke();
 
 			Cull();
+			SetupLights();
 
 			beforeFirstPass?.Invoke();
 			
 			DrawShadowPass();
+			
+			SetupCameraProperties();
+			
 			DrawDepthPrepass();
 			DrawVelocityPass();
-			
-			SetupLights();
-			
+
 			DrawOpaqueLightingPass();
 			DrawSkybox();
 			
@@ -116,7 +128,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 			afterSubmission?.Invoke();
 
-			ReleaseBuffers();
+			ReleaseTemporaryBuffers();
 
 			DisposeCommandBuffer();
 		}
@@ -139,7 +151,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				ConfigureProjectionMatrix(_currJitter);
 			} else camera.ResetProjectionMatrix();
 
-			_context.SetupCameraProperties(camera);
+			// _context.SetupCameraProperties(camera);
 
 			var transform = camera.transform;
 			
@@ -175,12 +187,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_nonjitteredMatrixVP = GL.GetGPUProjectionMatrix(camera.nonJitteredProjectionMatrix, false) * viewMatrix;
 			_invNonJitteredMatrixVP = _nonjitteredMatrixVP.inverse;
 
+			/*
 			_cmd.SetInvertCulling(false);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, _invMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _nonjitteredMatrixVP : _prevMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invNonJitteredMatrixVP : _prevInvMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_VP, _nonjitteredMatrixVP);
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_I_VP, _invNonJitteredMatrixVP);
+			*/
 			
 			var farHalfFovTan = _farPlane * _verticalFovTan;
 			
@@ -212,13 +226,23 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				prevFrustumCornersWS = _prevFrustumCornersWS,
 				_rtHandleProps = rtProps
 			};
-			
-			// Debug.Log(rtProps.rtHandleScale);
-			
+
 			_cameraDataBuffer.SetData(_cameraData);
 			
-			_cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
+			// _cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
 
+			ExecuteCommand();
+		}
+
+		internal void SetupCameraProperties() {
+			_context.SetupCameraProperties(camera);
+			_cmd.SetInvertCulling(false);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_I_VP, _invMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_VP, IsOnFirstFrame ? _nonjitteredMatrixVP : _prevMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_PREV_MATRIX_I_VP, IsOnFirstFrame ? _invNonJitteredMatrixVP : _prevInvMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_VP, _nonjitteredMatrixVP);
+			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_I_VP, _invNonJitteredMatrixVP);
+			_cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
 			ExecuteCommand();
 		}
 
@@ -229,6 +253,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			}
 
 			_cullingResults = _context.Cull(ref cullingParameters);
+			
+			// can only cull once per Submit() call
+			Submit();
 		}
 
 		internal void DrawDepthPrepass() {
@@ -284,6 +311,70 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		internal void DrawShadowPass() {
+			if (!settings.shadowSettings.enabled) return;
+			DrawMainLightShadowPass();
+			DrawSpotLightShadowPass();
+			DrawPointLightShadowPass();
+		}
+
+		internal void DrawMainLightShadowPass() {
+			Vector3 lightDir = -LightManager.MainLightData.direction.xyz;
+			var shadowCam = _shadowManager._shadowCamera;
+			
+			_shadowManager.UpdateCSM(camera, lightDir);
+
+			var shadowCmd = CommandBufferPool.Get("Render Main Light Shadowmap");
+
+			for (var i = 0; i < 4; i++) {
+				_shadowManager.SetupCSM(lightDir, i, settings.shadowSettings.mainLightShadowNearOffset, settings.shadowSettings.mainLightShadowFarOffset);
+				var shadowViewMatrix = shadowCam.worldToCameraMatrix;
+				var shadowProjectionMatrix = GL.GetGPUProjectionMatrix(shadowCam.projectionMatrix, false);
+				var shadowMatrixVP = shadowProjectionMatrix * shadowViewMatrix;
+				var shadowMatrixInvVP = shadowMatrixVP.inverse;
+
+				_mainLightShadowMatrixVPs[i] = shadowMatrixVP;
+				_mainLightShadowMatrixInvVPs[i] = shadowMatrixInvVP;
+
+				if (!camera.TryGetCullingParameters(out var cullingParameters)) continue;
+				
+				var shadowCullingResults = _context.Cull(ref cullingParameters);
+				
+				_context.SetupCameraProperties(shadowCam);
+				shadowCmd.SetRenderTarget(_mainLightShadowmapArray, 0, CubemapFace.Unknown, i);
+				shadowCmd.ClearRenderTarget(true, true, Color.clear);
+				
+				ExecuteCommand(shadowCmd);
+
+				var drawSettings = new DrawingSettings(ShaderTagManager.SHADOW_CASTER, new SortingSettings(shadowCam)) {
+					enableInstancing = settings.enableAutoInstancing
+				};
+				var filteringSettings = FilteringSettings.defaultValue;
+				
+				_context.DrawRenderers(shadowCullingResults, ref drawSettings, ref filteringSettings);
+				
+				Submit();
+			}
+
+			_mainLightShadowData[0] = settings.shadowSettings.GetGPUData(camera, LightManager.MainLight);
+			_mainLightShadowDataBuffer.SetData(_mainLightShadowData, 0, 0, 1);
+			
+			shadowCmd.SetGlobalConstantBuffer(_mainLightShadowDataBuffer, ShaderKeywordManager.MAIN_LIGHT_SHADOW_DATA, 0, sizeof(MainLightShadowData));
+			shadowCmd.SetGlobalMatrixArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_MATRIX_VP_ARRAY, _mainLightShadowMatrixVPs);
+			shadowCmd.SetGlobalMatrixArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_MATRIX_INV_VP_ARRAY, _mainLightShadowMatrixInvVPs);
+			shadowCmd.SetGlobalFloatArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_ORTHO_WIDTHS, _mainLightShadowOrthoWidths);
+			
+			shadowCmd.SetGlobalTexture(ShaderKeywordManager.MAIN_LIGHT_SHADOWMAP_ARRAY, _mainLightShadowmapArray);
+			
+			ExecuteCommand(shadowCmd);
+			
+			CommandBufferPool.Release(shadowCmd);
+		}
+
+		internal void DrawSpotLightShadowPass() {
+			
+		}
+
+		internal void DrawPointLightShadowPass() {
 			
 		}
 
@@ -519,6 +610,19 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16B16A16_SFloat, name: "ScreenSpaceReflection "), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.INDIRECT_SPECULAR, 
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.B10G11R11_UFloatPack32, name: "IndirectSpecular"), 1);
+			
+			InitScreenIndependentBuffers();
+		}
+
+		internal void InitScreenIndependentBuffers() {
+			var mainLightShadowmapSize = (int) settings.shadowSettings.mainLightShadowmapSize;
+			_mainLightShadowmapArray = new RenderTexture(new RenderTextureDescriptor(mainLightShadowmapSize, mainLightShadowmapSize, RenderTextureFormat.Shadowmap, 16, 1) {
+				autoGenerateMips = false,
+				dimension = TextureDimension.Tex2DArray,
+				volumeDepth = 4,
+				shadowSamplingMode = ShadowSamplingMode.CompareDepths
+			});
+			_mainLightShadowmapArray.Create();
 		}
 
 		internal void ResetBufferSize() {
@@ -552,7 +656,11 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_prevScreenSpaceReflection = _historyBuffers.GetFrameRT(ShaderKeywordManager.SCREEN_SPACE_REFLECTION, 1);
 		}
 
-		internal void ReleaseBuffers() { }
+		internal void ReleaseTemporaryBuffers() { }
+
+		internal void ReleaseBuffers() {
+			if (_mainLightShadowmapArray && _mainLightShadowmapArray.IsCreated()) _mainLightShadowmapArray.Release();
+		}
 
 		internal void InitComputeBuffers() {
 			_cameraData = new CameraData[1];
@@ -560,11 +668,19 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			
 			_mainLights = new DirectionalLight[1];
 			_mainLightBuffer = new ComputeBuffer(1, sizeof(DirectionalLight), ComputeBufferType.Constant);
+
+			_mainLightShadowData = new MainLightShadowData[1];
+			_mainLightShadowDataBuffer = new ComputeBuffer(1, sizeof(MainLightShadowData), ComputeBufferType.Constant);
+
+			_mainLightShadowMatrixVPs = new Matrix4x4[4];
+			_mainLightShadowMatrixInvVPs = new Matrix4x4[4];
+			_mainLightShadowOrthoWidths = new float[4];
 		}
 
 		internal void ReleaseComputeBuffers() {
 			_cameraDataBuffer.Dispose();
 			_mainLightBuffer.Dispose();
+			_mainLightShadowDataBuffer.Dispose();
 		}
 
 		public override void Dispose() {
@@ -573,8 +689,11 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				_historyBuffers.Dispose();
 			}
 			
+			ReleaseTemporaryBuffers();
 			ReleaseBuffers();
 			ReleaseComputeBuffers();
+			
+			_shadowManager.Dispose(true);
 			
 			base.Dispose();
 		}

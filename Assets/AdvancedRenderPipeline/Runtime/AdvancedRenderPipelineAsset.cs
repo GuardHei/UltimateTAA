@@ -62,6 +62,9 @@ namespace AdvancedRenderPipeline.Runtime {
 			mainLightShadowCascade1 = .1f,
 			mainLightShadowCascade2 = .25f,
 			mainLightShadowCascade3 = .5f,
+			mainLightShadowNearOffset = 250f,
+			mainLightShadowFarOffset = 250f,
+			mainLightShadowTint = Color.black,
 			mainLightShadowmapSize = ShadowmapSize._2048,
 			mainLightSoftShadow = SoftShadowMode.Pcf3x3
 		};
@@ -159,11 +162,28 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float mainLightShadowCascade2;
 		[Range(0f, 1f)]
 		public float mainLightShadowCascade3;
+		[Range(1f, 500f)]
+		public float mainLightShadowNearOffset;
+		[Range(1f, 500f)]
+		public float mainLightShadowFarOffset;
+		public Color mainLightShadowTint;
 		public ShadowmapSize mainLightShadowmapSize;
 		public SoftShadowMode mainLightSoftShadow;
 
-		public Vector3 MainLightShadowCascades => new(mainLightShadowCascade1, mainLightShadowCascade2, mainLightShadowCascade3);
+		public float3 MainLightShadowCascades => new(mainLightShadowCascade1, mainLightShadowCascade2, mainLightShadowCascade3);
+		
 		public Vector4 MainLightShadowCascadeRatios => new(mainLightShadowCascade1, mainLightShadowCascade2 - mainLightShadowCascade1, mainLightShadowCascade3 - mainLightShadowCascade2, 1.0f - mainLightShadowCascade3);
+
+		public float GetShadowDistance(Camera cam) => Mathf.Min(cam.farClipPlane, mainLightShadowDistance);
+
+		public MainLightShadowData GetGPUData(Camera cam, Light light) {
+			float size = (int) mainLightShadowmapSize;
+			return new MainLightShadowData {
+				_MainLightShadowParams0 = new float4(light.shadowBias, light.shadowNormalBias, size, 1f / size),
+				_MainLightShadowParams1 = new float4(mainLightShadowTint.linear.ColorToFloat4().xyz, light.shadowStrength),
+				_MainLightShadowParams2 = new float4(MainLightShadowCascades, GetShadowDistance(cam))
+			};
+		}
 	}
 
 	[Serializable]

@@ -139,6 +139,16 @@ CBUFFER_START(MainLightData)
     float4 _MainLightColor;
 CBUFFER_END
 
+CBUFFER_START(MainLightShadowData)
+    float4 _MainLightShadowParams0;
+    float4 _MainLightShadowParams1;
+    float4 _MainLightShadowParams2;
+CBUFFER_END
+
+float _MainLightShadowOrthoWidths[4];
+float4x4 _MainLightShadowMatrixVPArray[4];
+float4x4 _MainLightShadowMatrixInvVPArray[4];
+
 //////////////////////////////////////////
 // Alpha Related                        //
 //////////////////////////////////////////
@@ -161,6 +171,7 @@ SAMPLER(sampler_point_clamp);
 SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_repeat);
 SAMPLER(sampler_linear_repeat);
+SAMPLER_CMP(sampler_cmp_linear_clamp);
 
 TEXTURE2D(_RawColorTex);
 TEXTURE2D(_ColorTex);
@@ -232,6 +243,8 @@ TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr0);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr2);
 TEXTURE2D_ARRAY(_DiffuseProbeVBufferArr0);
+
+TEXTURE2D_ARRAY(_MainLightShadowmapArray);
 
 TEXTURE2D(_BlueNoise16);
 float4 _BlueNoise16_TexelSize;

@@ -39,8 +39,15 @@ namespace AdvancedRenderPipeline.Runtime {
 
 	[Serializable]
 	public struct DirectionalLight {
-		public float4 direction;
+		public float4 direction; // rgb - light direction
 		public float4 color; // rgb - final light color, a - unused
+	}
+
+	[Serializable]
+	public struct MainLightShadowData {
+		public float4 _MainLightShadowParams0; // r - constant bias, g - normal bias, b - size, a - 1f / size
+		public float4 _MainLightShadowParams1; // rgb - shadow tint, a - shadow strength
+		public float4 _MainLightShadowParams2; // rgb - cascade distances, a - shadow distance
 	}
 	
 	public enum DiffuseProbeDebugMode {

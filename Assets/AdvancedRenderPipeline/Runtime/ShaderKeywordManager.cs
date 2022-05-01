@@ -24,13 +24,15 @@ namespace AdvancedRenderPipeline.Runtime {
 
 		#region Shadow Params
 
-		public static readonly int SHADOW_CONSTANT_BIAS = Shader.PropertyToID("_ShadowConstantBias");
-		public static readonly int SHADOW_NORMAL_BIAS = Shader.PropertyToID("_ShadowNormalBias");
-		public static readonly int MAIN_LIGHT_SHADOW_DIST = Shader.PropertyToID("_MainLightShadowDist");
-		public static readonly int MAIN_LIGHT_SHADOW_STR = Shader.PropertyToID("_MainLightShadowStr");
-		public static readonly int MAIN_LIGHT_SHADOW_TINT = Shader.PropertyToID("_MainLightShadowTint");
-		public static readonly int MAIN_LIGHT_SHADOWMAP_SIZE = Shader.PropertyToID("_MainLightShadowmapSize");
-		public static readonly int MAIN_LIGHT_INV_VP = Shader.PropertyToID("_MainLightInvVP");
+		public static readonly int MAIN_LIGHT_SHADOW_DATA = Shader.PropertyToID("MainLightShadowData");
+		public static readonly int MAIN_LIGHT_SHADOW_PARAMS_0 = Shader.PropertyToID("_MainLightShadowParams0");
+		public static readonly int MAIN_LIGHT_SHADOW_PARAMS_1 = Shader.PropertyToID("_MainLightShadowParams1");
+		public static readonly int MAIN_LIGHT_SHADOW_PARAMS_2 = Shader.PropertyToID("_MainLightShadowParams2");
+		public static readonly int MAIN_LIGHT_SHADOW_ORTHO_WIDTHS = Shader.PropertyToID("_MainLightShadowOrthoWidths");
+		public static readonly int MAIN_LIGHT_SHADOW_MATRIX_VP_ARRAY = Shader.PropertyToID("_MainLightShadowMatrixVPArray");
+		public static readonly int MAIN_LIGHT_SHADOW_MATRIX_INV_VP_ARRAY = Shader.PropertyToID("_MainLightShadowMatrixInvVPArray");
+
+		public static readonly int MAIN_LIGHT_SHADOWMAP_ARRAY = Shader.PropertyToID("_MainLightShadowmapArray");
 
 		#endregion
 
@@ -96,7 +98,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int SCREEN_SPACE_REFLECTION = Shader.PropertyToID("_ScreenSpaceReflection");
 		public static readonly int PREV_SCREEN_SPACE_REFLECTION = Shader.PropertyToID("_PrevScreenSpaceReflection");
 		public static readonly int INDIRECT_SPECULAR = Shader.PropertyToID("_IndirectSpecular");
-		public static readonly int MAIN_LIGHT_SHADOW_MAP = Shader.PropertyToID("_MainLightShadowmap");
 
 		#endregion
 

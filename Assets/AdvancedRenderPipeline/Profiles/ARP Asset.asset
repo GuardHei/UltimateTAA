@@ -18,7 +18,7 @@ MonoBehaviour:
     enableDebugViewInEditor: 1
     debugOutput: 0
     enableAutoInstancing: 1
-    enableSRPBatching: 1
+    enableSRPBatching: 0
     enableMVAutoInstancing: 0
     enableMVSRPBatching: 1
     stopNaNPropagation: 1
@@ -32,11 +32,13 @@ MonoBehaviour:
     cameraMotionShader: {fileID: 4800000, guid: 0bc3da1da68d4e84affef526b5434fb2, type: 3}
     alphaTestDepthCutOff: 0.001
     shadowSettings:
-      enabled: 0
+      enabled: 1
       mainLightShadowDistance: 100
       mainLightShadowCascade1: 0.1
       mainLightShadowCascade2: 0.25
       mainLightShadowCascade3: 0.5
+      mainLightShadowNearOffset: 1
+      mainLightShadowFarOffset: 250
       mainLightShadowmapSize: 2048
       mainLightSoftShadow: 0
     iblLut: {fileID: 2800000, guid: de9d90a61eb0848dd8a35f98d367430f, type: 3}
@@ -62,7 +64,7 @@ MonoBehaviour:
       probeViewDistance: 50
       probeDepthSharpness: 50
       probeIrradianceGamma: 0
-      visibilityTestBias: 0
+      visibilityTestBias: 0.3
       enableMultiBounce: 1
       enableIndirectShadowSampling: 0
       offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}

@@ -9,12 +9,14 @@ public class ShadowmapManager : IDisposable {
 
     public static ShadowSettings shadowSettings => AdvancedRenderPipeline.Runtime.AdvancedRenderPipeline.settings.shadowSettings;
 
+    public Camera ShadowCamera => _shadowCamera;
+
     internal Camera _shadowCamera;
     internal Transform _shadowCameraTransform;
 
     #region Directional Light Shadow Params
 
-    internal float[] _dlOrthoWidths = new float[4];
+    public readonly float[] dlOrthoWidths = new float[4];
 
     internal Vector3[] _dlNearCorners = new Vector3[4];
     internal Vector3[] _dlFarCorners = new Vector3[4];
@@ -88,7 +90,7 @@ public class ShadowmapManager : IDisposable {
     public void UpdateCSM(Camera cam, Vector3 lightDir) {
         var viewport = new Rect(0f, 0f, 1f, 1f);
         cam.CalculateFrustumCorners(viewport, cam.nearClipPlane, Camera.MonoOrStereoscopicEye.Mono, _dlNearCorners);
-        cam.CalculateFrustumCorners(viewport, shadowSettings.mainLightShadowDistance, Camera.MonoOrStereoscopicEye.Mono, _dlFarCorners);
+        cam.CalculateFrustumCorners(viewport, shadowSettings.GetShadowDistance(cam), Camera.MonoOrStereoscopicEye.Mono, _dlFarCorners);
 
         var camTrans = cam.transform;
         var camPos = camTrans.position;
@@ -99,7 +101,6 @@ public class ShadowmapManager : IDisposable {
             _dlNearCorners[i] = camTrans.TransformVector(_dlNearCorners[i]) + camPos;
             _dlFarCorners[i] = camTrans.TransformVector(_dlFarCorners[i]) + camPos;
 
-            /*
             var dir = _dlFarCorners[i] - _dlNearCorners[i];
             
             _dlNearCorners0[i] = _dlNearCorners[i];
@@ -113,9 +114,9 @@ public class ShadowmapManager : IDisposable {
             
             _dlNearCorners3[i] = _dlFarCorners2[i];
             _dlFarCorners3[i] = _dlNearCorners3[i] + dir * ratios[3];
-            */
         }
 
+        /*
         for (var i = 0; i < 4; i++) {
             var dir = _dlFarCorners[i] - _dlNearCorners[i];
             
@@ -131,19 +132,20 @@ public class ShadowmapManager : IDisposable {
             _dlNearCorners3[i] = _dlFarCorners2[i];
             _dlFarCorners3[i] = _dlNearCorners3[i] + dir * ratios[3];
         }
+        */
         
         ComputeLightSpaceAABB(lightDir, _dlNearCorners0, _dlFarCorners0, ref _dlBBox0);
         ComputeLightSpaceAABB(lightDir, _dlNearCorners1, _dlFarCorners1, ref _dlBBox1);
         ComputeLightSpaceAABB(lightDir, _dlNearCorners2, _dlFarCorners2, ref _dlBBox2);
         ComputeLightSpaceAABB(lightDir, _dlNearCorners3, _dlFarCorners3, ref _dlBBox3);
 
-        _dlOrthoWidths[0] = (_dlFarCorners0[2] - _dlNearCorners0[0]).magnitude;
-        _dlOrthoWidths[1] = (_dlFarCorners1[2] - _dlNearCorners1[0]).magnitude;
-        _dlOrthoWidths[2] = (_dlFarCorners2[2] - _dlNearCorners2[0]).magnitude;
-        _dlOrthoWidths[3] = (_dlFarCorners3[2] - _dlNearCorners3[0]).magnitude;
+        dlOrthoWidths[0] = (_dlFarCorners0[2] - _dlNearCorners0[0]).magnitude;
+        dlOrthoWidths[1] = (_dlFarCorners1[2] - _dlNearCorners1[0]).magnitude;
+        dlOrthoWidths[2] = (_dlFarCorners2[2] - _dlNearCorners2[0]).magnitude;
+        dlOrthoWidths[3] = (_dlFarCorners3[2] - _dlNearCorners3[0]).magnitude;
     }
 
-    public void SetupCSM(Vector3 lightDir, int cascade, float offset) {
+    public void SetupCSM(Vector3 lightDir, int cascade, float nearOffset, float farOffset) {
         Vector3[] bbox;
         Vector3[] n;
         Vector3[] f;
@@ -200,10 +202,11 @@ public class ShadowmapManager : IDisposable {
         _shadowCameraTransform.position = center;
         
         _shadowCamera.orthographic = true;
+        // _shadowCamera.aspect = w / h;
         _shadowCamera.aspect = 1.0f;
         _shadowCamera.orthographicSize = len * .5f;
-        _shadowCamera.nearClipPlane = -offset;
-        _shadowCamera.farClipPlane = offset;
+        _shadowCamera.nearClipPlane = -nearOffset;
+        _shadowCamera.farClipPlane = farOffset;
     }
     
     internal void DrawFrustum(Vector3[] nearCorners, Vector3[] farCorners, Color color) {
@@ -238,25 +241,35 @@ public class ShadowmapManager : IDisposable {
         Debug.DrawLine(points[3], points[7], color);
     }
 
-    public void DrawBBoxes() {
-        DrawAABB(_dlBBox0, Color.yellow);  
-        DrawAABB(_dlBBox1, Color.magenta);
-        DrawAABB(_dlBBox2, Color.green);
-        DrawAABB(_dlBBox3, Color.cyan);
+    public void DrawBBoxes() => DrawBBoxes(Color.yellow, Color.magenta, Color.green, Color.cyan);
+    
+    public void DrawBBoxes(Color c0, Color c1, Color c2, Color c3) {
+        DrawAABB(_dlBBox0, c0);  
+        DrawAABB(_dlBBox1, c1);
+        DrawAABB(_dlBBox2, c2);
+        DrawAABB(_dlBBox3, c3);
     }
 
-    public void DrawFrustums() {
-        DrawFrustum(_dlNearCorners0, _dlFarCorners0, Color.yellow);
-        DrawFrustum(_dlNearCorners1, _dlFarCorners1, Color.magenta);
-        DrawFrustum(_dlNearCorners2, _dlFarCorners2, Color.green);
-        DrawFrustum(_dlNearCorners3, _dlFarCorners3, Color.cyan);
+    public void DrawFrustums() => DrawFrustums(Color.yellow, Color.magenta, Color.green, Color.cyan);
+    
+    public void DrawFrustums(Color c0, Color c1, Color c2, Color c3) {
+        DrawFrustum(_dlNearCorners0, _dlFarCorners0, c0);
+        DrawFrustum(_dlNearCorners1, _dlFarCorners1, c1);
+        DrawFrustum(_dlNearCorners2, _dlFarCorners2, c2);
+        DrawFrustum(_dlNearCorners3, _dlFarCorners3, c3);
     }
+    
+    public void DrawEntireFrustum() => DrawEntireFrustum(Color.white);
 
-    public void DrawEntireFrustum() {
-        DrawFrustum(_dlNearCorners, _dlFarCorners, Color.white);
-    }
+    public void DrawEntireFrustum(Color color) => DrawFrustum(_dlNearCorners, _dlFarCorners, color);
 
-    public void Dispose() {
-        Object.Destroy(_shadowCamera.gameObject);
+    public void Dispose() => Dispose(true);
+
+    public void Dispose(bool immediate) {
+        if (_shadowCamera) {
+            if (immediate) Object.DestroyImmediate(_shadowCamera.gameObject);
+            else Object.Destroy(_shadowCamera.gameObject);
+            // Object.DestroyImmediate(_shadowCamera.gameObject);
+        }
     }
 }
