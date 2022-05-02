@@ -606,7 +606,6 @@ GameObject:
   - component: {fileID: 705507995}
   - component: {fileID: 705507994}
   - component: {fileID: 705507996}
-  - component: {fileID: 705507997}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -637,8 +636,8 @@ Light:
     m_CustomResolution: -1
     m_Strength: 1
     m_Bias: 0.05
-    m_NormalBias: 0.4
-    m_NearPlane: 0.2
+    m_NormalBias: 1.4
+    m_NearPlane: 0.1
     m_CullingMatrixOverride:
       e00: 1
       e01: 0
@@ -705,27 +704,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 15
   rotationAxis: {x: 0, y: 1, z: 0}
---- !u!114 &705507997
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 705507993}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09702542323f49fdb20664c1c508f942, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  drawBBoxes: 1
-  drawEntireFrustum: 1
-  drawFrustums: 0
-  useCustomColors: 1
-  c0: {r: 1, g: 0, b: 0, a: 1}
-  c1: {r: 1, g: 0.96826184, b: 0, a: 1}
-  c2: {r: 0, g: 1, b: 0.013520718, a: 1}
-  c3: {r: 0, g: 0.8787503, b: 1, a: 1}
-  color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &713885295
 GameObject:
   m_ObjectHideFlags: 0
@@ -1405,7 +1383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ec09e72c675460db63818a74c11a4f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugMode: 0
+  debugMode: 12
   gizmosProbeMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   gizmosProbeMat: {fileID: 2100000, guid: 60190984736244e219d1d6e3c464bbd4, type: 2}
   gizmosProbeRadius: 0.5
@@ -3032,7 +3010,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1950546569}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.852, y: 0.114, z: 2.015}
+  m_LocalPosition: {x: -2.063, y: 0.114, z: 1.465}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []

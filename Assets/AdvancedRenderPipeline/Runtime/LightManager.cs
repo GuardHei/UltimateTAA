@@ -7,28 +7,26 @@ using UnityEngine.Rendering;
 namespace AdvancedRenderPipeline.Runtime {
 	public static class LightManager {
 		// public static bool MainLightIsAvailable => MainLight != null && MainLight.isActiveAndEnabled;
-		public static bool MainLightIsAvailable => MainLight != null;
+		public static bool MainLightIsAvailable => MainLight.light != null;
 		public static bool GIMainLightIsAvailable => GIMainLight != null;
-		public static bool MainLightShadowAvailable => MainLightIsAvailable && MainLight.shadows != LightShadows.None;
+		public static bool MainLightShadowAvailable => MainLightIsAvailable && MainLight.light.shadows != LightShadows.None;
 
-		public static Light MainLight {
+		public static int MainLightIndex {
+			get;
+			private set;
+		}
+
+		public static VisibleLight MainLight {
 			get => mainLight;
 			set {
 				mainLight = value;
-				if (value == null) {
-					MainLightData = new DirectionalLight {
-						direction = float4.zero,
-						color = float4.zero,
-					};
-				} else {
-					MainLightData = new DirectionalLight {
-						direction = -mainLight.transform.localToWorldMatrix.GetColumn(2),
-						color = (mainLight.color.linear * mainLight.intensity).ColorToFloat4()
-					};
-				}
+				MainLightData = new DirectionalLight {
+					direction = -mainLight.localToWorldMatrix.GetColumn(2),
+					color = mainLight.finalColor.ColorToFloat4()
+				};
 			}
 		}
-
+		
 		public static Light GIMainLight {
 			get => giMainLight;
 			set {
@@ -57,7 +55,7 @@ namespace AdvancedRenderPipeline.Runtime {
 			private set;
 		}
 
-		private static Light mainLight;
+		private static VisibleLight mainLight;
 		private static Light giMainLight;
 
 		public static void UpdateLight(CullingResults results) {
@@ -66,17 +64,19 @@ namespace AdvancedRenderPipeline.Runtime {
 			for (int i = 0, l = visibleLights.Length; i < l; i++) {
 				var vis = visibleLights[i];
 				if (vis.lightType == LightType.Directional) {
-					MainLight = vis.light;
-					MainLightData = new DirectionalLight {
-						direction = -vis.localToWorldMatrix.GetColumn(2),
-						color = vis.finalColor.ColorToFloat4()
-					};
+					MainLightIndex = i;
+					MainLight = vis;
 					mainLightFound = true;
 					break;
 				}
 			}
 
-			if (!mainLightFound) MainLight = null;
+			if (!mainLightFound) {
+				MainLightIndex = -1;
+				MainLight = new VisibleLight {
+					finalColor = Color.clear
+				};
+			}
 		}
 	}
 }

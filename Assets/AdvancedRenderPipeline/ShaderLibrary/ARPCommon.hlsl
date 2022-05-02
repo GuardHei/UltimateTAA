@@ -140,12 +140,12 @@ CBUFFER_START(MainLightData)
 CBUFFER_END
 
 CBUFFER_START(MainLightShadowData)
-    float4 _MainLightShadowParams0;
-    float4 _MainLightShadowParams1;
-    float4 _MainLightShadowParams2;
+    float4 _MainLightShadowParams0; // r - constant bias, g - normal bias, b - size, a - 1f / size
+    float4 _MainLightShadowParams1; // r - shadow blend, g - na, b - na a - shadow strength
+    float4 _MainLightShadowParams2; // rgb - cascade distances, a - shadow distance
 CBUFFER_END
 
-float _MainLightShadowOrthoWidths[4];
+float4 _MainLightShadowBoundArray[4];
 float4x4 _MainLightShadowMatrixVPArray[4];
 float4x4 _MainLightShadowMatrixInvVPArray[4];
 
@@ -171,7 +171,7 @@ SAMPLER(sampler_point_clamp);
 SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_repeat);
 SAMPLER(sampler_linear_repeat);
-SAMPLER_CMP(sampler_cmp_linear_clamp);
+SAMPLER_CMP(sampler_linear_clamp_compare);
 
 TEXTURE2D(_RawColorTex);
 TEXTURE2D(_ColorTex);
@@ -245,6 +245,7 @@ TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr2);
 TEXTURE2D_ARRAY(_DiffuseProbeVBufferArr0);
 
 TEXTURE2D_ARRAY(_MainLightShadowmapArray);
+SAMPLER_CMP(sampler_MainLightShadowmapArray);
 
 TEXTURE2D(_BlueNoise16);
 float4 _BlueNoise16_TexelSize;
@@ -308,6 +309,11 @@ float3 SignNotZero(float3 n) {
 
 float4 SignNotZero(float4 n) {
     return float4(SignNotZero(n.x), SignNotZero(n.y), SignNotZero(n.z), SignNotZero(n.w));
+}
+
+float DistanceSqr(float3 a, float3 b) {
+    float3 diff = a - b;
+    return dot(diff, diff);
 }
 
 //////////////////////////////////////////
@@ -580,6 +586,46 @@ float3 FastTonemapInvertSafe(float3 c) {
 
 float4 FastTonemapInvertSafe(float4 c) {
     return float4(FastTonemapInvertSafe(c.rgb), c.a);
+}
+
+//////////////////////////////////////////
+// Shadow Utility Functions             //
+//////////////////////////////////////////
+
+float GetMainLightShadowConstantBias() {
+    return _MainLightShadowParams0.r;
+}
+
+float GetMainLightShadowNormalBias() {
+    return _MainLightShadowParams0.g;
+}
+
+float2 GetMainLightShadowTexelParams() {
+    return _MainLightShadowParams0.zw;
+}
+
+float GetMainLightShadowBlend() {
+    return _MainLightShadowParams1.r;
+}
+
+float GetMainLightShadowStrength() {
+    return _MainLightShadowParams1.a;
+}
+
+float3 SampleMainLightShadowHard(float3 posWS, int cascade) {
+    float4 posShadow = mul(_MainLightShadowMatrixVPArray[cascade], float4(posWS, 1.0f));
+    float shadow = SAMPLE_TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray, sampler_MainLightShadowmapArray, posShadow.xyz, cascade);
+    return lerp(1.0f, shadow, GetMainLightShadowStrength());
+}
+
+float3 SampleMainLightShadowHard(float3 posWS) {
+    for (int i = 0; i < 4; i++) {
+        float4 sphere = _MainLightShadowBoundArray[i];
+        float distanceSqr = DistanceSqr(posWS, sphere.xyz);
+        if (distanceSqr < sphere.w) return SampleMainLightShadowHard(posWS, i);
+    }
+    
+    return float3(1.0f, 1.0f, 1.0f);
 }
 
 //////////////////////////////////////////

@@ -97,7 +97,7 @@ namespace AdvancedRenderPipeline.Runtime {
 				
 			// add pipeline processors
 			_pipelineProcessors.Add(new GeneralPipelineProcessor());
-			_pipelineProcessors.Add(new DiffuseProbeProcessor());
+			// _pipelineProcessors.Add(new DiffuseProbeProcessor());
 		}
 
 		protected override void Render(ScriptableRenderContext context, Camera[] cameras) {

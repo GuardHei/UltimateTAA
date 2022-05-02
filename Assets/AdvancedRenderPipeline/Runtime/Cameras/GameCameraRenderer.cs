@@ -1,4 +1,5 @@
 using System;
+using AdvancedRenderPipeline.Runtime.PipelineProcessors;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -58,7 +59,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		protected MainLightShadowData[] _mainLightShadowData;
 		protected Matrix4x4[] _mainLightShadowMatrixVPs;
 		protected Matrix4x4[] _mainLightShadowMatrixInvVPs;
-		protected float[] _mainLightShadowOrthoWidths;
+		protected Vector4[] _mainLightShadowBounds;
 
 		protected ComputeBuffer _cameraDataBuffer;
 		protected ComputeBuffer _mainLightBuffer;
@@ -66,13 +67,13 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		#endregion
 
-		protected ShadowmapManager _shadowManager;
+		protected DiffuseProbeProcessor _diffuseProbeProcessor;
 
 		public GameCameraRenderer(Camera camera) : base(camera) {
 			cameraType = AdvancedCameraType.Game;
 			_rendererDesc = "Render Game (" + camera.name + ")";
 
-			_shadowManager = new ShadowmapManager();
+			_diffuseProbeProcessor = new DiffuseProbeProcessor();
 
 			InitBuffers();
 			InitComputeBuffers();
@@ -97,9 +98,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			beforeFirstPass?.Invoke();
 			
 			DrawShadowPass();
+			UpdateDiffuseProbes();
 			
 			SetupCameraProperties();
-			
+
 			DrawDepthPrepass();
 			DrawVelocityPass();
 
@@ -252,10 +254,12 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				return;
 			}
 
+			cullingParameters.shadowDistance = settings.shadowSettings.GetShadowDistance(camera);
+
 			_cullingResults = _context.Cull(ref cullingParameters);
 			
 			// can only cull once per Submit() call
-			Submit();
+			// Submit();
 		}
 
 		internal void DrawDepthPrepass() {
@@ -317,51 +321,71 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			DrawPointLightShadowPass();
 		}
 
-		internal void DrawMainLightShadowPass() {
-			Vector3 lightDir = -LightManager.MainLightData.direction.xyz;
-			var shadowCam = _shadowManager._shadowCamera;
+		internal Matrix4x4 GetShadowViewProjMatrix(Matrix4x4 shadowViewProjMatrix) {
+			if (SystemInfo.usesReversedZBuffer) {
+				shadowViewProjMatrix.m20 = -shadowViewProjMatrix.m20;
+				shadowViewProjMatrix.m21 = -shadowViewProjMatrix.m21;
+				shadowViewProjMatrix.m22 = -shadowViewProjMatrix.m22;
+				shadowViewProjMatrix.m23 = -shadowViewProjMatrix.m23;
+			}
 			
-			_shadowManager.UpdateCSM(camera, lightDir);
+			shadowViewProjMatrix.m00 = 0.5f * (shadowViewProjMatrix.m00 + shadowViewProjMatrix.m30);
+			shadowViewProjMatrix.m01 = 0.5f * (shadowViewProjMatrix.m01 + shadowViewProjMatrix.m31);
+			shadowViewProjMatrix.m02 = 0.5f * (shadowViewProjMatrix.m02 + shadowViewProjMatrix.m32);
+			shadowViewProjMatrix.m03 = 0.5f * (shadowViewProjMatrix.m03 + shadowViewProjMatrix.m33);
+			shadowViewProjMatrix.m10 = 0.5f * (shadowViewProjMatrix.m10 + shadowViewProjMatrix.m30);
+			shadowViewProjMatrix.m11 = 0.5f * (shadowViewProjMatrix.m11 + shadowViewProjMatrix.m31);
+			shadowViewProjMatrix.m12 = 0.5f * (shadowViewProjMatrix.m12 + shadowViewProjMatrix.m32);
+			shadowViewProjMatrix.m13 = 0.5f * (shadowViewProjMatrix.m13 + shadowViewProjMatrix.m33);
+			shadowViewProjMatrix.m20 = 0.5f * (shadowViewProjMatrix.m20 + shadowViewProjMatrix.m30);
+			shadowViewProjMatrix.m21 = 0.5f * (shadowViewProjMatrix.m21 + shadowViewProjMatrix.m31);
+			shadowViewProjMatrix.m22 = 0.5f * (shadowViewProjMatrix.m22 + shadowViewProjMatrix.m32);
+			shadowViewProjMatrix.m23 = 0.5f * (shadowViewProjMatrix.m23 + shadowViewProjMatrix.m33);
+			
+			return shadowViewProjMatrix;
+		}
 
-			var shadowCmd = CommandBufferPool.Get("Render Main Light Shadowmap");
-
-			for (var i = 0; i < 4; i++) {
-				_shadowManager.SetupCSM(lightDir, i, settings.shadowSettings.mainLightShadowNearOffset, settings.shadowSettings.mainLightShadowFarOffset);
-				var shadowViewMatrix = shadowCam.worldToCameraMatrix;
-				var shadowProjectionMatrix = GL.GetGPUProjectionMatrix(shadowCam.projectionMatrix, false);
-				var shadowMatrixVP = shadowProjectionMatrix * shadowViewMatrix;
-				var shadowMatrixInvVP = shadowMatrixVP.inverse;
-
-				_mainLightShadowMatrixVPs[i] = shadowMatrixVP;
-				_mainLightShadowMatrixInvVPs[i] = shadowMatrixInvVP;
-
-				if (!camera.TryGetCullingParameters(out var cullingParameters)) continue;
-				
-				var shadowCullingResults = _context.Cull(ref cullingParameters);
-				
-				_context.SetupCameraProperties(shadowCam);
-				shadowCmd.SetRenderTarget(_mainLightShadowmapArray, 0, CubemapFace.Unknown, i);
-				shadowCmd.ClearRenderTarget(true, true, Color.clear);
-				
-				ExecuteCommand(shadowCmd);
-
-				var drawSettings = new DrawingSettings(ShaderTagManager.SHADOW_CASTER, new SortingSettings(shadowCam)) {
-					enableInstancing = settings.enableAutoInstancing
-				};
-				var filteringSettings = FilteringSettings.defaultValue;
-				
-				_context.DrawRenderers(shadowCullingResults, ref drawSettings, ref filteringSettings);
-				
-				Submit();
+		internal void DrawMainLightShadowPass() {
+			if (!LightManager.MainLightShadowAvailable) {
+				return;
 			}
 
-			_mainLightShadowData[0] = settings.shadowSettings.GetGPUData(camera, LightManager.MainLight);
+			var shadowSettings = settings.shadowSettings;
+			
+			var shadowCmd = CommandBufferPool.Get("Render Main Light Shadowmap");
+			var shadowDrawSettings = new ShadowDrawingSettings(_cullingResults, LightManager.MainLightIndex) {
+				objectsFilter = ShadowObjectsFilter.AllObjects
+			};
+
+			var light = LightManager.MainLight.light;
+
+			for (var i = 0; i < 4; i++) {
+				shadowCmd.SetRenderTarget(_mainLightShadowmapArray, 0, CubemapFace.Unknown, i);
+				shadowCmd.ClearRenderTarget(true, false, Color.clear);
+				if (!_cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(LightManager.MainLightIndex, i, 4, shadowSettings.MainLightShadowCascades, (int) shadowSettings.mainLightShadowmapSize, light.shadowNearPlane, out var shadowViewMatrix, out var shadowProjMatrix, out var splitData)) continue;
+				var shadowViewProjMatrix = GetShadowViewProjMatrix(shadowProjMatrix * shadowViewMatrix);
+				var cullingSphere = splitData.cullingSphere;
+				cullingSphere.w *= cullingSphere.w;
+				_mainLightShadowBounds[i] = cullingSphere;
+				_mainLightShadowMatrixVPs[i] = shadowViewProjMatrix;
+				_mainLightShadowMatrixInvVPs[i] = shadowProjMatrix.inverse;
+
+				shadowCmd.SetViewProjectionMatrices(shadowViewMatrix, shadowProjMatrix);
+				if (shadowSettings.enableVertexStageBias) shadowCmd.SetGlobalDepthBias(light.shadowBias, light.shadowNormalBias * shadowSettings.mainLightShadowNormalBiasScales[i]);
+				ExecuteCommand(shadowCmd);
+
+				shadowDrawSettings.splitData = splitData;
+				_context.DrawShadows(ref shadowDrawSettings);
+			}
+
+			_mainLightShadowData[0] = settings.shadowSettings.GetGPUData(camera, LightManager.MainLight.light);
 			_mainLightShadowDataBuffer.SetData(_mainLightShadowData, 0, 0, 1);
 			
+			if (shadowSettings.enableVertexStageBias) shadowCmd.SetGlobalDepthBias(0f, 0f);
 			shadowCmd.SetGlobalConstantBuffer(_mainLightShadowDataBuffer, ShaderKeywordManager.MAIN_LIGHT_SHADOW_DATA, 0, sizeof(MainLightShadowData));
+			shadowCmd.SetGlobalVectorArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_BOUND_ARRAY, _mainLightShadowBounds);
 			shadowCmd.SetGlobalMatrixArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_MATRIX_VP_ARRAY, _mainLightShadowMatrixVPs);
 			shadowCmd.SetGlobalMatrixArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_MATRIX_INV_VP_ARRAY, _mainLightShadowMatrixInvVPs);
-			shadowCmd.SetGlobalFloatArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_ORTHO_WIDTHS, _mainLightShadowOrthoWidths);
 			
 			shadowCmd.SetGlobalTexture(ShaderKeywordManager.MAIN_LIGHT_SHADOWMAP_ARRAY, _mainLightShadowmapArray);
 			
@@ -376,6 +400,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		internal void DrawPointLightShadowPass() {
 			
+		}
+
+		internal void UpdateDiffuseProbes() {
+			_diffuseProbeProcessor.Process(_context);
 		}
 
 		internal void DrawOpaqueLightingPass() {
@@ -622,6 +650,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				volumeDepth = 4,
 				shadowSamplingMode = ShadowSamplingMode.CompareDepths
 			});
+			_mainLightShadowmapArray.filterMode = FilterMode.Bilinear;
 			_mainLightShadowmapArray.Create();
 		}
 
@@ -674,7 +703,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 			_mainLightShadowMatrixVPs = new Matrix4x4[4];
 			_mainLightShadowMatrixInvVPs = new Matrix4x4[4];
-			_mainLightShadowOrthoWidths = new float[4];
+			_mainLightShadowBounds = new Vector4[4];
 		}
 
 		internal void ReleaseComputeBuffers() {
@@ -684,6 +713,8 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		public override void Dispose() {
+			_diffuseProbeProcessor.Dispose();
+			
 			if (_historyBuffers != null) {
 				_historyBuffers.ReleaseAll();
 				_historyBuffers.Dispose();
@@ -692,8 +723,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			ReleaseTemporaryBuffers();
 			ReleaseBuffers();
 			ReleaseComputeBuffers();
-			
-			_shadowManager.Dispose(true);
 			
 			base.Dispose();
 		}

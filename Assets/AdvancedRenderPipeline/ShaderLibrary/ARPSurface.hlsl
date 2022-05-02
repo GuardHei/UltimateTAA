@@ -325,7 +325,7 @@ void ARPSurfLightSetup(inout ARPSurfLightInputData output, ARPSurfMatOutputData 
     output.pack0 = float3(LdotH, NdotH, NdotL);
 }
 
-void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputData mat, ARPSurfLightInputData light) {
+void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputData mat, inout ARPSurfLightInputData light) {
     float metallic = mat.metallic;
     float linearRoughness = mat.linearRoughness;
     float roughness = LinearRoughnessToRoughness(linearRoughness);
@@ -336,6 +336,10 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     float LdotH = light.pack0.x;
     float NdotH = light.pack0.y;
     float NdotL = light.pack0.z;
+
+    float3 shadow = float3(.0f, .0f, .0f);
+    if (NdotL > .0f) shadow = SampleMainLightShadowHard(mat.posWS);
+    light.lighting *= shadow;
     
     float3 energyCompensation;
     float4 lut = GetDGFFromLut(energyCompensation, mat.f0, roughness, NdotV);
@@ -382,7 +386,6 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     float3 kS = F_SchlickRoughness(mat.f0, NdotV, linearRoughness);
     float3 kD = 1.0f - kS;
     kD *=  1.0f - metallic;
-    // float negE = 1.0f - envGF;
     
     float3 indirectDiffuse;
 
@@ -430,9 +433,6 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
 
     forwardLighting.rgb += clearCoatSpecularIBL * fc_i;
 
-    // indirectDiffuse = .0f;
-    // forwardLighting.rgb = frc;
-
     #elif defined(_HAS_SUBSURFACE_COLOR)
 
     forwardLighting.rgb = fd * saturate((NdotL + .5f) / 2.25f) * saturate(mat.subsurfaceColor + float3(NdotL, NdotL, NdotL)) * light.shadowedColor;
@@ -445,6 +445,8 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     #endif
 
     forwardLighting.rgb += emissive + indirectDiffuse;
+
+    // forwardLighting.rgb = shadow;
     
     output.directDiffuseLobe = fd;
     output.directSpecularLobe = fr;

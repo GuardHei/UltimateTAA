@@ -28,7 +28,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int MAIN_LIGHT_SHADOW_PARAMS_0 = Shader.PropertyToID("_MainLightShadowParams0");
 		public static readonly int MAIN_LIGHT_SHADOW_PARAMS_1 = Shader.PropertyToID("_MainLightShadowParams1");
 		public static readonly int MAIN_LIGHT_SHADOW_PARAMS_2 = Shader.PropertyToID("_MainLightShadowParams2");
-		public static readonly int MAIN_LIGHT_SHADOW_ORTHO_WIDTHS = Shader.PropertyToID("_MainLightShadowOrthoWidths");
+		public static readonly int MAIN_LIGHT_SHADOW_BOUND_ARRAY = Shader.PropertyToID("_MainLightShadowBoundArray");
 		public static readonly int MAIN_LIGHT_SHADOW_MATRIX_VP_ARRAY = Shader.PropertyToID("_MainLightShadowMatrixVPArray");
 		public static readonly int MAIN_LIGHT_SHADOW_MATRIX_INV_VP_ARRAY = Shader.PropertyToID("_MainLightShadowMatrixInvVPArray");
 

@@ -27,8 +27,15 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
     float3 skyColor = SampleGlobalEnvMapSpecular(dir, .0f);
     
     float3 diffuseColor = saturate(dot(N, L)) * INV_PI * albedo * lightColor;
-    
+
     float3 posWS = GetDiffuseProbePosWS(id.z) + dir * gbuffer2;
+
+    /*
+    if (IsDiffuseProbeIndirectShadowSamplingEnabled()) {
+        float3 shadow = SampleMainLightShadowHard(posWS);
+        diffuseColor *= shadow;
+    }
+    */
 
     if (IsDiffuseProbeMultiBounceEnabled()) {
         float3 indirectDiffuse = SampleIndirectDiffuseGI(posWS, N, albedo, float3(1.0f, 1.0f, 1.0f), true);
@@ -36,8 +43,6 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
     }
 
     _RadianceArr[id] = lerp(diffuseColor, skyColor, skyVisibility);
-    // _RadianceArr[id] = saturate(dot(N, L));
-    // _RadianceArr[id] = skyColor;
 }
 
 [numthreads(8,8,1)]
