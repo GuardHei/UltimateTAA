@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace AdvancedRenderPipeline.Runtime {
 	public static class ShaderKeywordManager {
@@ -135,6 +136,15 @@ namespace AdvancedRenderPipeline.Runtime {
 		#region Shader Features
 
 		public static readonly string ACCURATE_TRANSFORM_ON = "ACCURATE_TRANSFORM_ON";
+
+		public static GlobalKeyword MAIN_LIGHT_SHADOW_ON {
+			get {
+				if (main_light_shadow_on.name == null) main_light_shadow_on = GlobalKeyword.Create("MAIN_LIGHT_SHADOW_ON");
+				return main_light_shadow_on;
+			}
+		}
+
+		private static GlobalKeyword main_light_shadow_on;
 
 		#endregion
 		

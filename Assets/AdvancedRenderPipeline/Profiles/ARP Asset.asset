@@ -18,7 +18,7 @@ MonoBehaviour:
     enableDebugViewInEditor: 1
     debugOutput: 0
     enableAutoInstancing: 1
-    enableSRPBatching: 0
+    enableSRPBatching: 1
     enableMVAutoInstancing: 0
     enableMVSRPBatching: 1
     stopNaNPropagation: 1
@@ -39,8 +39,8 @@ MonoBehaviour:
       mainLightShadowCascade3: 0.5
       mainLightShadowBlend: 0
       mainLightShadowmapSize: 2048
-      mainLightSoftShadow: 0
-      enableVertexStageBias: 1
+      mainLightSoftShadow: 1
+      enableVertexStageBias: 0
       mainLightShadowNormalBiasScales:
         x: 1
         y: 1
@@ -70,6 +70,7 @@ MonoBehaviour:
       probeDepthSharpness: 50
       probeIrradianceGamma: 0
       visibilityTestBias: 0.3
+      enableVisibilityTest: 1
       enableMultiBounce: 1
       enableIndirectShadowSampling: 1
       offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}

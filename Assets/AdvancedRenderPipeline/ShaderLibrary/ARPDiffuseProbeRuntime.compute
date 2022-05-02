@@ -3,6 +3,8 @@
 #pragma kernel IrradiancePrefilter
 #pragma kernel IrradiancePadding
 
+#pragma multi_compile _ MAIN_LIGHT_SHADOW_ON
+
 #include "ARPCommon.hlsl"
 
 RW_TEXTURE2D_ARRAY(float3, _RadianceArr);
@@ -25,13 +27,15 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
     float2 gbufferOct = GetNormalizedOctCoords(id.xy, GetDiffuseProbeSize());
     float3 dir = UnpackNormalOctQuadEncode(gbufferOct);
     float3 skyColor = SampleGlobalEnvMapSpecular(dir, .0f);
+
+    float NdotL = saturate(dot(N, L));
     
-    float3 diffuseColor = saturate(dot(N, L)) * INV_PI * albedo * lightColor;
+    float3 diffuseColor = NdotL * INV_PI * albedo * lightColor;
 
     float3 posWS = GetDiffuseProbePosWS(id.z) + dir * gbuffer2;
 
-    if (IsDiffuseProbeIndirectShadowSamplingEnabled()) {
-        float3 shadow = SampleMainLightShadowHard(posWS);
+    if (IsDiffuseProbeIndirectShadowSamplingEnabled() && NdotL > .0f) {
+        float3 shadow = SampleMainLightShadowHard(posWS, N);
         diffuseColor *= shadow;
     }
 

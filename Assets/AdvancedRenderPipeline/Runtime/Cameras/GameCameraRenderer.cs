@@ -316,7 +316,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		internal void DrawShadowPass() {
-			if (!settings.shadowSettings.enabled) return;
 			DrawMainLightShadowPass();
 			DrawSpotLightShadowPass();
 			DrawPointLightShadowPass();
@@ -347,12 +346,15 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		internal void DrawMainLightShadowPass() {
-			if (!LightManager.MainLightShadowAvailable) {
+			var shadowSettings = settings.shadowSettings;
+			
+			if (!shadowSettings.enabled || !LightManager.MainLightShadowAvailable) {
+				_cmd.SetGlobalTexture(ShaderKeywordManager.MAIN_LIGHT_SHADOWMAP_ARRAY, _mainLightShadowmapArray);
+				_cmd.DisableKeyword(ShaderKeywordManager.MAIN_LIGHT_SHADOW_ON);
+				ExecuteCommand();
 				return;
 			}
 
-			var shadowSettings = settings.shadowSettings;
-			
 			var shadowCmd = CommandBufferPool.Get("Render Main Light Shadowmap");
 			var shadowDrawSettings = new ShadowDrawingSettings(_cullingResults, LightManager.MainLightIndex) {
 				objectsFilter = ShadowObjectsFilter.AllObjects
@@ -383,11 +385,12 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_mainLightShadowDataBuffer.SetData(_mainLightShadowData, 0, 0, 1);
 			
 			if (shadowSettings.enableVertexStageBias) shadowCmd.SetGlobalDepthBias(0f, 0f);
+			shadowCmd.EnableKeyword(ShaderKeywordManager.MAIN_LIGHT_SHADOW_ON);
+			
 			shadowCmd.SetGlobalConstantBuffer(_mainLightShadowDataBuffer, ShaderKeywordManager.MAIN_LIGHT_SHADOW_DATA, 0, sizeof(MainLightShadowData));
 			shadowCmd.SetGlobalVectorArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_BOUND_ARRAY, _mainLightShadowBounds);
 			shadowCmd.SetGlobalMatrixArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_MATRIX_VP_ARRAY, _mainLightShadowMatrixVPs);
 			shadowCmd.SetGlobalMatrixArray(ShaderKeywordManager.MAIN_LIGHT_SHADOW_MATRIX_INV_VP_ARRAY, _mainLightShadowMatrixInvVPs);
-			
 			shadowCmd.SetGlobalTexture(ShaderKeywordManager.MAIN_LIGHT_SHADOWMAP_ARRAY, _mainLightShadowmapArray);
 			
 			ExecuteCommand(shadowCmd);
@@ -408,8 +411,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		internal void DrawOpaqueLightingPass() {
-			var clearColor = camera.clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.black;
-			clearColor = Color.clear; // MRT needs to be cleared with 0 anyway
+			var clearColor = Color.clear; // MRT needs to be cleared with 0 anyway
 
 			_forwardMRTs[0] = _rawColorTex;
 			_forwardMRTs[1] = _gbuffer1Tex;
@@ -499,7 +501,6 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		}
 
 		internal void TonemapPass() {
-
 			var colorGradeParams = new Vector4(
 				Mathf.Pow(2f, settings.colorSettings.postExposure), 
 				settings.colorSettings.contrast * .01f + 1f, 
@@ -645,13 +646,14 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		internal void InitScreenIndependentBuffers() {
 			var mainLightShadowmapSize = (int) settings.shadowSettings.mainLightShadowmapSize;
-			_mainLightShadowmapArray = new RenderTexture(new RenderTextureDescriptor(mainLightShadowmapSize, mainLightShadowmapSize, RenderTextureFormat.Shadowmap, 16, 1) {
+			_mainLightShadowmapArray = new RenderTexture(new RenderTextureDescriptor(mainLightShadowmapSize, mainLightShadowmapSize, RenderTextureFormat.Shadowmap, 32, 1) {
 				autoGenerateMips = false,
 				dimension = TextureDimension.Tex2DArray,
 				volumeDepth = 4,
 				shadowSamplingMode = ShadowSamplingMode.CompareDepths
-			});
-			_mainLightShadowmapArray.filterMode = FilterMode.Bilinear;
+			}) {
+				filterMode = FilterMode.Bilinear
+			};
 			_mainLightShadowmapArray.Create();
 		}
 

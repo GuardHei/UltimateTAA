@@ -338,7 +338,7 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
     float NdotL = light.pack0.z;
 
     float3 shadow = float3(.0f, .0f, .0f);
-    if (NdotL > .0f) shadow = SampleMainLightShadowHard(mat.posWS);
+    if (NdotL > .0f) shadow = SampleMainLightShadowHard(mat.posWS, mat.N);
     light.lighting *= shadow;
     
     float3 energyCompensation;

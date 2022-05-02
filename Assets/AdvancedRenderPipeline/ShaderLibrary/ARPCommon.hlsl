@@ -76,7 +76,7 @@ CBUFFER_START(DiffuseProbeParams)
     int4 _DiffuseProbeParams3; // x: probe gbuffer size, y: probe vbuffer size, z: offline cubemap size, w: enabled or not (disabled = 0, enabled = 1)
     float4 _DiffuseProbeParams4; // xyz: min position, w: probe irradiance gamma
     float4 _DiffuseProbeParams5; // xyz: max position, w: gi source
-    float4 _DiffuseProbeParams6; // x: visibility test bias, y: enable multi bounce (disabled = 0, enabled = 1), z: enable indirect shadow sampling (disabled = 0, enabled = 1), w: na
+    float4 _DiffuseProbeParams6; // x: visibility test bias, y: enable multi bounce (disabled = 0, enabled = 1), z: enable indirect shadow sampling (disabled = 0, enabled = 1), w: enable visibility test (disabled = 0, enabled = 1)
 CBUFFER_END
 
 #ifndef DOTS_INSTANCING_ON // UnityPerDraw cbuffer doesn't exist with hybrid renderer
@@ -141,7 +141,7 @@ CBUFFER_END
 
 CBUFFER_START(MainLightShadowData)
     float4 _MainLightShadowParams0; // r - constant bias, g - normal bias, b - size, a - 1f / size
-    float4 _MainLightShadowParams1; // r - shadow blend, g - na, b - na a - shadow strength
+    float4 _MainLightShadowParams1; // r - shadow blend, g - shadow mode (none = 0, hard = 1, pcf3x3 = 2, pcf5x5 = 3, pcss = 4), b - na a - shadow strength
     float4 _MainLightShadowParams2; // rgb - cascade distances, a - shadow distance
 CBUFFER_END
 
@@ -612,17 +612,28 @@ float GetMainLightShadowStrength() {
     return _MainLightShadowParams1.a;
 }
 
+bool IsMainLightShadowEnabled() {
+    return _MainLightShadowParams1.g != .0f;
+}
+
 float3 SampleMainLightShadowHard(float3 posWS, int cascade) {
     float4 posShadow = mul(_MainLightShadowMatrixVPArray[cascade], float4(posWS, 1.0f));
     float shadow = SAMPLE_TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray, sampler_MainLightShadowmapArray, posShadow.xyz, cascade);
     return lerp(1.0f, shadow, GetMainLightShadowStrength());
 }
 
-float3 SampleMainLightShadowHard(float3 posWS) {
+float3 SampleMainLightShadowHard(float3 posWS, float3 N) {
+    #if !defined(MAIN_LIGHT_SHADOW_ON)
+    return float3(1.0f, 1.0f, 1.0f);
+    #endif
+    
     for (int i = 0; i < 4; i++) {
         float4 sphere = _MainLightShadowBoundArray[i];
         float distanceSqr = DistanceSqr(posWS, sphere.xyz);
-        if (distanceSqr < sphere.w) return SampleMainLightShadowHard(posWS, i);
+        if (distanceSqr < sphere.w) {
+            posWS += GetMainLightShadowNormalBias() * N;
+            return SampleMainLightShadowHard(posWS, i);
+        }
     }
     
     return float3(1.0f, 1.0f, 1.0f);
@@ -1227,6 +1238,10 @@ bool IsDiffuseProbeIndirectShadowSamplingEnabled() {
     return _DiffuseProbeParams6.z != .0f;
 }
 
+bool IsDDGIVisibilityTestEnabled() {
+    return _DiffuseProbeParams6.w != .0f;
+}
+
 bool IsInsideDDGIVolume(float3 posWS, float tolerance) {
     const float3 tolerances = float3(tolerance, tolerance, tolerance);
     const float3 mi = GetDiffuseProbeVolumeMinPos() - tolerances;
@@ -1358,28 +1373,30 @@ float4 GetProbeIrradianceWeighted(int3 probeIndex, float3 posWS, float3 N, bool 
     cosWeight = cosWeight * cosWeight + .2f;
     netWeight *= cosWeight;
 
-    // Visibility weighting:
-    // This value is dependent on whether or not the current sample position is occluded by the current probe
-    //  We sample from VBuffer, which stores distance info (result.x is scaled E[x], result.y is scaled E[x^2]), and use these values to calculate variance
-    float2 visParams = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, GetVisibilityMapUV(-pointToProbe), index1d, 0).xy;
+    if (IsDDGIVisibilityTestEnabled()) {
+        // Visibility weighting:
+        // This value is dependent on whether or not the current sample position is occluded by the current probe
+        //  We sample from VBuffer, which stores distance info (result.x is scaled E[x], result.y is scaled E[x^2]), and use these values to calculate variance
+        float2 visParams = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, GetVisibilityMapUV(-pointToProbe), index1d, 0).xy;
     
-    float variance = abs((visParams.x * visParams.x) - visParams.y);
+        float variance = abs((visParams.x * visParams.x) - visParams.y);
 
-    // Check for occlusion, when the offset distance between the sample point and probe is greater than the distance to the closest geometry (stored in VBuffer)
-    float chebyshevWeight = 1.0f;
-    float biasedDist = distToProbe - surfaceOffset;
-    if (biasedDist > visParams.x) {
-        // occlusion occurs; weight this probe's result using chebyshev's inequality
-        float k = biasedDist - visParams.x;
-        chebyshevWeight = variance / (variance + (k * k));
-        chebyshevWeight *= chebyshevWeight * chebyshevWeight;
-        // chebyshevWeight = .0f;
-        // return float4(1.0f, .0f, .0f, 1.0f);
+        // Check for occlusion, when the offset distance between the sample point and probe is greater than the distance to the closest geometry (stored in VBuffer)
+        float chebyshevWeight = 1.0f;
+        float biasedDist = distToProbe - surfaceOffset;
+        if (biasedDist > visParams.x) {
+            // occlusion occurs; weight this probe's result using chebyshev's inequality
+            float k = biasedDist - visParams.x;
+            chebyshevWeight = variance / (variance + (k * k));
+            chebyshevWeight *= chebyshevWeight * chebyshevWeight;
+            // chebyshevWeight = .0f;
+            // return float4(1.0f, .0f, .0f, 1.0f);
+        }
+
+        // Clamp resulting Chebyshev weight to some min value above 0; in the case that all probes are occluded, we use a heavily reduced sample from all probes
+        chebyshevWeight = max(minVarianceWeight, chebyshevWeight);
+        netWeight *= chebyshevWeight;
     }
-
-    // Clamp resulting Chebyshev weight to some min value above 0; in the case that all probes are occluded, we use a heavily reduced sample from all probes
-    chebyshevWeight = max(minVarianceWeight, chebyshevWeight);
-    netWeight *= chebyshevWeight;
 
     // Avoid final weight being 0, and clamp to FLT_EPS
     netWeight = max(netWeight, FLT_EPS);

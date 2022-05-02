@@ -8,14 +8,19 @@
 4. Implement basic motion vector pass - Fin.
 5. Implement more advanced TAA - Fin.
 6. Implement more advanced materials - Fin.
-7. Implement precomputed radiance transfer GI with realtime relighting - 90% Done.
+7. Implement precomputed radiance transfer GI with realtime relighting - Fin.
    1. Offline capture - Fin.
    2. Runtime radiance update
       1. Single bounce - Fin.
       2. Multi bounce - Fin.
-      3. Indirect shadow - WIP.
+      3. Indirect shadow - Fin.
    3. Runtime irradiance prefilter - Fin.
    4. Runtime irradiance sampling - Fin.
+8. Implement Cascaded Directional Shadow - 50% Fin.
+   1. Cascaded shadowmap render - Fin.
+   2. Cascaded hard shadow sample - Fin.
+   3. Cascaded PCF soft shadow sample - WIP.
+   4. Cascaded PCSS soft shadow sample - WIP.
 
 ## Preview
 |![Damaged Helmet](https://s2.loli.net/2022/01/25/Vo3DmB1CNzSR4Yd.png)|
@@ -93,6 +98,22 @@
  | Depth     | D24S8             | Depth           | N/A        | N/A             | Stencil                      |
 
  ## Render Pass Overview
+
+ ### Cascaded Shadowmap Pass
+
+    Render the cascaded shadowmap for the main directional light (only support 1 directional light shadow at the moment).
+
+ ### Diffuse Probe Radiance Update Pass
+
+    Update the radiance of the diffuse probes.
+
+ ### Diffuse Probe Irradiance Update Pass
+
+    Prefilter the irradiance of the diffuse probes.
+
+ ### Diffuse Probe Irradiance Padding Pass
+
+    Add the 1-px padding of the irradiance maps for bilinear filtering.
 
  ### Occluder Depth Stencil Prepass
 

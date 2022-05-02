@@ -66,7 +66,7 @@ namespace AdvancedRenderPipeline.Runtime {
 			enableVertexStageBias = true,
 			mainLightShadowNormalBiasScales = new float4(1.0f, 1.0f, 1.0f, 1.0f),
 			mainLightShadowmapSize = ShadowmapSize._2048,
-			mainLightSoftShadow = SoftShadowMode.Pcf3x3
+			mainLightSoftShadow = SoftShadowMode.Hard
 		};
 		[Header("Image Based Lighting")]
 		public Texture2D iblLut;
@@ -86,7 +86,7 @@ namespace AdvancedRenderPipeline.Runtime {
 			source = DiffuseGISource.Skybox,
 			volumeCenter = Vector3.zero, dimensions = new Vector3Int(2, 2, 2), maxIntervals = Vector3.one, 
 			probeGBufferSize = DiffuseGIProbeSize._16, probeVBufferSize = DiffuseGIProbeSize._16, offlineCubemapSize = DiffuseGIProbeSize._512,
-			probeViewDistance = 50f, probeDepthSharpness = 80f, probeIrradianceGamma = 1f, visibilityTestBias = .3f,
+			probeViewDistance = 50f, probeDepthSharpness = 80f, probeIrradianceGamma = 1f, visibilityTestBias = .3f, enableVisibilityTest = true,
 			probeGBufferPath0 = "probe_gbuffer_0", probeGBufferPath1 = "probe_gbuffer_1", probeGBufferPath2 = "probe_gbuffer_2", probeVBufferPath0 = "probe_vbuffer_0"
 		};
 		[Header("Anti Aliasing")]
@@ -120,21 +120,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		TaaColorHistory,
 		HDRColor,
 		NaN
-	}
-
-	public enum ShadowmapSize {
-		_256 = 256,
-		_512 = 512,
-		_1024 = 1024,
-		_2048 = 2048,
-		_4096 = 4096,
-		_8192 = 8192
-	}
-
-	public enum SoftShadowMode {
-		Pcf3x3 = 0,
-		Pcf5x5 = 1,
-		Pcss = 2
 	}
 
 	public enum TonemappingMode {
@@ -179,10 +164,26 @@ namespace AdvancedRenderPipeline.Runtime {
 			float size = (int) mainLightShadowmapSize;
 			return new MainLightShadowData {
 				_MainLightShadowParams0 = new float4(light.shadowBias, light.shadowNormalBias, size, 1f / size),
-				_MainLightShadowParams1 = new float4(mainLightShadowBlend, .0f, .0f, light.shadowStrength),
+				_MainLightShadowParams1 = new float4(mainLightShadowBlend, LightManager.MainLightShadowAvailable && enabled ? (int) mainLightSoftShadow : 0, .0f, light.shadowStrength),
 				_MainLightShadowParams2 = new float4(MainLightShadowCascades, GetShadowDistance(cam))
 			};
 		}
+	}
+	
+	public enum ShadowmapSize {
+		_256 = 256,
+		_512 = 512,
+		_1024 = 1024,
+		_2048 = 2048,
+		_4096 = 4096,
+		_8192 = 8192
+	}
+
+	public enum SoftShadowMode {
+		Hard = 1,
+		Pcf3x3 = 2,
+		Pcf5x5 = 3,
+		Pcss = 4
 	}
 
 	[Serializable]
@@ -267,6 +268,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float probeIrradianceGamma;
 		[Range(0f, 1f)]
 		public float visibilityTestBias;
+		public bool enableVisibilityTest;
 		public bool enableMultiBounce;
 		public bool enableIndirectShadowSampling;
 		public ComputeShader offlineComputeShader;
@@ -303,7 +305,7 @@ namespace AdvancedRenderPipeline.Runtime {
 					_DiffuseProbeParams3 = new int4((int) probeGBufferSize, (int) probeVBufferSize, (int) offlineCubemapSize, Enabled ? 1 : 0),
 					_DiffuseProbeParams4 = new float4(Min, probeIrradianceGamma),
 					_DiffuseProbeParams5 = new float4(Max, (int) source),
-					_DiffuseProbeParams6 = new float4(visibilityTestBias, enableMultiBounce ? 1f : 0f, enableIndirectShadowSampling ? 1f : 0f, .0f)
+					_DiffuseProbeParams6 = new float4(visibilityTestBias, enableMultiBounce ? 1f : 0f, enableIndirectShadowSampling ? 1f : 0f, enableVisibilityTest ? 1f : 0f)
 				};
 				return gpuParams;
 			}
