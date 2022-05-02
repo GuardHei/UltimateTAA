@@ -53,9 +53,6 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         }
 
         internal void Setup() {
-            
-            // SetupGILights();
-
             var valid = ValidateProbeData();
             
             var giSettings = diffuseGISettings;

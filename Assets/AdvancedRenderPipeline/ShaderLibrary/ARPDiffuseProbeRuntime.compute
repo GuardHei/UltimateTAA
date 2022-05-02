@@ -30,12 +30,10 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
 
     float3 posWS = GetDiffuseProbePosWS(id.z) + dir * gbuffer2;
 
-    /*
     if (IsDiffuseProbeIndirectShadowSamplingEnabled()) {
         float3 shadow = SampleMainLightShadowHard(posWS);
         diffuseColor *= shadow;
     }
-    */
 
     if (IsDiffuseProbeMultiBounceEnabled()) {
         float3 indirectDiffuse = SampleIndirectDiffuseGI(posWS, N, albedo, float3(1.0f, 1.0f, 1.0f), true);

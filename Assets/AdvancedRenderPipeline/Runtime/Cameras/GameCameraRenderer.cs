@@ -98,9 +98,10 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			beforeFirstPass?.Invoke();
 			
 			DrawShadowPass();
-			UpdateDiffuseProbes();
-			
+
 			SetupCameraProperties();
+			
+			UpdateDiffuseProbes();
 
 			DrawDepthPrepass();
 			DrawVelocityPass();
