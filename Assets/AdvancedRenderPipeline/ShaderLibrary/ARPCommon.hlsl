@@ -618,7 +618,10 @@ bool IsMainLightShadowEnabled() {
 
 float3 SampleMainLightShadowHard(float3 posWS, int cascade) {
     float4 posShadow = mul(_MainLightShadowMatrixVPArray[cascade], float4(posWS, 1.0f));
-    float shadow = SAMPLE_TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray, sampler_MainLightShadowmapArray, posShadow.xyz, cascade);
+    // float shadow = SAMPLE_TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray, sampler_MainLightShadowmapArray, posShadow.xyz, cascade);
+    float shadow = SAMPLE_TEXTURE2D_ARRAY_LOD(_MainLightShadowmapArray, sampler_linear_clamp, posShadow.xy, cascade, 0).r;
+    if (shadow > posShadow.z) shadow = .0f;
+    else shadow = 1.0f;
     return lerp(1.0f, shadow, GetMainLightShadowStrength());
 }
 
