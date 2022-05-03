@@ -152,6 +152,8 @@ Shader "Advanced Render Pipeline/ARPStandardDebug" {
                         } else if (debugMode == 12) {
                             float4 info = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeRadianceArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0);
                             debugInfo = info.rgb;
+                        } else if (debugMode == 13) {
+                            debugInfo = lightingData.forwardLighting;
                         }
                     } else {
                         // set color to magenta to display error
