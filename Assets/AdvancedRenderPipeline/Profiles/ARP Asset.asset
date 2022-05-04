@@ -33,11 +33,11 @@ MonoBehaviour:
     alphaTestDepthCutOff: 0.001
     shadowSettings:
       enabled: 1
-      mainLightShadowDistance: 50
+      mainLightShadowDistance: 100
       mainLightShadowCascade1: 0.1
       mainLightShadowCascade2: 0.25
       mainLightShadowCascade3: 0.5
-      mainLightShadowBlend: 0
+      mainLightShadowBlend: 0.1
       mainLightShadowmapSize: 2048
       mainLightSoftShadow: 1
       enableVertexStageBias: 1
@@ -60,9 +60,9 @@ MonoBehaviour:
       markProbesDirty: 0
       enabledFlag: 1
       source: 2
-      volumeCenter: {x: 0, y: 0, z: 0.1}
-      dimensions: {x: 7, y: 7, z: 18}
-      maxIntervals: {x: 1.2, y: 1.2, z: 1.2}
+      volumeCenter: {x: 0.25, y: 0.5, z: -0.65}
+      dimensions: {x: 5, y: 6, z: 12}
+      maxIntervals: {x: 2.5, y: 1.6, z: 2}
       probeGBufferSize: 16
       probeVBufferSize: 32
       offlineCubemapSize: 512
@@ -71,7 +71,7 @@ MonoBehaviour:
       probeIrradianceGamma: 0
       visibilityTestBias: 0.3
       enableVisibilityTest: 1
-      enableMultiBounce: 0
+      enableMultiBounce: 1
       enableIndirectShadowSampling: 1
       offlineComputeShader: {fileID: 7200000, guid: abe83e13e87534761b22cae9d89a643f, type: 3}
       runtimeComputeShader: {fileID: 7200000, guid: 753bbe1d3eeaa4eb388959a6c0d6b951, type: 3}
@@ -79,10 +79,10 @@ MonoBehaviour:
       probeGBufferPath1: probe_gbuffer_arr_1
       probeGBufferPath2: probe_gbuffer_arr_2
       probeVBufferPath0: probe_vbuffer_arr_0
-      probeGBufferArr0: {fileID: 0}
-      probeGBufferArr1: {fileID: 0}
-      probeGBufferArr2: {fileID: 0}
-      probeVBufferArr0: {fileID: 0}
+      probeGBufferArr0: {fileID: 18700000, guid: 4b64edae4dad84e199c2a99eeb643d0c, type: 2}
+      probeGBufferArr1: {fileID: 18700000, guid: f6129fcc3554e4bb2b20ccd74c511525, type: 2}
+      probeGBufferArr2: {fileID: 18700000, guid: 5e0919df36e7f4142854ffad666ce20b, type: 2}
+      probeVBufferArr0: {fileID: 18700000, guid: 42e6f916215054bedad54e810532e21f, type: 2}
     taaSettings:
       enabled: 1
       jitterNum: 8

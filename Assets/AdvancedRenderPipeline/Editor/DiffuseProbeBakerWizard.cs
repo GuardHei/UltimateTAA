@@ -7,6 +7,7 @@ using AdvancedRenderPipeline.Editor;
 using AdvancedRenderPipeline.Runtime;
 using AdvancedRenderPipeline.Runtime.Cameras;
 using RP_Tests;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -303,8 +304,10 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         
                         gbuffer0Arr.SetPixels(gbuffer0Single.GetPixels(), probeId, 0);
                         gbuffer1Arr.SetPixels(gbuffer1Single.GetPixels(), probeId, 0);
-                        gbuffer2Arr.SetPixels(gbuffer2Single.GetPixels(), probeId, 0);
-                        vbuffer0Arr.SetPixels(vbuffer0Single.GetPixels(), probeId, 0);
+                        // gbuffer2Arr.SetPixels(gbuffer2Single.GetPixels(), probeId, 0);
+                        gbuffer2Arr.SetPixelData(gbuffer2Single.GetPixelData<float>(0), 0, probeId);
+                        // vbuffer0Arr.SetPixels(vbuffer0Single.GetPixels(), probeId, 0);
+                        vbuffer0Arr.SetPixelData(vbuffer0Single.GetPixelData<float2>(0), 0, probeId);
                     }
                 }
             }
