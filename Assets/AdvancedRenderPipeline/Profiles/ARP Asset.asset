@@ -40,7 +40,7 @@ MonoBehaviour:
       mainLightShadowBlend: 0.1
       mainLightShadowmapSize: 2048
       mainLightSoftShadow: 1
-      enableVertexStageBias: 1
+      enableVertexStageBias: 0
       mainLightShadowNormalBiasScales:
         x: 1
         y: 1

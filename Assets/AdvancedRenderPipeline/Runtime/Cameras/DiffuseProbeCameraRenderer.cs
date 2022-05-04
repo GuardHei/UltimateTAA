@@ -278,6 +278,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
         public void ReleaseComputeBuffers() {
 	        _cameraDataBuffer?.Dispose();
+	        _diffuseProbeParamsBuffer?.Dispose();
         }
         
         public override void Dispose() {
