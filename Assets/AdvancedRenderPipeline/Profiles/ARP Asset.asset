@@ -16,7 +16,7 @@ MonoBehaviour:
     enableTaaInEditor: 0
     enableDebugView: 1
     enableDebugViewInEditor: 1
-    debugOutput: 0
+    debugOutput: 12
     enableAutoInstancing: 1
     enableSRPBatching: 1
     enableMVAutoInstancing: 0
@@ -79,10 +79,10 @@ MonoBehaviour:
       probeGBufferPath1: probe_gbuffer_arr_1
       probeGBufferPath2: probe_gbuffer_arr_2
       probeVBufferPath0: probe_vbuffer_arr_0
-      probeGBufferArr0: {fileID: 18700000, guid: 4b64edae4dad84e199c2a99eeb643d0c, type: 2}
-      probeGBufferArr1: {fileID: 18700000, guid: f6129fcc3554e4bb2b20ccd74c511525, type: 2}
-      probeGBufferArr2: {fileID: 18700000, guid: 5e0919df36e7f4142854ffad666ce20b, type: 2}
-      probeVBufferArr0: {fileID: 18700000, guid: 42e6f916215054bedad54e810532e21f, type: 2}
+      probeGBufferArr0: {fileID: 0}
+      probeGBufferArr1: {fileID: 0}
+      probeGBufferArr2: {fileID: 0}
+      probeVBufferArr0: {fileID: 0}
     taaSettings:
       enabled: 1
       jitterNum: 8

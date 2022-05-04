@@ -244,7 +244,7 @@ TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr2);
 TEXTURE2D_ARRAY(_DiffuseProbeVBufferArr0);
 
-TEXTURE2D_ARRAY(_MainLightShadowmapArray);
+TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray);
 SAMPLER_CMP(sampler_MainLightShadowmapArray);
 
 TEXTURE2D(_BlueNoise16);

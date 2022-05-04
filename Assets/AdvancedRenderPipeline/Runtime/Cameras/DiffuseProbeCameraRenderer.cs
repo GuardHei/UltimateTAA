@@ -34,13 +34,15 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         protected RenderTargetIdentifier[] _gbufferMRT = new RenderTargetIdentifier[3];
         protected RenderTargetIdentifier _depthTex = new(ShaderKeywordManager.DEPTH_TEXTURE);
 
-        protected int _currentFace = 0;
+        protected int _currentFace;
         
         #region Compute Buffers
 
         protected CameraData[] _cameraData;
+        protected DiffuseProbeParams[] _diffuseProbeParams;
 
         protected ComputeBuffer _cameraDataBuffer;
+        protected ComputeBuffer _diffuseProbeParamsBuffer;
 
         #endregion
 
@@ -171,6 +173,11 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			
 			_cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
 			
+			var diffuseProbeParams = settings.diffuseGISettings.GPUParams;
+			_diffuseProbeParams[0] = diffuseProbeParams;
+			_diffuseProbeParamsBuffer.SetData(_diffuseProbeParams);
+			_cmd.SetGlobalConstantBuffer(_diffuseProbeParamsBuffer, ShaderKeywordManager.DIFFUSE_PROBE_PARAMS, 0, sizeof(DiffuseProbeParams));
+			
 			ExecuteCommand();
         }
 
@@ -264,6 +271,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         public void InitComputeBuffers() {
 	        _cameraData = new CameraData[1];
 	        _cameraDataBuffer = new ComputeBuffer(1, sizeof(CameraData), ComputeBufferType.Constant);
+
+	        _diffuseProbeParams = new DiffuseProbeParams[1];
+	        _diffuseProbeParamsBuffer = new ComputeBuffer(1, sizeof(DiffuseProbeParams), ComputeBufferType.Constant);
         }
 
         public void ReleaseComputeBuffers() {
