@@ -625,6 +625,14 @@ float3 SampleMainLightShadowHard(float3 posWS, int cascade) {
     return lerp(1.0f, shadow, GetMainLightShadowStrength());
 }
 
+float3 SampleMainLightShadowHard(float3 posWS, float3 N, int cascade) {
+    #if !defined(MAIN_LIGHT_SHADOW_ON)
+    return float3(1.0f, 1.0f, 1.0f);
+    #endif
+    posWS += GetMainLightShadowNormalBias() * N;
+    return SampleMainLightShadowHard(posWS, cascade);
+}
+
 float3 SampleMainLightShadowHard(float3 posWS, float3 N) {
     #if !defined(MAIN_LIGHT_SHADOW_ON)
     return float3(1.0f, 1.0f, 1.0f);
@@ -633,10 +641,7 @@ float3 SampleMainLightShadowHard(float3 posWS, float3 N) {
     for (int i = 0; i < 4; i++) {
         float4 sphere = _MainLightShadowBoundArray[i];
         float distanceSqr = DistanceSqr(posWS, sphere.xyz);
-        if (distanceSqr < sphere.w) {
-            posWS += GetMainLightShadowNormalBias() * N;
-            return SampleMainLightShadowHard(posWS, i);
-        }
+        if (distanceSqr < sphere.w) return SampleMainLightShadowHard(posWS, N, i);
     }
     
     return float3(1.0f, 1.0f, 1.0f);
