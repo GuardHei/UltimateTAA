@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ARP Asset
   m_EditorClassIdentifier: 
   settings:
-    enableTaaInEditor: 0
+    enableTaaInEditor: 1
     enableDebugView: 1
     enableDebugViewInEditor: 1
     debugOutput: 0
