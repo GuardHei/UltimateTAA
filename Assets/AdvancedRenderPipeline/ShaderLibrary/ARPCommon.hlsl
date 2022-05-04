@@ -1075,6 +1075,7 @@ float3 EvaluateDiffuseIBL(float3 kD, float3 N, float3 diffuse, float d) {
 float3 EvaluateSpecularIBL(float3 R, float linearRoughness, float3 GF, float3 energyCompensation) {
     // GFD = 1.0f;
     // float3 indirectSpecular = _GlobalEnvMapSpecular.SampleLevel(sampler_GlobalEnvMapSpecular, R, LinearRoughnessToMipmapLevel(linearRoughness, SPEC_IBL_MAX_MIP)).rgb;
+    if (_DiffuseProbeParams5.w == .0f) return float3(.0f, .0f, .0f);
     float3 indirectSpecular = SampleGlobalEnvMapSpecular(R, LinearRoughnessToMipmapLevel(linearRoughness, SPEC_IBL_MAX_MIP));
     indirectSpecular *= GF * energyCompensation;
     return indirectSpecular;
