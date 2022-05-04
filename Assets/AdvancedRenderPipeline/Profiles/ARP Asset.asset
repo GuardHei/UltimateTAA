@@ -60,9 +60,9 @@ MonoBehaviour:
       markProbesDirty: 0
       enabledFlag: 1
       source: 2
-      volumeCenter: {x: 0, y: 1.5, z: 0}
-      dimensions: {x: 11, y: 6, z: 8}
-      maxIntervals: {x: 1.3, y: 1.3, z: 1.2}
+      volumeCenter: {x: 0, y: 0, z: 0.1}
+      dimensions: {x: 7, y: 7, z: 18}
+      maxIntervals: {x: 1.2, y: 1.2, z: 1.2}
       probeGBufferSize: 16
       probeVBufferSize: 32
       offlineCubemapSize: 512
