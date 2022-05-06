@@ -20,7 +20,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
         // GBuffer Layout
         // GBuffer 0 (RGBA8): RGB - Albedo, A - Sky Visibility
-        // GBuffer 1 (RG8): RG - Normal (Octhedron Encoded)
+        // GBuffer 1 (RG8): RG - Normal (Octahedron Encoded)
         // GBuffer 2 (R16): R - Radial Distance
         // VBuffer 0 (RG16): R - Radial Distance Clamped, G - (Radial Distance Clamped) ^ 2
         protected RenderTexture _gbufferCubemap0;

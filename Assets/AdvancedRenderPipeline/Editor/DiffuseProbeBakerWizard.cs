@@ -277,16 +277,6 @@ public class DiffuseProbeBakerWizard : ScriptableWizard {
                         var probeId = diffuseGISettings.GetProbeIndex1d(new Vector3Int(i, j, k));
                         var pos = origin + new Vector3(i * maxIntervals.x, j * maxIntervals.y, k * maxIntervals.z);
                         tr.position = pos;
-
-                        /*
-                        highResolutionGBuffer0.Add(gbufferCubemap0);
-                        highResolutionGBuffer1.Add(gbufferCubemap1);
-                        highResolutionGBuffer2.Add(gbufferCubemap2);
-                        octahdronGBuffer0.Add(gbuffer0);
-                        octahdronGBuffer1.Add(gbuffer1);
-                        octahdronGBuffer2.Add(gbuffer2);
-                        octahdronVBuffer0.Add(vbuffer0);
-                        */
                         
                         cam.Render();
 
