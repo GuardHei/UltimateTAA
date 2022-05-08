@@ -33,7 +33,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicSmoothnessMap:
-        m_Texture: {fileID: 2800000, guid: c8781b1496882409aa29da1fce4df64b, type: 3}
+        m_Texture: {fileID: 2800000, guid: a1d9c3e4f69e744318efc20b7233339a, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
@@ -58,11 +58,11 @@ Material:
     - _HeightScale: 0
     - _MetallicScale: 0
     - _NormalScale: 0
-    - _SmoothnessScale: 0.353
+    - _SmoothnessScale: 0.333
     - _StencilRef: 1
     m_Colors:
     - _AlbedoTint: {r: 0.18867922, g: 0, b: 0, a: 1}
     - _EmissiveTint: {r: 0, g: 0, b: 0, a: 1}
-    - _SheenTint: {r: 0.3773585, g: 0.19366322, b: 0.19366322, a: 1}
+    - _SheenTint: {r: 0, g: 0, b: 0, a: 1}
     - _SubsurfaceTint: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
