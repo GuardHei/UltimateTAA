@@ -25,9 +25,7 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
     float3 dir = UnpackNormalOctQuadEncode(gbufferOct);
     float3 skyColor = SampleGlobalEnvMapSpecular(dir, .0f);
     float NdotL = saturate(dot(N, L));
-    
     float3 diffuseColor = NdotL * INV_PI * albedo * lightColor;
-
     float3 posWS = GetDiffuseProbePosWS(id.z) + dir * gbuffer2;
 
     if (IsDiffuseProbeIndirectShadowSamplingEnabled() && NdotL > .0f) {

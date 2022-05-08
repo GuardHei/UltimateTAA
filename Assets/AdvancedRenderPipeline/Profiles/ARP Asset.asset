@@ -38,7 +38,7 @@ MonoBehaviour:
       mainLightShadowCascade2: 0.25
       mainLightShadowCascade3: 0.5
       mainLightShadowBlend: 0.1
-      mainLightShadowmapSize: 2048
+      mainLightShadowmapSize: 4096
       mainLightSoftShadow: 1
       enableVertexStageBias: 0
       mainLightShadowNormalBiasScales:
@@ -49,20 +49,20 @@ MonoBehaviour:
     iblLut: {fileID: 2800000, guid: de9d90a61eb0848dd8a35f98d367430f, type: 3}
     diffuseIBLLut: {fileID: 2800000, guid: 3b1341f5a97fb4ea7be016e40935dbc2, type: 3}
     specularIBLLut: {fileID: 2800000, guid: d2b1aa1c8d67742d896366ec636fd0c5, type: 3}
-    globalEnvMapDiffuse: {fileID: 8900000, guid: ecad7319420654d6194bd1ecab7ae466, type: 3}
-    globalEnvMapSpecular: {fileID: 8900000, guid: 4774adbdd17264952b6562a3707dc3c6, type: 3}
+    globalEnvMapDiffuse: {fileID: 8900000, guid: 38c4ba0d5b9af47f6b18e2cc54f856a4, type: 3}
+    globalEnvMapSpecular: {fileID: 8900000, guid: 08dcc2421f186400d9c825aa484f0c64, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
-    globalEnvMapRotation: 0
+    globalEnvMapRotation: 191
     skyboxMipLevel: 0
-    skyboxIntensity: 0
+    skyboxIntensity: 3
     diffuseGISettings:
       enabled: 1
       markProbesDirty: 0
       enabledFlag: 1
-      source: 2
-      volumeCenter: {x: 0, y: 1.5, z: 0}
-      dimensions: {x: 11, y: 6, z: 8}
-      maxIntervals: {x: 1.3, y: 1.3, z: 1.2}
+      source: 1
+      volumeCenter: {x: -0.25, y: 1, z: 0}
+      dimensions: {x: 5, y: 5, z: 6}
+      maxIntervals: {x: 2, y: 2, z: 2}
       probeGBufferSize: 16
       probeVBufferSize: 32
       offlineCubemapSize: 512
