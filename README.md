@@ -23,6 +23,17 @@
    4. Cascaded PCSS soft shadow sample - WIP.
 
 ## Preview
+
+Dynamic Diffuse GI Test 1
+https://user-images.githubusercontent.com/30316509/167318723-7e36ca47-cabe-4092-8db7-6bae51ac07b5.mp4
+
+Dynamic Diffuse GI Test 2
+https://user-images.githubusercontent.com/30316509/167318672-e426d779-b720-4a7e-9e76-68659d5fe0f7.mp4
+
+Dynamic Diffuse GI Test 3
+https://user-images.githubusercontent.com/30316509/167318664-84ab9bf6-e36a-44aa-a0f9-d17580d8d2cb.mp4
+
+
 |![Damaged Helmet](https://s2.loli.net/2022/01/25/Vo3DmB1CNzSR4Yd.png)|
 |:--:|
 |*Damaged Helmet (glTF 2.0)*|
