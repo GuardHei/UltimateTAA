@@ -58,11 +58,11 @@ MonoBehaviour:
     diffuseGISettings:
       enabled: 0
       markProbesDirty: 0
-      enabledFlag: 1
+      enabledFlag: 0
       source: 2
-      volumeCenter: {x: 0, y: 3.9, z: 0}
-      dimensions: {x: 8, y: 6, z: 7}
-      maxIntervals: {x: 3, y: 2, z: 2}
+      volumeCenter: {x: 0, y: 6.5, z: -2}
+      dimensions: {x: 10, y: 9, z: 7}
+      maxIntervals: {x: 3.5, y: 2, z: 2.7}
       probeGBufferSize: 16
       probeVBufferSize: 32
       offlineCubemapSize: 512
