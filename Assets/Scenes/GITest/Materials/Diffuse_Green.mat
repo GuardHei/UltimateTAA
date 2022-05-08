@@ -22,7 +22,7 @@ Material:
     m_TexEnvs:
     - _AlbedoMap:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 12, y: 2}
+        m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissiveMap:
         m_Texture: {fileID: 0}
@@ -49,10 +49,10 @@ Material:
     - _Cull: 0
     - _HeightScale: 0
     - _MetallicScale: 0
-    - _NormalScale: 1
+    - _NormalScale: 0
     - _SmoothnessScale: 0
     - _StencilRef: 1
     m_Colors:
-    - _AlbedoTint: {r: 0.07006645, g: 1, b: 0, a: 1}
+    - _AlbedoTint: {r: 0.011528611, g: 1, b: 0, a: 1}
     - _EmissiveTint: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
