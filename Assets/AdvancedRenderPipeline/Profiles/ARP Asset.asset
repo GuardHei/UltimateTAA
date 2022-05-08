@@ -54,15 +54,15 @@ MonoBehaviour:
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
     globalEnvMapRotation: 191
     skyboxMipLevel: 0
-    skyboxIntensity: 3
+    skyboxIntensity: 1
     diffuseGISettings:
-      enabled: 1
+      enabled: 0
       markProbesDirty: 0
       enabledFlag: 1
-      source: 1
-      volumeCenter: {x: -0.25, y: 1, z: 0}
-      dimensions: {x: 5, y: 5, z: 6}
-      maxIntervals: {x: 2, y: 2, z: 2}
+      source: 2
+      volumeCenter: {x: 0, y: 3.9, z: 0}
+      dimensions: {x: 8, y: 6, z: 7}
+      maxIntervals: {x: 3, y: 2, z: 2}
       probeGBufferSize: 16
       probeVBufferSize: 32
       offlineCubemapSize: 512

@@ -46,7 +46,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Cull: 2
+    - _Cull: 0
     - _HeightScale: 0
     - _MetallicScale: 0
     - _NormalScale: 1
