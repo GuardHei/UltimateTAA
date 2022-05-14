@@ -21,7 +21,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AlbedoMap:
-        m_Texture: {fileID: 2800000, guid: 3451dcba7d9d8b74db34bdcd4a7dda84, type: 3}
+        m_Texture: {fileID: 2800000, guid: 5893e171b7863ab44a208e9ffe55b27c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissiveMap:
@@ -33,11 +33,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicSmoothnessMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 4f00ea2b9141b514ebabb2d4a34fda56, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: e94aeb2013b0a7446bef0bd9d5224732, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -49,8 +49,8 @@ Material:
     - _Cull: 0
     - _HeightScale: 0
     - _MetallicScale: 0
-    - _NormalScale: 1
-    - _SmoothnessScale: 0
+    - _NormalScale: 0
+    - _SmoothnessScale: 0.279
     - _StencilRef: 1
     m_Colors:
     - _AlbedoTint: {r: 1, g: 1, b: 1, a: 1}

@@ -21,7 +21,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AlbedoMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: a3d66729dd90b5948bb72d8a92acb2e8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissiveMap:
@@ -49,10 +49,10 @@ Material:
     - _Cull: 0
     - _HeightScale: 0
     - _MetallicScale: 0
-    - _NormalScale: 0
-    - _SmoothnessScale: 0.372
+    - _NormalScale: 0.017
+    - _SmoothnessScale: 0
     - _StencilRef: 1
     m_Colors:
-    - _AlbedoTint: {r: 0, g: 0.16630936, b: 1, a: 1}
+    - _AlbedoTint: {r: 1, g: 1, b: 1, a: 1}
     - _EmissiveTint: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
