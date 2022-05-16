@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ARP Asset
   m_EditorClassIdentifier: 
   settings:
-    enableTaaInEditor: 0
+    enableTaaInEditor: 1
     enableDebugView: 1
     enableDebugViewInEditor: 1
     debugOutput: 0
@@ -56,7 +56,7 @@ MonoBehaviour:
     skyboxMipLevel: 0
     skyboxIntensity: 1
     diffuseGISettings:
-      enabled: 1
+      enabled: 0
       markProbesDirty: 0
       enabledFlag: 1
       source: 2
@@ -89,16 +89,16 @@ MonoBehaviour:
       jitterSpread: 1
       minHistoryWeight: 0.6
       maxHistoryWeight: 0.95
-      minClipScale: 0.5
-      maxClipScale: 1.3
-      staticClipScale: 2
-      minVelocityRejection: 0.1
+      minClipScale: 0.8
+      maxClipScale: 1.8
+      staticClipScale: 5
+      minVelocityRejection: 1
       velocityRejectionScale: 3
-      minDepthRejection: 1.5
-      depthRejectionScale: 1
+      minDepthRejection: 1
+      resamplingSharpness: 0.25
       minSharpness: 0.05
       maxSharpness: 0.1
-      motionSharpeningFactor: 2
+      motionSharpeningFactor: 0
     colorSettings:
       postExposure: 0
       contrast: 0

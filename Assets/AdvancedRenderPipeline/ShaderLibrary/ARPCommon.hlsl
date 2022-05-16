@@ -10,10 +10,12 @@
 
 #if UNITY_REVERSED_Z
 #define CLOSET_DEPTH(d1, d2) max(d1, d2)
-#define CLOSER_DEPTH(d1, d2) d1 > d2
+#define CLOSER_DEPTH(d1, d2) (d1 > d2)
+#define DEPTH_DIFF(d1, d2) (d2 - d1)
 #else
 #define CLOSET_DEPTH(d1, d2) min(d1, d2)
-#define CLOSER_DEPTH(d1, d2) d1 < d2
+#define CLOSER_DEPTH(d1, d2) (d1 < d2)
+#define DEPTH_DIFF(d1, d2) (d1 - d2)
 #endif
 
 #define SPEC_IBL_MAX_MIP (6u)
@@ -423,20 +425,6 @@ float BlueNoise1024(uint2 coord) {
     return LOAD_TEXTURE2D(_BlueNoise1024, coord & 0x3FF).r;
 }
 
-/*
-// Convert from Clip space (-1..1) to NDC 0..1 space.
-// Note it doesn't mean we don't have negative value, we store negative or positive offset in NDC space.
-// Note: ((positionCS * 0.5 + 0.5) - (previousPositionCS * 0.5 + 0.5)) = (motionVector * 0.5)
-// PS: From Unity HDRP
-float2 EncodeMotionVector(float2 mv) {
-    return mv * .5f;
-}
-
-float2 DecodeMotionVector(float2 encoded) {
-    return encoded * 2.0f;
-}
-*/
-
 // Convert Normal from [-1, 1] to [0, 1]
 float3 EncodeNormal(float3 N) {
     return N * .5f + .5f;
@@ -574,6 +562,7 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     #endif
 
     if (_ProjectionParams.x < .0f) mv.y = -mv.y;
+    mv.x = -mv.x;
 
     return mv * .5f;
 }

@@ -93,7 +93,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public TemporalAntiAliasingSettings taaSettings = new() {
 			enabled = true, jitterNum = JitterNum._8, jitterSpread = .75f, 
 			minHistoryWeight = .6f, maxHistoryWeight = .95f, minClipScale = .5f, maxClipScale = 1.25f, 
-			minVelocityRejection = 1f, velocityRejectionScale = 0f, minDepthRejection = 1f, depthRejectionScale = 0f, 
+			minVelocityRejection = 1f, velocityRejectionScale = 0f, minDepthRejection = 1f, 
 			minSharpness = .25f, maxSharpness = .25f
 		};
 		[Header("Color Grading & Tonemapping")]
@@ -194,19 +194,6 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float range;
 	}
 
-	public struct ScreenSpaceAmbientOcclusion {
-		public bool enabled;
-		public SSAOMode aoMode;
-		public bool enableRO;
-		public bool enableBilateralUpscaling;
-		public int sampleCount;
-	}
-
-	public enum SSAOMode {
-		SSAO = 0,
-		GTAO = 1
-	}
-
 	[Serializable]
 	public struct TemporalAntiAliasingSettings {
 		public bool enabled;
@@ -232,7 +219,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		[Range(0f, 50f)]
 		public float minDepthRejection;
 		[Range(0f, 2f)]
-		public float depthRejectionScale;
+		public float resamplingSharpness;
 		[Range(0f, 2f)]
 		public float minSharpness;
 		[Range(0f, 2f)]
@@ -241,7 +228,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float motionSharpeningFactor;
 
 		public Vector4 TaaParams0 => new(minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale);
-		public Vector4 TaaParams1 => new(minVelocityRejection, velocityRejectionScale, minDepthRejection, depthRejectionScale);
+		public Vector4 TaaParams1 => new(minVelocityRejection, velocityRejectionScale, minDepthRejection, resamplingSharpness);
 		public Vector4 TaaParams2 => new(minSharpness, maxSharpness, motionSharpeningFactor, staticClipScale);
 	}
 
