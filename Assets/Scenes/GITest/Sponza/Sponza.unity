@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.38602138, g: 0.33513638, b: 0.29857504, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -431,7 +431,7 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 0.99595886, g: 1, b: 0.92941177, a: 1}
+  m_Color: {r: 0.9922813, g: 1, b: 0.8726415, a: 1}
   m_Intensity: 100
   m_Range: 10
   m_SpotAngle: 30
@@ -489,14 +489,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_LocalRotation: {x: 0.23895161, y: 0.6951327, z: -0.27560258, w: 0.6194642}
+  m_LocalRotation: {x: 0.3720815, y: -0.65247524, z: 0.36393946, w: 0.5507991}
   m_LocalPosition: {x: 0, y: 3.5, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 42.782, y: -263.694, z: -360.722}
+  m_LocalEulerAnglesHint: {x: 62.228, y: -465.987, z: -370.465}
 --- !u!114 &705507996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -519,7 +519,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 851edca498f57ed4790459322c04fba1, type: 2}
   m_CullingMode: 0
@@ -625,6 +625,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 2
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
@@ -756,6 +757,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_AddedGameObjects: []
   m_SourcePrefab: {fileID: 100100000, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
 --- !u!1 &959253618
 GameObject:
@@ -1353,6 +1355,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 2
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -9203112490639580878, guid: 665b7db1831164bdd934715e73c4e7d2, type: 3}
@@ -3224,6 +3227,7 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: b0a13450e3a5c0f478e89dded1264150, type: 2}
     m_RemovedComponents: []
+    m_AddedGameObjects: []
   m_SourcePrefab: {fileID: 100100000, guid: 665b7db1831164bdd934715e73c4e7d2, type: 3}
 --- !u!1 &1626770185
 GameObject:

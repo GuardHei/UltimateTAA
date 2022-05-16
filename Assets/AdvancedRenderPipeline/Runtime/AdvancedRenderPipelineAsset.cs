@@ -187,6 +187,27 @@ namespace AdvancedRenderPipeline.Runtime {
 	}
 
 	[Serializable]
+	public struct ScreenSpaceShadowSettings {
+		public bool enabled;
+		public uint minStep;
+		public uint maxStep;
+		public float range;
+	}
+
+	public struct ScreenSpaceAmbientOcclusion {
+		public bool enabled;
+		public SSAOMode aoMode;
+		public bool enableRO;
+		public bool enableBilateralUpscaling;
+		public int sampleCount;
+	}
+
+	public enum SSAOMode {
+		SSAO = 0,
+		GTAO = 1
+	}
+
+	[Serializable]
 	public struct TemporalAntiAliasingSettings {
 		public bool enabled;
 		public JitterNum jitterNum;

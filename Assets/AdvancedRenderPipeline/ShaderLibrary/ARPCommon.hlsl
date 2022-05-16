@@ -43,12 +43,13 @@
 #define UNITY_MATRIX_I_M unity_WorldToObject
 #define UNITY_PREV_MATRIX_I_M unity_MatrixPreviousMI
 #define UNITY_MATRIX_V unity_MatrixV
+#define UNITY_MATRIX_I_V unity_InvMatrixV
 #define UNITY_MATRIX_VP unity_MatrixVP
 #define UNITY_MATRIX_I_VP unity_InvMatrixVP
 #define UNITY_PREV_MATRIX_VP unity_MatrixPreviousVP // nonjittered
 #define UNITY_PREV_MATRIX_I_VP unity_InvMatrixPreviousVP // nonjittered
 #define UNITY_MATRIX_NONJITTERED_VP _NonJitteredMatrixVP
-#define UNITY_MATRIX_NONJITTERED_I_VP _InvNonJitteredMatrixVP;
+#define UNITY_MATRIX_NONJITTERED_I_VP _InvNonJitteredMatrixVP
 #define UNITY_MATRIX_P glstate_matrix_projection
 
 struct RTHandleProperties {
@@ -113,6 +114,7 @@ float4 _JitterParams;
 float4x4 unity_MatrixVP;
 float4x4 unity_MatrixV;
 float4x4 glstate_matrix_projection;
+float4x4 unity_InvMatrixV;
 float4x4 unity_InvMatrixVP;
 float4x4 unity_MatrixPreviousVP;
 float4x4 unity_InvMatrixPreviousVP;
