@@ -115,9 +115,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int ENABLE_REPROJECTION = Shader.PropertyToID("_EnableReprojection");
 		public static readonly int FRAME_PARAMS = Shader.PropertyToID("_FrameParams");
 		public static readonly int JITTER_PARAMS = Shader.PropertyToID("_JitterParams");
-		public static readonly int TAA_PARAMS_0 = Shader.PropertyToID("_TaaParams_0");
-		public static readonly int TAA_PARAMS_1 = Shader.PropertyToID("_TaaParams_1");
-		public static readonly int TAA_PARAMS_2 = Shader.PropertyToID("_TaaParams_2");
+		public static readonly int TAA_PARAMS = Shader.PropertyToID("_TaaParams");
 
 		#endregion
 

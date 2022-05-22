@@ -562,7 +562,7 @@ float2 CalculateMotionVector(float4 posCS, float4 prevPosCS) {
     #endif
 
     if (_ProjectionParams.x < .0f) mv.y = -mv.y;
-    mv.x = -mv.x;
+    // mv.x = -mv.x;
 
     return mv * .5f;
 }
@@ -607,26 +607,28 @@ bool IsMainLightShadowEnabled() {
     return _MainLightShadowParams1.g != .0f;
 }
 
-float3 SampleMainLightShadowHard(float3 posWS, int cascade) {
+float SampleMainLightShadowHard(float3 posWS, int cascade) {
     float4 posShadow = mul(_MainLightShadowMatrixVPArray[cascade], float4(posWS, 1.0f));
-    // float shadow = SAMPLE_TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray, sampler_MainLightShadowmapArray, posShadow.xyz, cascade);
+    float shadow = SAMPLE_TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray, sampler_MainLightShadowmapArray, posShadow.xyz, cascade);
+    /*
     float shadow = SAMPLE_TEXTURE2D_ARRAY_LOD(_MainLightShadowmapArray, sampler_linear_clamp, posShadow.xy, cascade, 0).r;
     if (shadow > posShadow.z) shadow = .0f;
     else shadow = 1.0f;
+    */
     return lerp(1.0f, shadow, GetMainLightShadowStrength());
 }
 
-float3 SampleMainLightShadowHard(float3 posWS, float3 N, int cascade) {
+float SampleMainLightShadowHard(float3 posWS, float3 N, int cascade) {
     #if !defined(MAIN_LIGHT_SHADOW_ON)
-    return float3(1.0f, 1.0f, 1.0f);
+    return 1.0f;
     #endif
     posWS += GetMainLightShadowNormalBias() * N;
     return SampleMainLightShadowHard(posWS, cascade);
 }
 
-float3 SampleMainLightShadowHard(float3 posWS, float3 N) {
+float SampleMainLightShadowHard(float3 posWS, float3 N) {
     #if !defined(MAIN_LIGHT_SHADOW_ON)
-    return float3(1.0f, 1.0f, 1.0f);
+    return 1.0f;
     #endif
     
     for (int i = 0; i < 4; i++) {
@@ -635,7 +637,7 @@ float3 SampleMainLightShadowHard(float3 posWS, float3 N) {
         if (distanceSqr < sphere.w) return SampleMainLightShadowHard(posWS, N, i);
     }
     
-    return float3(1.0f, 1.0f, 1.0f);
+    return 1.0f;
 }
 
 //////////////////////////////////////////

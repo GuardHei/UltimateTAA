@@ -220,16 +220,32 @@ namespace AdvancedRenderPipeline.Runtime {
 		public float minDepthRejection;
 		[Range(0f, 2f)]
 		public float resamplingSharpness;
-		[Range(0f, 2f)]
+		[Range(0f, 0.1f)]
 		public float minSharpness;
-		[Range(0f, 2f)]
+		[Range(0f, 0.1f)]
 		public float maxSharpness;
 		[Range(0f, 10f)]
 		public float motionSharpeningFactor;
+		[Range(0f, 0.5f)]
+		public float minEdgeBlurriness;
+		[Range(0f, 1f)]
+		public float invalidHistoryThreshold;
 
 		public Vector4 TaaParams0 => new(minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale);
-		public Vector4 TaaParams1 => new(minVelocityRejection, velocityRejectionScale, minDepthRejection, resamplingSharpness);
+		public Vector4 TaaParams1 => new(minVelocityRejection, velocityRejectionScale, minDepthRejection, -resamplingSharpness);
 		public Vector4 TaaParams2 => new(minSharpness, maxSharpness, motionSharpeningFactor, staticClipScale);
+		public Vector4 TaaParams3 => new(minEdgeBlurriness, invalidHistoryThreshold, 0, 0);
+
+		public Matrix4x4 TaaParams {
+			get {
+				var mat = new Matrix4x4();
+				mat.SetRow(0, TaaParams0);
+				mat.SetRow(1, TaaParams1);
+				mat.SetRow(2, TaaParams2);
+				mat.SetRow(3, TaaParams3);
+				return mat;
+			}
+		}
 	}
 
 	[Serializable]

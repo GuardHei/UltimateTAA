@@ -16,7 +16,7 @@ MonoBehaviour:
     enableTaaInEditor: 1
     enableDebugView: 1
     enableDebugViewInEditor: 1
-    debugOutput: 0
+    debugOutput: 14
     enableAutoInstancing: 1
     enableSRPBatching: 1
     enableMVAutoInstancing: 0
@@ -56,7 +56,7 @@ MonoBehaviour:
     skyboxMipLevel: 0
     skyboxIntensity: 1
     diffuseGISettings:
-      enabled: 0
+      enabled: 1
       markProbesDirty: 0
       enabledFlag: 1
       source: 2
@@ -90,15 +90,17 @@ MonoBehaviour:
       minHistoryWeight: 0.6
       maxHistoryWeight: 0.95
       minClipScale: 0.8
-      maxClipScale: 1.8
+      maxClipScale: 1.5
       staticClipScale: 5
-      minVelocityRejection: 1
+      minVelocityRejection: 0.3
       velocityRejectionScale: 3
-      minDepthRejection: 1
-      resamplingSharpness: 0.25
-      minSharpness: 0.05
-      maxSharpness: 0.1
-      motionSharpeningFactor: 0
+      minDepthRejection: 0.5
+      resamplingSharpness: 0.487
+      minSharpness: 0
+      maxSharpness: 0.01
+      motionSharpeningFactor: 5
+      minEdgeBlurriness: 0.4
+      invalidHistoryThreshold: 0.2
     colorSettings:
       postExposure: 0
       contrast: 0

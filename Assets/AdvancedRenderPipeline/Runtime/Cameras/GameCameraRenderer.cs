@@ -483,9 +483,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			if (!IsOnFirstFrame && settings.taaSettings.enabled && _enableTaa) enableProjection = 1f;
 
 			MaterialManager.TaaMat.SetFloat(ShaderKeywordManager.ENABLE_REPROJECTION, enableProjection);
-			MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS_0, settings.taaSettings.TaaParams0);
-			MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS_1, settings.taaSettings.TaaParams1);
-			MaterialManager.TaaMat.SetVector(ShaderKeywordManager.TAA_PARAMS_2, settings.taaSettings.TaaParams2);
+			MaterialManager.TaaMat.SetMatrix(ShaderKeywordManager.TAA_PARAMS, settings.taaSettings.TaaParams);
 				
 			_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_TAA_COLOR_TEXTURE, _prevTaaColorTex);
 			_cmd.SetGlobalTexture(ShaderKeywordManager.PREV_DEPTH_TEXTURE, _prevDepthTex);
@@ -627,7 +625,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.None,
 					depthBufferBits: DepthBits.Depth32, name: "DepthTex "), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.VELOCITY_TEXTURE,
-				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_SNorm, name: "VelocityTex "), 2);
+				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_SNorm, name: "VelocityTex"), 2);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_1_TEXTURE,
 				(system, i) => system.Alloc(size => InternalRes, colorFormat: GraphicsFormat.R16G16_UNorm, name: "GBuffer1"), 1);
 			_historyBuffers.AllocBuffer(ShaderKeywordManager.GBUFFER_2_TEXTURE,
@@ -650,7 +648,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 				autoGenerateMips = false,
 				dimension = TextureDimension.Tex2DArray,
 				volumeDepth = 4,
-				shadowSamplingMode = ShadowSamplingMode.CompareDepths
+				shadowSamplingMode = ShadowSamplingMode.CompareDepths,
 			}) {
 				filterMode = FilterMode.Bilinear
 			};

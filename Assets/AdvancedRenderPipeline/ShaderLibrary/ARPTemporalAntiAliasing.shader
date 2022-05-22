@@ -29,25 +29,17 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
             };
 
             float _EnableReprojection;
-            float4 _TaaParams_0; // { minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale }
-            float4 _TaaParams_1; // { minVelocityRejection, velocityRejectionScale, minDepthRejection, resamplingSharpness }
-            float4 _TaaParams_2; // { minSharpness, maxSharpness, motionSharpeningFactor, staticClipScale }
+            // { minHistoryWeight, maxHistoryWeight, minClipScale, maxClipScale }
+            // { minVelocityRejection, velocityRejectionScale, minDepthRejection, resamplingSharpness }
+            // { minSharpness, maxSharpness, motionSharpeningFactor, staticClipScale }
+            // { minEdgeBlurriness, invalidHistoryThreshold }
+            float4x4 _TaaParams;
 
             VertexOutput Vert(uint vertexID : SV_VertexID) {
                 VertexOutput output;
                 output.posCS = VertexIDToPosCS(vertexID);
                 output.screenUV = VertexIDToScreenUV(vertexID);
                 return output;
-            }
-
-            float3 OneTapBicubicFilter(float3 center, float3 top, float3 right, float3 bottom, float3 left, float3 prevCenter, float2 uv, float sharpness) {
-                float2 f = frac(_ScreenSize.xy * uv - .5f);
-                float c = .8f * sharpness;
-                float2 w = c * (f * f - f);
-                float4 color = float4(lerp(left, right, f.x), 1.0f) * w.x;
-                color += float4(lerp(top, bottom, f.y), 1.0f) * w.y;
-                color += float4((1.0f + color.a) * prevCenter - color.a * center, 1.0f);
-                return color.rgb * rcp(color.a);
             }
 
             float4 Fragment(VertexOutput input) : SV_TARGET {
@@ -66,31 +58,31 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
 
                 int2 coord = int2(floor(uv.x * _ScreenSize.x), floor(uv.y * _ScreenSize.y));
 
-                const int2 offset1 = int2(1, 1); // top right
-                const int2 offset2 = int2(1, -1); // bottom right
-                const int2 offset3 = int2(-1, 1); // top left
-                const int2 offset4 = int2(-1, -1); // bottom left
-                const int2 offset5 = int2(0, 1); // top middle
-                const int2 offset6 = int2(1, 0); // middle right
-                const int2 offset7 = int2(0, -1); // bottom middle
-                const int2 offset8 = int2(-1, 0); // middle left
+                int2 offset1 = int2(1, 1); // top right
+                int2 offset2 = int2(1, -1); // bottom right
+                int2 offset3 = int2(-1, 1); // top left
+                int2 offset4 = int2(-1, -1); // bottom left
+                int2 offset5 = int2(0, 1); // top middle
+                int2 offset6 = int2(1, 0); // middle right
+                int2 offset7 = int2(0, -1); // bottom middle
+                int2 offset8 = int2(-1, 0); // middle left
 
-                const int2 coord1 = coord + offset1;
-                const int2 coord2 = coord + offset2;
-                const int2 coord3 = coord + offset3;
-                const int2 coord4 = coord + offset4;
+                int2 coord1 = coord + offset1;
+                int2 coord2 = coord + offset2;
+                int2 coord3 = coord + offset3;
+                int2 coord4 = coord + offset4;
                 
-                const float d0 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0).r;
-                const float d1 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset1).r;
-                const float d2 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset2).r;
-                const float d3 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset3).r;
-                const float d4 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset4).r;
+                float d0 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0).r;
+                float d1 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset1).r;
+                float d2 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset2).r;
+                float d3 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset3).r;
+                float d4 = _DepthTex.SampleLevel(sampler_point_clamp, uv, 0, offset4).r;
 
-                const float linearDepth0 = DepthToLinearEyeSpace(d0);
-                const float linearDepth1 = DepthToLinearEyeSpace(d1);
-                const float linearDepth2 = DepthToLinearEyeSpace(d2);
-                const float linearDepth3 = DepthToLinearEyeSpace(d3);
-                const float linearDepth4 = DepthToLinearEyeSpace(d4);
+                float linearDepth0 = DepthToLinearEyeSpace(d0);
+                float linearDepth1 = DepthToLinearEyeSpace(d1);
+                float linearDepth2 = DepthToLinearEyeSpace(d2);
+                float linearDepth3 = DepthToLinearEyeSpace(d3);
+                float linearDepth4 = DepthToLinearEyeSpace(d4);
 
                 // velocity dilation
                 float closetDepth = d0;
@@ -159,18 +151,20 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 m2 += n7 * n7;
                 m2 += n8 * n8;
 
-                const float minHistoryWeight = _TaaParams_0.x;
-                const float maxHistoryWeight = _TaaParams_0.y;
-                const float minClipScale = _TaaParams_0.z;
-                const float maxClipScale = _TaaParams_0.w;
-                const float minVelocityRejection = clamp(.00001f, .99999f, _TaaParams_1.x);
-                const float velocityRejectionScale = _TaaParams_1.y;
-                const float minDepthRejection = _TaaParams_1.z;
-                const float resamplingSharpness = _TaaParams_1.w;
-                const float minSharpness = _TaaParams_2.x;
-                const float maxSharpness = _TaaParams_2.y;
-                const float motionSharpeningFactor = _TaaParams_2.z;
-                const float staticClipScale = _TaaParams_2.w;
+                float minHistoryWeight = _TaaParams[0].x;
+                float maxHistoryWeight = _TaaParams[0].y;
+                float minClipScale = _TaaParams[0].z;
+                float maxClipScale = _TaaParams[0].w;
+                float minVelocityRejection = _TaaParams[1].x;
+                float velocityRejectionScale = _TaaParams[1].y;
+                float minDepthRejection = _TaaParams[1].z;
+                float resamplingSharpness = _TaaParams[1].w;
+                float minSharpness = _TaaParams[2].x;
+                float maxSharpness = _TaaParams[2].y;
+                float motionSharpeningFactor = _TaaParams[2].z;
+                float staticClipScale = _TaaParams[2].w;
+                float minEdgeBlurriness = _TaaParams[3].x;
+                float invalidHistoryThreshold = _TaaParams[3].y;
 
                 int2 prevCoord = int2(floor(prevUV.x * _ScreenSize.x), floor(prevUV.y * _ScreenSize.y));
 
@@ -184,11 +178,11 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 }
 
                 // velocity weighting
-                const float prevD0 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0).r;
-                const float prevD1 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset1).r;
-                const float prevD2 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset2).r;
-                const float prevD3 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset3).r;
-                const float prevD4 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset4).r;
+                float prevD0 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0).r;
+                float prevD1 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset1).r;
+                float prevD2 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset2).r;
+                float prevD3 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset3).r;
+                float prevD4 = _PrevDepthTex.SampleLevel(sampler_point_clamp, prevUV, 0, offset4).r;
 
                 float prevClosetDepth = prevD0;
                 int2 prevClosetOffset = int2(0, 0);
@@ -215,34 +209,52 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 float mvScale = length(mv);
 
                 float velocityWeight = saturate((length(prevMV - mv) - minVelocityRejection) * velocityRejectionScale);
-                float clipScale = lerp(maxClipScale, minClipScale, velocityWeight);
 
                 // return velocityWeight;
 
                 // stencil test
-                const uint st0 = LOAD_TEXTURE2D(_StencilTex, coord).STENCIL_CHANNEL & 3;
-                const uint st1 = LOAD_TEXTURE2D(_StencilTex, coord1).STENCIL_CHANNEL & 3;
-                const uint st2 = LOAD_TEXTURE2D(_StencilTex, coord2).STENCIL_CHANNEL & 3;
-                const uint st3 = LOAD_TEXTURE2D(_StencilTex, coord3).STENCIL_CHANNEL & 3;
-                const uint st4 = LOAD_TEXTURE2D(_StencilTex, coord4).STENCIL_CHANNEL & 3;
-                const uint prevSt = LOAD_TEXTURE2D(_PrevStencilTex, prevCoord).STENCIL_CHANNEL & 3;
+                uint st0 = LOAD_TEXTURE2D(_StencilTex, coord).STENCIL_CHANNEL & 3;
+                uint st1 = LOAD_TEXTURE2D(_StencilTex, coord1).STENCIL_CHANNEL & 3;
+                uint st2 = LOAD_TEXTURE2D(_StencilTex, coord2).STENCIL_CHANNEL & 3;
+                uint st3 = LOAD_TEXTURE2D(_StencilTex, coord3).STENCIL_CHANNEL & 3;
+                uint st4 = LOAD_TEXTURE2D(_StencilTex, coord4).STENCIL_CHANNEL & 3;
+                uint prevSt = LOAD_TEXTURE2D(_PrevStencilTex, prevCoord).STENCIL_CHANNEL & 3;
 
+                bool mismatch = !(st0 == prevSt || st1 == prevSt || st2 == prevSt || st3 == prevSt || st4 == prevSt);
+
+                /*
                 bool atEdge = st0 != st1;
                 atEdge = atEdge || st0 != st2;
                 atEdge = atEdge || st0 != st3;
                 atEdge = atEdge || st0 != st4;
-
                 atEdge = atEdge || abs(linearDepth0 - linearDepth1) > minDepthRejection;
                 atEdge = atEdge || abs(linearDepth0 - linearDepth2) > minDepthRejection;
                 atEdge = atEdge || abs(linearDepth0 - linearDepth3) > minDepthRejection;
                 atEdge = atEdge || abs(linearDepth0 - linearDepth4) > minDepthRejection;
+                */
 
                 // return atEdge ? 1.0f : .0f;
 
                 // depth test
-                const float linearPrevDepth = PrevDepthToLinearEyeSpace(prevClosetDepth);
+                float linearPrevDepth = PrevDepthToLinearEyeSpace(prevClosetDepth);
 
-                bool mismatch = (st0 != prevSt) || (DEPTH_DIFF(closetLinearDepth, linearPrevDepth) > minDepthRejection);
+                float depthM1 = linearDepth0;
+                float depthM2 = linearDepth0 * linearDepth0;
+                depthM1 += linearDepth1;
+                depthM2 += linearDepth1 * linearDepth1;
+                depthM1 += linearDepth2;
+                depthM2 += linearDepth2 * linearDepth2;
+                depthM1 += linearDepth3;
+                depthM2 += linearDepth3 * linearDepth3;
+                depthM1 += linearDepth4;
+                depthM2 += linearDepth4 * linearDepth4;
+
+                // depth weighting
+                // we use neighboring depths to compute the variance and calculate the chebyshev weight
+                // this prevents aliasing on geometry edges due to a tight clip scale
+                float depthWeight = (linearDepth0 - linearPrevDepth < minDepthRejection) ? 1.0f : DepthVariance(depthM1, depthM2, 5, linearDepth0, linearPrevDepth);
+                
+                float clipScale = lerp(maxClipScale, minClipScale, velocityWeight * depthWeight);
                 
                 clipScale = mismatch ? minClipScale : clipScale;
 
@@ -250,7 +262,7 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 bool staticPixel = mvScale < 2.0f * FLT_EPS && prevMVScale < 2.0f * FLT_EPS;
                 // increase clip box scale when it is a static pixel and we detect a large different in depth/stencil either historically or spatially
                 // we also need to make sure it is not covered by any transparent effect, in which case the MV computation is broken
-                bool antiFlicker = staticPixel && (atEdge || prev.a < .5f) && curr.a > .99f;
+                bool antiFlicker = staticPixel && !mismatch && prev.a < .5f && curr.a > .99f;
                 clipScale = antiFlicker ? staticClipScale : clipScale;
 
                 // return antiFlicker ? 1.0f : .0f;
@@ -286,16 +298,25 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 // prev.rgb = YCoCgToRGB(ClipAABB(minColor, maxColor, RGBToYCoCg(prev.rgb)));
                 */
 
-                // cross pattern sharperning
-                float sharpnessFactor = lerp(maxSharpness, minSharpness, mvScale * motionSharpeningFactor);
-                float3 corners = c1 + c2 + c3 + c4;
-                curr.rgb = curr.rgb * (1.0 + 4.0f * sharpnessFactor) + corners * -sharpnessFactor;
-                curr = clamp(curr, .0f, HALF_MAX);
+                // return depthWeight;
+
+                bool edgeBlur = !antiFlicker && (mismatch || depthWeight < invalidHistoryThreshold);
+                float3 cross = c5 + c6 + c7 + c8;
+                if (edgeBlur) {
+                    // adaptive gaussian blur if pixel is at edge and doesn't have a valid history sample
+                    float centerWeight = minEdgeBlurriness;
+                    curr.rgb = AdaptiveGaussianBlur(curr.rgb, cross, c1 + c2 + c3 + c4, centerWeight);
+                } else {
+                    // cross pattern sharpening
+                    float sharpnessFactor = lerp(maxSharpness, minSharpness, mvScale * motionSharpeningFactor);
+                    curr.rgb = AdaptiveSharpening(curr.rgb, cross, sharpnessFactor);
+                }
 
                 // decrease history weight when transparent pixel has a large opacity (motion vector is less reliable here)
                 float historyWeight = curr.a > .999f ? maxHistoryWeight : lerp(maxHistoryWeight, minHistoryWeight, curr.a);
+                float3 resolved = lerp(curr.rgb, prev.rgb, historyWeight);
 
-                output = lerp(curr, prev, historyWeight);
+                output.rgb = resolved;
                 // record antiFlicker history
                 output.a = antiFlicker ? .0f : 1.0f;
                 return output;
