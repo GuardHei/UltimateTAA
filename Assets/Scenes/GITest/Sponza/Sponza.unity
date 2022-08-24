@@ -431,8 +431,8 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 0.8915094, g: 0.9630953, b: 1, a: 1}
-  m_Intensity: 100
+  m_Color: {r: 1, g: 0.995998, b: 0.8901961, a: 1}
+  m_Intensity: 10
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.802082
@@ -489,14 +489,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_LocalRotation: {x: 0.3720815, y: -0.65247524, z: 0.36393946, w: 0.5507991}
-  m_LocalPosition: {x: 0, y: 3.5, z: 1}
+  m_LocalRotation: {x: 0.42565802, y: -0.6216747, z: 0.38448003, w: 0.53339577}
+  m_LocalPosition: {x: 0, y: 3.41, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 62.228, y: -465.987, z: -370.465}
+  m_LocalEulerAnglesHint: {x: 68.77, y: -471.945, z: -379.199}
 --- !u!114 &705507996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1096,10 +1096,10 @@ MonoBehaviour:
   diffuseProbeGBufferCubemap0: {fileID: 8400000, guid: 226b332dbaf3a408792dd47568038227, type: 2}
   diffuseProbeGBufferCubemap1: {fileID: 8400000, guid: 3bc43357857ab4dc48f68fedd4435a89, type: 2}
   diffuseProbeGBufferCubemap2: {fileID: 8400000, guid: b9257b95ce786470d926418690151d72, type: 2}
-  diffuseProbeGBuffer0: {fileID: 8400000, guid: 7b938ba7d567b4971b30014355921e1c, type: 2}
-  diffuseProbeGBuffer1: {fileID: 8400000, guid: c20fbf0c5bda34a3ca9c8df9a94cd144, type: 2}
-  diffuseProbeGBuffer2: {fileID: 8400000, guid: 4dd8bbd1aa454406aab65e644ac2240c, type: 2}
-  diffuseProbeVBuffer0: {fileID: 8400000, guid: 59ff333295949475fb77cb535aade6c6, type: 2}
+  diffuseProbeGBuffer0: {fileID: 0}
+  diffuseProbeGBuffer1: {fileID: 0}
+  diffuseProbeGBuffer2: {fileID: 0}
+  diffuseProbeVBuffer0: {fileID: 0}
 --- !u!20 &1138084877
 Camera:
   m_ObjectHideFlags: 0

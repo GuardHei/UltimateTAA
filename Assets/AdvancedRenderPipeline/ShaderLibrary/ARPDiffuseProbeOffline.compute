@@ -73,15 +73,13 @@ void GBufferPrefilter(uint3 id : SV_DispatchThreadID) {
 
 [numthreads(8,8,1)]
 void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
-    // vbuffer needs to have a 1-px wide border on both sides
-    uint2 coordNoBorder = id.xy;
-    uint2 coord = coordNoBorder + uint2(1u, 1u);
-    uint vbufferSizeNoBorder = GetDiffuseProbeVBufferSizeNoBorder();
+    uint2 coord = id.xy;
+    uint vbufferSize = GetDiffuseProbeVBufferSize();
 
-    if (coordNoBorder.x > vbufferSizeNoBorder || coordNoBorder.y > vbufferSizeNoBorder) return;
+    if (coord.x > vbufferSize || coord.y > vbufferSize) return;
     
-    float2 vbufferOctNoBorder = GetNormalizedOctCoords(coordNoBorder, vbufferSizeNoBorder);
-    float3 N = UnpackNormalOctQuadEncode(vbufferOctNoBorder);
+    float2 vbufferOct = GetNormalizedOctCoords(coord, vbufferSize);
+    float3 N = UnpackNormalOctQuadEncode(vbufferOct);
 
     float radialDepthTotal = .0f;
     float radialDepth2Total = .0f;
@@ -106,8 +104,6 @@ void VBufferPrefilter(uint3 id : SV_DispatchThreadID) {
         radialDepth2Total += (radialDepth * radialDepth) * weight;
         weightTotal += weight;
     }
-
-    
 
     // float sampleCount = float(SAMPLE_COUNT);
     weightTotal = max(weightTotal, FLT_EPS);

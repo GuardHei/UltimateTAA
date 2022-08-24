@@ -1188,10 +1188,6 @@ float ApplyParallaxShadow(float2 uv, float3 lightDirTS, float scale, float shado
 // Dynamic Diffuse GI                   //
 //////////////////////////////////////////
 
-bool IsDDGIEnabled() {
-    return _DiffuseProbeParams3.w == 1;
-}
-
 int GetDiffuseProbeGBufferSize() {
     return _DiffuseProbeParams3.x;
 }
@@ -1200,16 +1196,8 @@ int GetDiffuseProbeVBufferSize() {
     return _DiffuseProbeParams3.y;
 }
 
-int GetDiffuseProbeVBufferSizeNoBorder() {
-    return _DiffuseProbeParams3.y - 2;
-}
-
 int GetDiffuseProbeSize() {
     return GetDiffuseProbeGBufferSize();
-}
-
-int GetDiffuseProbeSizeNoBorder() {
-    return GetDiffuseProbeSize() - 2;
 }
 
 float3 GetDiffuseProbeDimensions() {
@@ -1230,6 +1218,14 @@ float3 GetDiffuseProbeVolumeMaxPos() {
 
 float GetGISource() {
     return _DiffuseProbeParams5.w;
+}
+
+float GetProbeIrradianceGamma() {
+    return _DiffuseProbeParams4.w;
+}
+
+bool IsDDGIEnabled() {
+    return GetGISource() == 2;
 }
 
 bool IsDiffuseProbeMultiBounceEnabled() {
@@ -1327,14 +1323,14 @@ float2 GetUVWithBorder(float3 dir, float size, float sizeNoBorder) {
 }
 
 float2 GetIrradianceMapUV(float3 dir) {
-    return GetUVWithBorder(dir, float(GetDiffuseProbeSize()), float(GetDiffuseProbeSizeNoBorder()));
+    return DirToNormalizedOct(dir);
 }
 
 float2 GetVisibilityMapUV(float3 dir) {
-    return GetUVWithBorder(dir, float(GetDiffuseProbeVBufferSize()), float(GetDiffuseProbeVBufferSizeNoBorder()));
+    return DirToNormalizedOct(dir);
 }
 
-float4 GetProbeIrradianceWeighted(int3 probeIndex, float3 posWS, float3 N, bool prev) {
+float4 GetProbeIrradianceWeighted(int3 probeIndex, float3 posWS, float3 N, bool prev, inout float visibility) {
     // Weights for each factor
     const int index1d = GetProbeIndex1d(probeIndex);
 
@@ -1343,6 +1339,10 @@ float4 GetProbeIrradianceWeighted(int3 probeIndex, float3 posWS, float3 N, bool 
 
     // Minimum Chebyshev weight value, so that we never have a weight of 0
     const float minVarianceWeight = .005f;
+
+    // Sample the texture given normal vector N
+    Texture2DArray irradianceArr = prev ? _PrevDiffuseProbeIrradianceArr : _DiffuseProbeIrradianceArr;
+    float3 probeIrradiance = SAMPLE_TEXTURE2D_ARRAY_LOD(irradianceArr, sampler_linear_clamp, GetIrradianceMapUV(N), index1d, 0).rgb;
 
     // Probe sampling starts here ////////////////////////////////////////////////////////////////
     // Find probe world-space position
@@ -1398,14 +1398,12 @@ float4 GetProbeIrradianceWeighted(int3 probeIndex, float3 posWS, float3 N, bool 
         // Clamp resulting Chebyshev weight to some min value above 0; in the case that all probes are occluded, we use a heavily reduced sample from all probes
         chebyshevWeight = max(minVarianceWeight, chebyshevWeight);
         netWeight *= chebyshevWeight;
+
+        visibility += chebyshevWeight;
     }
 
     // Avoid final weight being 0, and clamp to FLT_EPS
     netWeight = max(netWeight, FLT_EPS);
-
-    // Sample the texture given normal vector N
-    Texture2DArray irradianceArr = prev ? _PrevDiffuseProbeIrradianceArr : _DiffuseProbeIrradianceArr;
-    float3 probeIrradiance = SAMPLE_TEXTURE2D_ARRAY_LOD(irradianceArr, sampler_linear_clamp, GetIrradianceMapUV(N), index1d, 0).rgb;
 
     // Weight the resulting irradiance, return both irradiance and weight in float4
     return float4(probeIrradiance * netWeight, netWeight);
@@ -1444,9 +1442,11 @@ float3 SampleIndirectDiffuseGI(float3 posWS, float3 N, float3 diffuse, float3 kD
     // Note: we need to clamp index values to int3(0, 0, 0) and int3(max_x - 1, max_y - 1, max_z - 1)
     const int3 minProbeDimensions = int3(0, 0, 0);
     const int3 maxProbeDimensions = GetDiffuseProbeDimensions() - int3(1, 1, 1);
+
+    float visibility = 0;
     
     // PROBE 0 (startProbeIndex)
-    float4 probeIrr = GetProbeIrradianceWeighted(startProbeIndex, posWS, N, prev);
+    float4 probeIrr = GetProbeIrradianceWeighted(startProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
@@ -1455,49 +1455,49 @@ float3 SampleIndirectDiffuseGI(float3 posWS, float3 N, float3 diffuse, float3 kD
     //PROBE 3
     int3 currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z);
     clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
-    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 6
     currProbeIndex = int3(startProbeIndex.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z + probeOffsets.z);
     clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
-    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 1
     currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y, startProbeIndex.z);
     clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
-    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 4
     currProbeIndex = int3(startProbeIndex.x, startProbeIndex.y, startProbeIndex.z + probeOffsets.z);
     clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
-    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 7
     currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z + probeOffsets.z);
     clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
-    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 2
     currProbeIndex = int3(startProbeIndex.x, startProbeIndex.y + probeOffsets.y, startProbeIndex.z);
     clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
-    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
     // PROBE 5
     currProbeIndex = int3(startProbeIndex.x + probeOffsets.x, startProbeIndex.y, startProbeIndex.z + probeOffsets.z);
     clamp(currProbeIndex, minProbeDimensions, maxProbeDimensions);
-    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev);
+    probeIrr = GetProbeIrradianceWeighted(currProbeIndex, posWS, N, prev, visibility);
     irradiance += probeIrr.rgb;
     sumWeights += probeIrr.a;
 
@@ -1505,12 +1505,15 @@ float3 SampleIndirectDiffuseGI(float3 posWS, float3 N, float3 diffuse, float3 kD
     sumWeights = max(sumWeights, FLT_EPS);
 
     // Normalize total irradiance by the sum of all weights
-    irradiance /= sumWeights;
+    irradiance *= 1.0f / sumWeights;
+    irradiance *= GetProbeIrradianceGamma();
 
-    float3 indirectDiffuse = irradiance * diffuse * kD * INV_PI;
+    visibility *= 1.0f / 8.0f;
+    bool occluded = IsDDGIVisibilityTestEnabled() ? visibility < .01f : false;
+
+    float3 indirectDiffuse = occluded ? .0f : irradiance * diffuse * kD * INV_PI;
 
     return indirectDiffuse;
-    // return irradiance;
 }
 
 #endif

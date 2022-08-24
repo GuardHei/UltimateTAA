@@ -282,6 +282,7 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Vector3Int dimensions;
 		public Vector3 maxIntervals;
 		public DiffuseGIProbeSize probeGBufferSize;
+		public DiffuseGIProbeSize probeIrradianceSize;
 		public DiffuseGIProbeSize probeVBufferSize;
 		public DiffuseGIProbeSize offlineCubemapSize;
 		[Range(.1f, 250f)]

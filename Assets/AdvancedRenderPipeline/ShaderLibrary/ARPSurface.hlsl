@@ -446,7 +446,7 @@ void ARPSurfLighting(inout ARPSurfLightingData output, inout ARPSurfMatOutputDat
 
     forwardLighting.rgb += emissive + indirectDiffuse;
 
-    // forwardLighting.rgb = shadow;
+    // forwardLighting.rgb = indirectDiffuse;
     
     output.directDiffuseLobe = fd;
     output.directSpecularLobe = fr;

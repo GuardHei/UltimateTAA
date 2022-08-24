@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: ARP Asset
   m_EditorClassIdentifier: 
   settings:
-    enableTaaInEditor: 1
+    enableTaaInEditor: 0
     enableDebugView: 1
     enableDebugViewInEditor: 1
-    debugOutput: 14
+    debugOutput: 12
     enableAutoInstancing: 1
     enableSRPBatching: 1
     enableMVAutoInstancing: 0
@@ -61,15 +61,16 @@ MonoBehaviour:
       enabledFlag: 1
       source: 2
       volumeCenter: {x: 0, y: 6.5, z: -0.65}
-      dimensions: {x: 10, y: 9, z: 8}
-      maxIntervals: {x: 3.5, y: 2, z: 2.7}
+      dimensions: {x: 20, y: 9, z: 8}
+      maxIntervals: {x: 2, y: 2, z: 2.7}
       probeGBufferSize: 16
+      probeIrradianceSize: 8
       probeVBufferSize: 32
       offlineCubemapSize: 512
       probeViewDistance: 50
-      probeDepthSharpness: 50
-      probeIrradianceGamma: 0
-      visibilityTestBias: 0.3
+      probeDepthSharpness: 80
+      probeIrradianceGamma: 1.2
+      visibilityTestBias: 0.05
       enableVisibilityTest: 1
       enableMultiBounce: 1
       enableIndirectShadowSampling: 1

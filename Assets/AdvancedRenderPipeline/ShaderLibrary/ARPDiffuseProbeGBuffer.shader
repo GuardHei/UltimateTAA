@@ -31,7 +31,8 @@ Shader "Hidden/ARPDiffuseProbeGBuffer" {
             
             ZTest LEqual
             ZWrite On
-			Cull [_Cull]
+			// Cull [_Cull]
+            Cull Off
             
             HLSLPROGRAM
 

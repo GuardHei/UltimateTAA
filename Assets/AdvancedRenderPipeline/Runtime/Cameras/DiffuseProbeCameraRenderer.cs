@@ -245,6 +245,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 	        
 	        _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
 
+	        /*
 	        kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_PADDING);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_0, _gbufferCubemap0);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_1, _gbufferCubemap1);
@@ -255,6 +256,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_0, _vbuffer0);
 	        
 	        _cmd.DispatchCompute(cs, kernel, threadGroupsX, threadGroupsY, threadGroupsZ);
+	        */
 
 	        _cmd.SetInvertCulling(false);
 	        ExecuteCommand();

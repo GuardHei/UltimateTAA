@@ -43,14 +43,12 @@ void RadianceUpdate(uint3 id : SV_DispatchThreadID) {
 
 [numthreads(8,8,1)]
 void IrradiancePrefilter(uint3 id : SV_DispatchThreadID) {
-    uint endCoord = GetDiffuseProbeSize() - 1u;
-    if (id.x == 0u || id.y == 0u 
-        || id.x >= endCoord
-        || id.y >= endCoord) {
+    uint endCoord = GetDiffuseProbeSize();
+    if (id.x >= endCoord || id.y >= endCoord) {
         return;
     }
-    float2 coordNoBorder = id.xy - uint2(1u, 1u);
-    float2 gbufferOct = GetNormalizedOctCoords(coordNoBorder, GetDiffuseProbeSizeNoBorder());
+    float2 coord = id.xy;
+    float2 gbufferOct = GetNormalizedOctCoords(coord, GetDiffuseProbeSize());
     float3 N = UnpackNormalOctQuadEncode(gbufferOct);
     float3x3 o2w = GetLocalFrame(N);
 
