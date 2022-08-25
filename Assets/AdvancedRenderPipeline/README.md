@@ -33,7 +33,9 @@
 
  Unused
 
- ## Thin - GBuffer
+ ## GBuffer Layout
+
+ Originally forward+ design with a thin gbuffer
 
  | GBuffer   | Format            | Channel R  | Channel G  | Channel B       | Channel A                    |
  | :-------- | :---------------- | :--------  | :--------  | :-------------- | :--------------------------- |
@@ -42,6 +44,20 @@
  | GBuffer 2 | RGBA8_UNorm       | Specular R | Specular G | Specular B      | Linear Roughness             |
  | Velocity  | RG16_SNorm        | Velocity X | Velocity Y | N/A             | N/A                          |
  | Depth     | D24S8             | Depth      | N/A        | N/A             | Stencil                      |
+
+ Switching to a deferred path with optional gbuffer 3 & 4;
+ Emssive objects will be drawn again after lighting calculation is done to save bandwidth
+
+ | GBuffer   | Format                 | Channels                                                                                      |
+ | :-------- | :--------------------- | :-------------------------------------------------------------------------------------------- |
+ | GBuffer 0 | RGBA8_UNorm            | RGB: Albedo Color A: Material Shadow                                                          |
+ | GBuffer 1 | RGBA8_UNorm            | RGB: Oct Normal X [12b] + Normal Y [12b] A: Linear Roughness                                  | 
+ | GBuffer 2 | RGBA8_UNorm            | R: Metallic G: Ambient Occlusion B: Specular Occlusion A: Object Mask [4b] + Material ID [4b] |
+ | GBuffer 3 | RGBA8_UNorm            | *Clear Coat Setup* R: Clear Coat Mask G: Linear Clear Coat Roughness BA: N/A                  |
+ | GBuffer 3 | RGBA8_UNorm            | *Fabric Setup* RGB: Subsurface Color A: Opacity                                               |
+ | GBuffer 4 | RGBA8_UNorm            | *Fabric Setup* RGB: Sheen Color A: Opacity Mask                                               |
+ | Velocity  | RG16_SNorm             | RG: Velocity                                                                                  |
+ | Depth     | D24S8                  | Depth Stencil                                                                                 |
 
  ## Render Pass Overview
 

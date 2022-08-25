@@ -16,7 +16,7 @@ MonoBehaviour:
     enableTaaInEditor: 0
     enableDebugView: 1
     enableDebugViewInEditor: 1
-    debugOutput: 12
+    debugOutput: 0
     enableAutoInstancing: 1
     enableSRPBatching: 1
     enableMVAutoInstancing: 0
@@ -52,7 +52,7 @@ MonoBehaviour:
     globalEnvMapDiffuse: {fileID: 8900000, guid: 38c4ba0d5b9af47f6b18e2cc54f856a4, type: 3}
     globalEnvMapSpecular: {fileID: 8900000, guid: 08dcc2421f186400d9c825aa484f0c64, type: 3}
     indirectSpecularShader: {fileID: 4800000, guid: 724cd6789a4f42208298c74975e31f2f, type: 3}
-    globalEnvMapRotation: 191
+    globalEnvMapRotation: 148
     skyboxMipLevel: 0
     skyboxIntensity: 1
     diffuseGISettings:
@@ -69,7 +69,7 @@ MonoBehaviour:
       offlineCubemapSize: 512
       probeViewDistance: 50
       probeDepthSharpness: 80
-      probeIrradianceGamma: 1.2
+      probeIrradianceGamma: 1.5
       visibilityTestBias: 0.05
       enableVisibilityTest: 1
       enableMultiBounce: 1
