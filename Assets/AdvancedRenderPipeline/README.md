@@ -50,13 +50,13 @@
 
  | GBuffer   | Format                 | Channels                                                                                      |
  | :-------- | :--------------------- | :-------------------------------------------------------------------------------------------- |
- | GBuffer 0 | RGBA8_UNorm            | RGB: Albedo Color A: Material Shadow                                                          |
- | GBuffer 1 | RGBA8_UNorm            | RGB: Oct Normal X [12b] + Normal Y [12b] A: Linear Roughness                                  | 
- | GBuffer 2 | RGBA8_UNorm            | R: Metallic G: Ambient Occlusion B: Specular Occlusion A: Object Mask [4b] + Material ID [4b] |
- | GBuffer 3 | RGBA8_UNorm            | *Clear Coat Setup* R: Clear Coat Mask G: Linear Clear Coat Roughness BA: N/A                  |
- | GBuffer 3 | RGBA8_UNorm            | *Fabric Setup* RGB: Subsurface Color A: Opacity                                               |
- | GBuffer 4 | RGBA8_UNorm            | *Fabric Setup* RGB: Sheen Color A: Opacity Mask                                               |
- | Velocity  | RG16_SNorm             | RG: Velocity                                                                                  |
+ | GBuffer 0 | RGBA8_UNorm            | **RGB:** Albedo Color **A:** Material Shadow                                                          |
+ | GBuffer 1 | RGBA8_UNorm            | **RGB:** Oct Normal X [12b] + Normal Y [12b] **A:** Linear Roughness                                  | 
+ | GBuffer 2 | RGBA8_UNorm            | **R:** Metallic **G:** Ambient Occlusion **B:** Specular Occlusion **A:** Object Mask [4b] + Material ID [4b] |
+ | GBuffer 3 | RGBA8_UNorm            | *Clear Coat Setup* **R:** Clear Coat Mask **G:** Linear Clear Coat Roughness **BA:** N/A                  |
+ | GBuffer 3 | RGBA8_UNorm            | *Fabric Setup* **RGB:** Subsurface Color **A:** Opacity                                               |
+ | GBuffer 4 | RGBA8_UNorm            | *Fabric Setup* **RGB:** Sheen Color **A:** Opacity Mask                                               |
+ | Velocity  | RG16_SNorm             | **RG:** Velocity                                                                                  |
  | Depth     | D24S8                  | Depth Stencil                                                                                 |
 
  ## Render Pass Overview

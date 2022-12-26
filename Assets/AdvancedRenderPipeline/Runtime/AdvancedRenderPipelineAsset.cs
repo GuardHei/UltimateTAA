@@ -282,8 +282,8 @@ namespace AdvancedRenderPipeline.Runtime {
 		public Vector3Int dimensions;
 		public Vector3 maxIntervals;
 		public DiffuseGIProbeSize probeGBufferSize;
-		public DiffuseGIProbeSize probeIrradianceSize;
 		public DiffuseGIProbeSize probeVBufferSize;
+		public DiffuseGIProbeSize probeIrradianceSize;
 		public DiffuseGIProbeSize offlineCubemapSize;
 		[Range(.1f, 250f)]
 		public float probeViewDistance;
@@ -345,19 +345,6 @@ namespace AdvancedRenderPipeline.Runtime {
 			var x = index % dimensions.x;
 			return new Vector3Int(x, y, z);
 		}
-	}
-
-	public enum DiffuseGIProbeSize {
-		_6 = 6,
-		_8 = 8,
-		_16 = 16,
-		_24 = 24,
-		_32 = 32,
-		_64 = 64,
-		_128 = 128,
-		_256 = 256,
-		_512 = 512,
-		_1024 = 1024
 	}
 
 	public enum DiffuseGISource {

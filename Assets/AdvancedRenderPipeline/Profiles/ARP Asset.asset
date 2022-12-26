@@ -18,9 +18,9 @@ MonoBehaviour:
     enableDebugViewInEditor: 1
     debugOutput: 0
     enableAutoInstancing: 1
-    enableSRPBatching: 1
+    enableSRPBatching: 0
     enableMVAutoInstancing: 0
-    enableMVSRPBatching: 1
+    enableMVSRPBatching: 0
     stopNaNPropagation: 1
     blueNoise16: {fileID: 2800000, guid: 8c8f633af43744017ad26c1cfcc827ea, type: 3}
     blueNoise64: {fileID: 2800000, guid: 4d07aea4dc1a34d36aebaec6cc23552f, type: 3}
@@ -56,16 +56,16 @@ MonoBehaviour:
     skyboxMipLevel: 0
     skyboxIntensity: 1
     diffuseGISettings:
-      enabled: 1
+      enabled: 0
       markProbesDirty: 0
       enabledFlag: 1
-      source: 2
+      source: 1
       volumeCenter: {x: 0, y: 6.5, z: -0.65}
       dimensions: {x: 20, y: 9, z: 8}
       maxIntervals: {x: 2, y: 2, z: 2.7}
       probeGBufferSize: 16
-      probeIrradianceSize: 8
       probeVBufferSize: 32
+      probeIrradianceSize: 8
       offlineCubemapSize: 512
       probeViewDistance: 50
       probeDepthSharpness: 80
@@ -87,16 +87,16 @@ MonoBehaviour:
     taaSettings:
       enabled: 1
       jitterNum: 8
-      jitterSpread: 1
+      jitterSpread: 0
       minHistoryWeight: 0.6
       maxHistoryWeight: 0.95
       minClipScale: 0.8
-      maxClipScale: 1.5
+      maxClipScale: 1.6
       staticClipScale: 5
       minVelocityRejection: 0.3
       velocityRejectionScale: 3
       minDepthRejection: 0.5
-      resamplingSharpness: 0.487
+      resamplingSharpness: 0
       minSharpness: 0
       maxSharpness: 0.01
       motionSharpeningFactor: 5

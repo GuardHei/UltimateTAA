@@ -337,21 +337,21 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
             var vertical = _verticalFovTan * _nearPlane;
             var horizontal = vertical * _aspect;
             
-            /*
             jitter.x *= horizontal / (.5f * InternalRes.x);
             jitter.y *= vertical / (.5f * InternalRes.y);
 
             var proj = camera.projectionMatrix;
             proj.m02 += jitter.x / horizontal;
             proj.m12 += jitter.y / vertical;
-            */
             
+            /*
             jitter.x *= 1f / (.5f * InternalRes.x);
             jitter.y *= 1f / (.5f * InternalRes.y);
 
             var proj = camera.projectionMatrix;
             proj.m02 += jitter.x;
             proj.m12 += jitter.y;
+            */
 
             return proj;
         }

@@ -56,9 +56,9 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int DIFFUSE_PROBE_PARAMS_0 = Shader.PropertyToID("_DiffuseProbeParams0");
 		public static readonly int DIFFUSE_PROBE_PARAMS_1 = Shader.PropertyToID("_DiffuseProbeParams1");
 		public static readonly int DIFFUSE_PROBE_PARAMS_2 = Shader.PropertyToID("_DiffuseProbeParams2");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_CUBEMAP_0 = Shader.PropertyToID("_DiffuseProbeGBufferCubemap0");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_CUBEMAP_1 = Shader.PropertyToID("_DiffuseProbeGBufferCubemap1");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_CUBEMAP_2 = Shader.PropertyToID("_DiffuseProbeGBufferCubemap2");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_0_CUBEMAP = Shader.PropertyToID("_DiffuseProbeGBuffer0Cubemap");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_1_CUBEMAP = Shader.PropertyToID("_DiffuseProbeGBuffer1Cubemap");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_2_CUBEMAP = Shader.PropertyToID("_DiffuseProbeGBuffer2Cubemap");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_0 = Shader.PropertyToID("_DiffuseProbeGBuffer0");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_1 = Shader.PropertyToID("_DiffuseProbeGBuffer1");
 		public static readonly int DIFFUSE_PROBE_GBUFFER_2 = Shader.PropertyToID("_DiffuseProbeGBuffer2");
@@ -66,10 +66,10 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int PREV_DIFFUSE_PROBE_IRRADIANCE_ARRAY = Shader.PropertyToID("_PrevDiffuseProbeIrradianceArr");
 		public static readonly int DIFFUSE_PROBE_IRRADIANCE_ARRAY = Shader.PropertyToID("_DiffuseProbeIrradianceArr");
 		public static readonly int DIFFUSE_PROBE_RADIANCE_ARRAY = Shader.PropertyToID("_DiffuseProbeRadianceArr");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_0 = Shader.PropertyToID("_DiffuseProbeGBufferArr0");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_1 = Shader.PropertyToID("_DiffuseProbeGBufferArr1");
-		public static readonly int DIFFUSE_PROBE_GBUFFER_ARRAY_2 = Shader.PropertyToID("_DiffuseProbeGBufferArr2");
-		public static readonly int DIFFUSE_PROBE_VBUFFER_ARRAY_0 = Shader.PropertyToID("_DiffuseProbeVBufferArr0");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_0_ARRAY = Shader.PropertyToID("_DiffuseProbeGBuffer0Arr");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_1_ARRAY = Shader.PropertyToID("_DiffuseProbeGBuffer1Arr");
+		public static readonly int DIFFUSE_PROBE_GBUFFER_2_ARRAY = Shader.PropertyToID("_DiffuseProbeGBuffer2Arr");
+		public static readonly int DIFFUSE_PROBE_VBUFFER_ARRAY = Shader.PropertyToID("_DiffuseProbeVBufferArr");
 		
 		// Only used in compute shaders
 		public static readonly int RADIANCE_ARRAY = Shader.PropertyToID("_RadianceArr");
@@ -92,9 +92,11 @@ namespace AdvancedRenderPipeline.Runtime {
 		public static readonly int PREV_STENCIL_TEXTURE = Shader.PropertyToID("_PrevStencilTex");
 		public static readonly int VELOCITY_TEXTURE = Shader.PropertyToID("_VelocityTex");
 		public static readonly int PREV_VELOCITY_TEXTURE = Shader.PropertyToID("_PrevVelocityTex");
+		public static readonly int GBUFFER_0_TEXTURE = Shader.PropertyToID("_GBuffer0");
 		public static readonly int GBUFFER_1_TEXTURE = Shader.PropertyToID("_GBuffer1");
 		public static readonly int GBUFFER_2_TEXTURE = Shader.PropertyToID("_GBuffer2");
 		public static readonly int GBUFFER_3_TEXTURE = Shader.PropertyToID("_GBuffer3");
+		public static readonly int GBUFFER_4_TEXTURE = Shader.PropertyToID("_GBuffer4");
 		public static readonly int SCREEN_SPACE_CUBEMAP = Shader.PropertyToID("_ScreenSpaceCubemap");
 		public static readonly int SCREEN_SPACE_REFLECTION = Shader.PropertyToID("_ScreenSpaceReflection");
 		public static readonly int PREV_SCREEN_SPACE_REFLECTION = Shader.PropertyToID("_PrevScreenSpaceReflection");

@@ -105,10 +105,10 @@ namespace AdvancedRenderPipeline.Runtime.PipelineProcessors {
         }
 
         internal void SetupProbeBuffers() {
-            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_ARRAY_0, diffuseGISettings.probeGBufferArr0);
-            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_ARRAY_1, diffuseGISettings.probeGBufferArr1);
-            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_ARRAY_2, diffuseGISettings.probeGBufferArr2);
-            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_ARRAY_0, diffuseGISettings.probeVBufferArr0);
+            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0_ARRAY, diffuseGISettings.probeGBufferArr0);
+            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1_ARRAY, diffuseGISettings.probeGBufferArr1);
+            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2_ARRAY, diffuseGISettings.probeGBufferArr2);
+            _cmd.SetGlobalTexture(ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_ARRAY, diffuseGISettings.probeVBufferArr0);
         }
 
         internal void RelightProbes() {

@@ -132,20 +132,20 @@ Shader "Advanced Render Pipeline/ARPStandardDebug" {
                             debugInfo = float3(depth, depth, depth);
                         } else if (debugMode == 8) {
                             uvNoBorder = GetVisibilityMapUV(matData.N);
-                            float depth = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, uvNoBorder, probeIndex, 0).r;
+                            float depth = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0).r;
                             debugInfo = float3(depth, depth, depth);
                         }  else if (debugMode == 9) {
                             uvNoBorder = GetVisibilityMapUV(matData.N);
-                            float depth = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, uvNoBorder, probeIndex, 0).r;
+                            float depth = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0).r;
                             depth /= GetMaxVisibilityDepth();
                             debugInfo = float3(depth, depth, depth);
                         } else if (debugMode == 10) {
                             uvNoBorder = GetVisibilityMapUV(matData.N);
-                            float depth2 = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, uvNoBorder, probeIndex, 0).g;
+                            float depth2 = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0).g;
                             debugInfo = float3(depth2, depth2, depth2);
                         }  else if (debugMode == 11) {
                             uvNoBorder = GetVisibilityMapUV(matData.N);
-                            float depth2 = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, uvNoBorder, probeIndex, 0).g;
+                            float depth2 = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr, sampler_linear_clamp, uvNoBorder, probeIndex, 0).g;
                             float maxDepth = GetMaxVisibilityDepth();
                             depth2 /= maxDepth * maxDepth;
                             debugInfo = float3(depth2, depth2, depth2);

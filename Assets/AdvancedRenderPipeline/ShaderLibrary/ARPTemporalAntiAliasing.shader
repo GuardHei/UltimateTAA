@@ -108,7 +108,8 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                     closetLinearDepth = linearDepth4;
                     closetOffset = offset4;
                 }
-                
+
+                closetOffset = int2(0, 0);
                 float2 mv = LOAD_TEXTURE2D(_VelocityTex, coord + closetOffset).rg; // if velocity is outside the screen, we want to set it to 0 instead of clamping.
                 float2 prevUV = uv - mv;
 
@@ -120,6 +121,28 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 float3 c6 = FastTonemap(_MainTex.SampleLevel(sampler_point_clamp, uv, 0, offset6)).rgb;
                 float3 c7 = FastTonemap(_MainTex.SampleLevel(sampler_point_clamp, uv, 0, offset7)).rgb;
                 float3 c8 = FastTonemap(_MainTex.SampleLevel(sampler_point_clamp, uv, 0, offset8)).rgb;
+                
+                /*
+                // temporary debug only
+
+                mv = LOAD_TEXTURE2D(_VelocityTex, coord).rg;
+                float3 f0 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * .0f, 0).rgb;
+                float3 f1 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 1.0f, 0).rgb;
+                float3 f2 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 2.0f, 0).rgb;
+                float3 f3 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 3.0f, 0).rgb;
+                float3 f4 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 4.0f, 0).rgb;
+                float3 f5 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 5.0f, 0).rgb;
+                float3 f6 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 6.0f, 0).rgb;
+                float3 f7 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 7.0f, 0).rgb;
+                float3 f8 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 8.0f, 0).rgb;
+                float3 f9 = _MainTex.SampleLevel(sampler_point_clamp, uv - mv * 9.0f, 0).rgb;
+
+                // return float4(FastTonemap(f2), 1.0f);
+                return float4(FastTonemap((f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8 + f9) / 10.0f), 1.0f);
+                // return float4(FastTonemap(f0), 1.0f);
+                
+                // debug ends here
+                */
 
                 float3 n0 = RGBToYCoCg(curr.rgb);
                 float3 n1 = RGBToYCoCg(c1);
@@ -268,7 +291,8 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                 // return antiFlicker ? 1.0f : .0f;
                 // return mismatch ? 1.0f : .0f;
                 // return (mismatch && !antiFlicker) ? 1.0f : .0f;
-
+                
+                // clipScale = 1.0f;
                 prev.rgb = YCoCgToRGB(ClipVariance(m1, m2, 9.0f, clipScale, RGBToYCoCg(prev.rgb)));
                 
                 /*
@@ -302,6 +326,7 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
 
                 bool edgeBlur = !antiFlicker && (mismatch || depthWeight < invalidHistoryThreshold);
                 float3 cross = c5 + c6 + c7 + c8;
+                /*
                 if (edgeBlur) {
                     // adaptive gaussian blur if pixel is at edge and doesn't have a valid history sample
                     float centerWeight = minEdgeBlurriness;
@@ -311,9 +336,11 @@ Shader "Hidden/ARPTemporalAntiAliasing" {
                     float sharpnessFactor = lerp(maxSharpness, minSharpness, mvScale * motionSharpeningFactor);
                     curr.rgb = AdaptiveSharpening(curr.rgb, cross, sharpnessFactor);
                 }
+                */
 
                 // decrease history weight when transparent pixel has a large opacity (motion vector is less reliable here)
                 float historyWeight = curr.a > .999f ? maxHistoryWeight : lerp(maxHistoryWeight, minHistoryWeight, curr.a);
+                // historyWeight = .95f;
                 float3 resolved = lerp(curr.rgb, prev.rgb, historyWeight);
 
                 output.rgb = resolved;

@@ -138,7 +138,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 		public override void Setup() {
 
-			var jitterNum = (int)settings.taaSettings.jitterNum;
+			var jitterNum = (int) settings.taaSettings.jitterNum;
 			var frameNumCycled = _frameNum % jitterNum;
 			
 			var frameParams = new Vector4(_frameNum, jitterNum,  frameNumCycled, frameNumCycled / (float) jitterNum);
@@ -247,6 +247,13 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 			_cmd.SetGlobalMatrix(ShaderKeywordManager.UNITY_MATRIX_NONJITTERED_I_VP, _invNonJitteredMatrixVP);
 			_cmd.SetGlobalConstantBuffer(_cameraDataBuffer, ShaderKeywordManager.CAMERA_DATA, 0, sizeof(CameraData));
 			ExecuteCommand();
+			
+			/*
+			Debug.Log("====frame " + _frameNum + "====\n");
+			Debug.Log("PREV_MATRIX_VP: \n" + _prevMatrixVP);
+			Debug.Log("NONJITTERED_MATRIX_VP: \n" + _nonjitteredMatrixVP);
+			Debug.Log("MATRIX_VP: \n" + _matrixVP);
+			*/
 		}
 
 		internal void Cull() {
@@ -293,6 +300,7 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 		internal void DrawDynamicVelocityPass() {
 			// Assume RT is correctly set by the previous step
 
+			
 			var sortSettings = new SortingSettings(camera) { criteria = SortingCriteria.OptimizeStateChanges };
 			var drawSettings = new DrawingSettings(ShaderTagManager.MOTION_VECTORS, sortSettings) { enableInstancing = settings.enableMVAutoInstancing, perObjectData = PerObjectData.MotionVectors };
 			// drawSettings.SetShaderPassName(0, ShaderTagManager.MOTION_VECTORS);

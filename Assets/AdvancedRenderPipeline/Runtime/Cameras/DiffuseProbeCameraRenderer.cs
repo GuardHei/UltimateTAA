@@ -212,9 +212,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
         public void FinalBlit() {
 	        var cs = settings.diffuseGISettings.offlineComputeShader;
 	        var kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_PREFILTER);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_0, _gbufferCubemap0);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_1, _gbufferCubemap1);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_2, _gbufferCubemap2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0_CUBEMAP, _gbufferCubemap0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1_CUBEMAP, _gbufferCubemap1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2_CUBEMAP, _gbufferCubemap2);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0, _gbuffer0);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1, _gbuffer1);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2, _gbuffer2);
@@ -230,9 +230,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 	        ExecuteCommand();
 	        
 	        kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_PREFILTER);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_0, _gbufferCubemap0);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_1, _gbufferCubemap1);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_2, _gbufferCubemap2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0_CUBEMAP, _gbufferCubemap0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1_CUBEMAP, _gbufferCubemap1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2_CUBEMAP, _gbufferCubemap2);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0, _gbuffer0);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1, _gbuffer1);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2, _gbuffer2);
@@ -247,9 +247,9 @@ namespace AdvancedRenderPipeline.Runtime.Cameras {
 
 	        /*
 	        kernel = cs.FindKernel(ShaderKeywordManager.DIFFUSE_PROBE_VBUFFER_PADDING);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_0, _gbufferCubemap0);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_1, _gbufferCubemap1);
-	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_CUBEMAP_2, _gbufferCubemap2);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0_CUBEMAP, _gbufferCubemap0);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1_CUBEMAP, _gbufferCubemap1);
+	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2_CUBEMAP, _gbufferCubemap2);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_0, _gbuffer0);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_1, _gbuffer1);
 	        _cmd.SetComputeTextureParam(cs, kernel, ShaderKeywordManager.DIFFUSE_PROBE_GBUFFER_2, _gbuffer2);

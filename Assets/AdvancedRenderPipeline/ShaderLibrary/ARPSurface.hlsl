@@ -87,6 +87,27 @@ struct ARPSurfGBufferOutput {
     float gbuffer3 : SV_TARGET3;
 };
 
+struct ARPSurfGBufferOutputStandard {
+    float4 gbuffer0 : SV_TARGET0;
+    float4 gbuffer1 : SV_TARGET1;
+    float4 gbuffer2 : SV_TARGET2;
+};
+
+struct ARPSurfGBufferOutputClearCoat {
+    float4 gbuffer0 : SV_TARGET0;
+    float4 gbuffer1 : SV_TARGET1;
+    float4 gbuffer2 : SV_TARGET2;
+    float4 gbuffer3 : SV_TARGET3;
+};
+
+struct ARPSurfGBufferOutputFabric {
+    float4 gbuffer0 : SV_TARGET0;
+    float4 gbuffer1 : SV_TARGET1;
+    float4 gbuffer2 : SV_TARGET2;
+    float4 gbuffer3 : SV_TARGET3;
+    float4 gbuffer4 : SV_TARGET4;
+};
+
 struct ARPSurfMatInputData {
     float3 albedoTint;
     float3 emissiveTint;

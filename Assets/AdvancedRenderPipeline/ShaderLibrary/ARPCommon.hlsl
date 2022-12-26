@@ -246,7 +246,7 @@ TEXTURE2D_ARRAY(_DiffuseProbeRadianceArr);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr0);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr1);
 TEXTURE2D_ARRAY(_DiffuseProbeGBufferArr2);
-TEXTURE2D_ARRAY(_DiffuseProbeVBufferArr0);
+TEXTURE2D_ARRAY(_DiffuseProbeVBufferArr);
 
 TEXTURE2D_ARRAY_SHADOW(_MainLightShadowmapArray);
 SAMPLER_CMP(sampler_MainLightShadowmapArray);
@@ -1379,7 +1379,7 @@ float4 GetProbeIrradianceWeighted(int3 probeIndex, float3 posWS, float3 N, bool 
         // Visibility weighting:
         // This value is dependent on whether or not the current sample position is occluded by the current probe
         //  We sample from VBuffer, which stores distance info (result.x is scaled E[x], result.y is scaled E[x^2]), and use these values to calculate variance
-        float2 visParams = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr0, sampler_linear_clamp, GetVisibilityMapUV(-pointToProbe), index1d, 0).xy;
+        float2 visParams = SAMPLE_TEXTURE2D_ARRAY_LOD(_DiffuseProbeVBufferArr, sampler_linear_clamp, GetVisibilityMapUV(-pointToProbe), index1d, 0).xy;
     
         float variance = abs((visParams.x * visParams.x) - visParams.y);
 
